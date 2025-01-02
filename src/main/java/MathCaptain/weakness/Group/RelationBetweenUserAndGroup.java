@@ -31,6 +31,6 @@ public class RelationBetweenUserAndGroup {
     @Column(nullable = false)
     private Float personalWeeklyGoal;
 
-    @Enumerated(EnumType.STRING)
-    private Status status; // Enum for status (e.g., ACTIVE, INACTIVE)
+//    @Enumerated(EnumType.STRING)
+//    private Status status; // Enum for status (e.g., ACTIVE, INACTIVE)
 }
