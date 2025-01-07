@@ -1,4 +1,4 @@
-package MathCaptain.weakness.Group;
+package MathCaptain.weakness.domain.Group;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
@@ -12,6 +12,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @Entity
 @Getter
+@Table(name = "user_group")
 public class Group {
 
     @Id

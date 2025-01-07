@@ -1,4 +1,4 @@
-package MathCaptain.weakness.Group;
+package MathCaptain.weakness.domain.Group;
 
 import ch.qos.logback.core.status.Status;
 import jakarta.persistence.*;

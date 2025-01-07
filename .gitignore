@@ -35,3 +35,10 @@ out/
 
 ### VS Code ###
 .vscode/
+
+### DS STORE ###
+.DS_Store
+
+### Secret key ###
+src/main/resources/secret.properties
+src/main/resources/application-jwt.yml

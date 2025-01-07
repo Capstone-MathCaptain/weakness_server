@@ -1,4 +1,4 @@
-package MathCaptain.weakness.Group;
+package MathCaptain.weakness.domain.Group;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;

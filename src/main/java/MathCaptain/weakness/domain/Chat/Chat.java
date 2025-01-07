@@ -1,4 +1,4 @@
-package MathCaptain.weakness.Chat;
+package MathCaptain.weakness.domain.Chat;
 
 import jakarta.persistence.*;
 import lombok.Getter;

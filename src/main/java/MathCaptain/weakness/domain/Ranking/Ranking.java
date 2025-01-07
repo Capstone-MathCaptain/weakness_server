@@ -1,4 +1,4 @@
-package MathCaptain.weakness.Ranking;
+package MathCaptain.weakness.domain.Ranking;
 
 import jakarta.persistence.*;
 import lombok.Getter;

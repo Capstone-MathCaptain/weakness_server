@@ -1,4 +1,4 @@
-package MathCaptain.weakness.Recruitment;
+package MathCaptain.weakness.domain.Recruitment;
 
 import jakarta.persistence.*;
 import lombok.Getter;
