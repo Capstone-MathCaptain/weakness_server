@@ -1,8 +1,8 @@
 package MathCaptain.weakness.Security.jwt;
 
-import MathCaptain.weakness.domain.User.UserDetailsImpl;
-import MathCaptain.weakness.domain.User.UserRepository;
-import MathCaptain.weakness.domain.User.Users;
+import MathCaptain.weakness.User.Domain.UserDetailsImpl;
+import MathCaptain.weakness.User.Repository.UserRepository;
+import MathCaptain.weakness.User.Domain.Users;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -29,7 +29,7 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
 
     private final String NO_CHECK_URL = "/login";
 
-    /**
+     /**
      * 1. 리프레시 토큰이 오는 경우 -> 유효하면 AccessToken 재발급후, 필터 진행 X, 바로 튕기기
      *
      * 2. 리프레시 토큰은 없고 AccessToken만 있는 경우 -> 유저정보 저장후 필터 계속 진행
@@ -47,7 +47,6 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
                 .filter(jwtService::isTokenValid)
                 .orElse(null); // RefreshToken이 없거나 유효하지 않으면 null을 반환
 
-
         if(refreshToken != null){
             checkRefreshTokenAndReIssueAccessToken(response, refreshToken); // refreshToken으로 유저 정보를 찾아오고, 존재하면 AccessToken을 재발급
             return; // 인증을 처리하지 않게 하기 위해 return
@@ -58,7 +57,8 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
 
     private void checkAccessTokenAndAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         jwtService.extractAccessToken(request).filter(jwtService::isTokenValid).ifPresent(
-
+                // AccessToken이 존재하고 유효하다면
+                // AccessToken에서 email을 추출하고, email로 유저 정보를 찾아서 인증처리
                 accessToken -> jwtService.extractEmail(accessToken).ifPresent(
 
                         email -> userRepository.findByEmail(email).ifPresent(
@@ -76,13 +76,13 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
 
         Authentication authentication = new UsernamePasswordAuthenticationToken(userDetails, null,authoritiesMapper.mapAuthorities(userDetails.getAuthorities()));
 
-
-        SecurityContext context = SecurityContextHolder.createEmptyContext();//5
+        SecurityContext context = SecurityContextHolder.createEmptyContext();
         context.setAuthentication(authentication);
         SecurityContextHolder.setContext(context);
     }
 
     private void checkRefreshTokenAndReIssueAccessToken(HttpServletResponse response, String refreshToken) {
+        // 해당하는 refreshToken이 DB에 존재하면, user에게 AccessToken 발급
         userRepository.findByRefreshToken(refreshToken).ifPresent(
                 users -> jwtService.sendAccessToken(response, jwtService.createAccessToken(users.getEmail()))
         );

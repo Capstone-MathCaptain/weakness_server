@@ -2,10 +2,10 @@ package MathCaptain.weakness.Security;
 
 import MathCaptain.weakness.Security.jwt.JwtAuthenticationProcessingFilter;
 import MathCaptain.weakness.Security.jwt.JwtService;
-import MathCaptain.weakness.domain.Login.LoginSuccessJWTProvideHandler;
-import MathCaptain.weakness.domain.Login.LoginFailureHandler;
-import MathCaptain.weakness.domain.User.UserDetailsServiceImpl;
-import MathCaptain.weakness.domain.User.UserRepository;
+import MathCaptain.weakness.Login.LoginSuccessJWTProvideHandler;
+import MathCaptain.weakness.Login.LoginFailureHandler;
+import MathCaptain.weakness.User.Service.UserDetailsServiceImpl;
+import MathCaptain.weakness.User.Repository.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -124,8 +124,7 @@ public class SecurityConfig {
 
     @Bean
     public JwtAuthenticationProcessingFilter jwtAuthenticationProcessingFilter(){
-        JwtAuthenticationProcessingFilter jsonUsernamePasswordLoginFilter = new JwtAuthenticationProcessingFilter(jwtService, userRepository);
-        return jsonUsernamePasswordLoginFilter;
+        return new JwtAuthenticationProcessingFilter(jwtService, userRepository);
     }
 
 
