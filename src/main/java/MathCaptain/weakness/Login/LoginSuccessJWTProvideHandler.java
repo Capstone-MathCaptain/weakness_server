@@ -1,7 +1,7 @@
 package MathCaptain.weakness.Login;
 
 import MathCaptain.weakness.Security.jwt.JwtService;
-import MathCaptain.weakness.User.Repository.UserRepository;
+import MathCaptain.weakness.User.repository.UserRepository;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

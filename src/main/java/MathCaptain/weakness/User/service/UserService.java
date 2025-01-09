@@ -1,9 +1,9 @@
-package MathCaptain.weakness.User.Service;
+package MathCaptain.weakness.User.service;
 
-import MathCaptain.weakness.User.DTO.updateUserDto;
-import MathCaptain.weakness.User.DTO.userDto;
-import MathCaptain.weakness.User.Repository.UserRepository;
-import MathCaptain.weakness.User.Domain.Users;
+import MathCaptain.weakness.User.dto.updateUserDto;
+import MathCaptain.weakness.User.dto.userDto;
+import MathCaptain.weakness.User.repository.UserRepository;
+import MathCaptain.weakness.User.domain.Users;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;

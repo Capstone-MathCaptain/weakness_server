@@ -1,8 +1,8 @@
-package MathCaptain.weakness.User.Service;
+package MathCaptain.weakness.User.service;
 
-import MathCaptain.weakness.User.Domain.UserDetailsImpl;
-import MathCaptain.weakness.User.Repository.UserRepository;
-import MathCaptain.weakness.User.Domain.Users;
+import MathCaptain.weakness.User.domain.UserDetailsImpl;
+import MathCaptain.weakness.User.repository.UserRepository;
+import MathCaptain.weakness.User.domain.Users;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;

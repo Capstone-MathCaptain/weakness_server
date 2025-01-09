@@ -1,8 +1,8 @@
 package MathCaptain.weakness.Security.jwt;
 
-import MathCaptain.weakness.User.Domain.UserDetailsImpl;
-import MathCaptain.weakness.User.Repository.UserRepository;
-import MathCaptain.weakness.User.Domain.Users;
+import MathCaptain.weakness.User.domain.UserDetailsImpl;
+import MathCaptain.weakness.User.repository.UserRepository;
+import MathCaptain.weakness.User.domain.Users;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

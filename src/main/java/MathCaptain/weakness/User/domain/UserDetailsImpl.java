@@ -1,4 +1,4 @@
-package MathCaptain.weakness.User.Domain;
+package MathCaptain.weakness.User.domain;
 
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;

@@ -1,4 +1,4 @@
-package MathCaptain.weakness.User.DTO;
+package MathCaptain.weakness.User.dto;
 
 import lombok.*;
 

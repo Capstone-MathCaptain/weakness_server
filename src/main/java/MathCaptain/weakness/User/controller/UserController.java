@@ -1,9 +1,9 @@
-package MathCaptain.weakness.User.Controller;
+package MathCaptain.weakness.User.controller;
 
-import MathCaptain.weakness.User.DTO.updateUserDto;
-import MathCaptain.weakness.User.DTO.userDto;
-import MathCaptain.weakness.User.Domain.Users;
-import MathCaptain.weakness.User.Service.UserService;
+import MathCaptain.weakness.User.dto.updateUserDto;
+import MathCaptain.weakness.User.dto.userDto;
+import MathCaptain.weakness.User.domain.Users;
+import MathCaptain.weakness.User.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

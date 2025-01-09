@@ -4,8 +4,8 @@ import MathCaptain.weakness.Security.jwt.JwtAuthenticationProcessingFilter;
 import MathCaptain.weakness.Security.jwt.JwtService;
 import MathCaptain.weakness.Login.LoginSuccessJWTProvideHandler;
 import MathCaptain.weakness.Login.LoginFailureHandler;
-import MathCaptain.weakness.User.Service.UserDetailsServiceImpl;
-import MathCaptain.weakness.User.Repository.UserRepository;
+import MathCaptain.weakness.User.service.UserDetailsServiceImpl;
+import MathCaptain.weakness.User.repository.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -41,6 +41,7 @@ public class SecurityConfig {
 		return (web -> web.ignoring()
 				.requestMatchers(toH2Console())
 				.requestMatchers("/h2-console/**")
+                .requestMatchers("/group/**", "/user/**") // 접근 허용된 URL
 		);
 	}
 
@@ -53,6 +54,7 @@ public class SecurityConfig {
                 .addFilterAfter(jsonUsernamePasswordLoginFilter(), LogoutFilter.class) // 추가 : 커스터마이징 된 필터를 SpringSecurityFilterChain에 등록
                 .authorizeHttpRequests((authorize) -> authorize
                         .requestMatchers("/signup", "/", "/login").permitAll() // 접근 허용된 URL
+//                        .requestMatchers("/group/**", "/user/**").authenticated() // 그룹 관련 URL은 인증된 사용자만 접근 가능
                         .anyRequest().authenticated())
                 // 폼 로그인은 현재 사용하지 않음
 //				.formLogin(formLogin -> formLogin
