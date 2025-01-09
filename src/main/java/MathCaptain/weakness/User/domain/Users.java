@@ -1,5 +1,7 @@
-package MathCaptain.weakness.User.Domain;
+package MathCaptain.weakness.User.domain;
 
+import MathCaptain.weakness.Group.domain.Group;
+import MathCaptain.weakness.Group.domain.RelationBetweenUserAndGroup;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
@@ -7,6 +9,8 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
+
+import java.util.List;
 
 @Entity
 @Getter
@@ -17,6 +21,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 public class Users {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "user_id")
     private Long userId;
 
     @Email
@@ -37,6 +42,12 @@ public class Users {
 
     @Size(min = 11, max = 13, message = "전화번호를 잘못입력하셨습니다! 다시 입력해주세요.")
     private String phoneNumber;
+
+    @OneToOne(mappedBy = "member")
+    private RelationBetweenUserAndGroup relationBetweenUserAndGroup;
+
+    @OneToMany(mappedBy = "leader")
+    private List<Group> group;
 
     //== jwt 토큰 추가 ==//
     @Column(length = 1000)

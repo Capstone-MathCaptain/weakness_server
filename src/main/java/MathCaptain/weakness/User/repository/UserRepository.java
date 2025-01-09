@@ -1,6 +1,6 @@
-package MathCaptain.weakness.User.Repository;
+package MathCaptain.weakness.User.repository;
 
-import MathCaptain.weakness.User.Domain.Users;
+import MathCaptain.weakness.User.domain.Users;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
