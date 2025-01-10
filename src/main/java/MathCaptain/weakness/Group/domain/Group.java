@@ -31,7 +31,7 @@ public class Group {
     @JoinColumn(name = "leader")
     private Users leader;
 
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "groupId")
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "group")
     @Column(name = "members")
     private List<RelationBetweenUserAndGroup> relationBetweenUserAndGroup;
 
@@ -68,5 +68,39 @@ public class Group {
     @PrePersist
     protected void onCreate() {
         this.create_date = LocalDate.now();
+    }
+
+    //==수정 로직==//
+
+    public void updateName(String name) {
+        this.name = name;
+    }
+
+    public void updateCategory(CategoryStatus category) {
+        this.category = category;
+    }
+
+    public void updateMinDailyHours(int min_daily_hours) {
+        this.min_daily_hours = min_daily_hours;
+    }
+
+    public void updateMinWeeklyDays(int min_weekly_days) {
+        this.min_weekly_days = min_weekly_days;
+    }
+
+    public void updateGroupPoint(Long group_point) {
+        this.group_point = group_point;
+    }
+
+    public void updateHashtags(List<String> hashtags) {
+        this.hashtags = hashtags;
+    }
+
+    public void updateDisturbMode(Boolean disturb_mode) {
+        this.disturb_mode = disturb_mode;
+    }
+
+    public void updateGroupImageUrl(String group_image_url) {
+        this.group_image_url = group_image_url;
     }
 }

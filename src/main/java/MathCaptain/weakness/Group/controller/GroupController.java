@@ -1,12 +1,16 @@
 package MathCaptain.weakness.Group.controller;
 
+import MathCaptain.weakness.Group.dto.request.GroupJoinRequestDto;
+import MathCaptain.weakness.Group.dto.request.GroupUpdateRequestDto;
+import MathCaptain.weakness.Group.dto.response.GroupResponseDto;
+import MathCaptain.weakness.Group.dto.response.RelationResponseDto;
+import MathCaptain.weakness.Group.dto.response.UserResponseDto;
 import MathCaptain.weakness.Group.service.GroupService;
-import MathCaptain.weakness.Group.dto.GroupCreateDto;
+import MathCaptain.weakness.Group.dto.request.GroupCreateRequestDto;
+import MathCaptain.weakness.Group.service.RelationService;
 import org.springframework.web.bind.annotation.*;
-import MathCaptain.weakness.Group.domain.Group;
 import lombok.RequiredArgsConstructor;
 import jakarta.validation.Valid;
-
 import java.util.List;
 
 @RestController
@@ -14,15 +18,37 @@ import java.util.List;
 public class GroupController {
 
     private final GroupService groupService;
+    private final RelationService relationService;
 
     @GetMapping("/group/{groupId}")
-    private Group groupInfo(@PathVariable long groupId) {
+    public GroupResponseDto groupInfo(@PathVariable long groupId) {
         return groupService.getGroupInfo(groupId);
     }
 
-    @PostMapping("/group/{leaderId}")
-    public String createGroup(@Valid @PathVariable long leaderId, @RequestBody GroupCreateDto groupCreateDto) {
-        Long id = groupService.createGroup(leaderId, groupCreateDto);
+    @PostMapping("/group")
+    public String createGroup(@Valid @RequestBody GroupCreateRequestDto groupCreateRequestDto) {
+        Long id = groupService.createGroup(groupCreateRequestDto);
         return Long.toString(id) + "번 그룹이 생성되었습니다.";
+    }
+
+    @PutMapping("/group/{groupId}")
+    public GroupResponseDto updateGroup(@PathVariable long groupId, @RequestBody GroupUpdateRequestDto groupUpdateRequestDto) {
+        return groupService.updateGroupInfo(groupId, groupUpdateRequestDto);
+    }
+
+    @PostMapping("/group/join/{groupId}")
+    public String joinGroup(@PathVariable long groupId, @RequestBody GroupJoinRequestDto groupJoinRequestDto) {
+        groupService.joinGroup(groupId, groupJoinRequestDto);
+        return "그룹에 가입되었습니다.";
+    }
+
+    @GetMapping("/group/members/{groupId}")
+    public List<UserResponseDto> groupMembers(@PathVariable long groupId) {
+        return groupService.getGroupMembers(groupId);
+    }
+
+    @GetMapping("/group/relation/{relationId}")
+    public RelationResponseDto relationInfo(@PathVariable Long relationId) {
+        return relationService.getRelationInfo(relationId);
     }
 }
