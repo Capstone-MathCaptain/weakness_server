@@ -7,7 +7,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.validator.constraints.Range;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
@@ -32,16 +34,18 @@ public class RelationBetweenUserAndGroup {
     private GroupRole groupRole;
 
     @ManyToOne
-    @JoinColumn(name = "group_id")
-    private Group groupId;
+    @JoinColumn(name = "group")
+    private Group group;
 
     @Column(nullable = false)
-    private LocalDateTime joinDate;
+    private LocalDate joinDate;
 
     @Column(nullable = false)
+    @Range(min = 0, max = 24)
     private int personalDailyGoal;
 
     @Column(nullable = false)
+    @Range(min = 0)
     private int personalWeeklyGoal;
 
     // 기본값 설정
@@ -51,7 +55,7 @@ public class RelationBetweenUserAndGroup {
             this.groupRole = GroupRole.MEMBER; // 기본값 설정
         }
         if (this.joinDate == null) {
-            this.joinDate = LocalDateTime.now(); // joinDate의 기본값 설정 (필요 시)
+            this.joinDate = LocalDate.now(); // joinDate의 기본값 설정 (필요 시)
         }
     }
 }

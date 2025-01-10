@@ -1,4 +1,4 @@
-package MathCaptain.weakness.Group.dto;
+package MathCaptain.weakness.Group.dto.request;
 
 import MathCaptain.weakness.Group.enums.CategoryStatus;
 import lombok.Builder;
@@ -8,9 +8,9 @@ import java.util.List;
 
 @Data
 @Builder
-public class GroupCreateDto {
+public class GroupCreateRequestDto {
 
-//    private long leader_id;
+    private long leader_id;
 
     private String group_name;
 

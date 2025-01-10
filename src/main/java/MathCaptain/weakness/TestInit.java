@@ -27,21 +27,36 @@ public class TestInit {
     @Transactional
     public void init() {
 
-        String email = "test@example.com";
-        String refreshToken = JwtTestUtil.createTestJwt(email);
+        String email1 = "test1@example.com";
+        String refreshToken1 = JwtTestUtil.createTestJwt(email1);
+
+        String email2 = "test2@example.com";
+        String refreshToken2 = JwtTestUtil.createTestJwt(email2);
 
         // 테스트 유저 생성
-        Users users = Users.builder()
+        Users users1 = Users.builder()
                 .userId(1L)
-                .email(email)
-                .password(passwordEncoder.encode("password"))
-                .name("tester")
+                .email(email1)
+                .password(passwordEncoder.encode("password1"))
+                .name("tester01")
                 .nickname("tester01")
                 .phoneNumber("01012345678")
-                .refreshToken(refreshToken)
+                .refreshToken(refreshToken1)
                 .build();
 
-        userRepository.save(users);
+        Users users2 = Users.builder()
+                .userId(2L)
+                .email(email2)
+                .password(passwordEncoder.encode("password2"))
+                .name("tester02")
+                .nickname("tester02")
+                .phoneNumber("01056781234")
+                .refreshToken(refreshToken2)
+                .build();
+
+
+        userRepository.save(users1);
+        userRepository.save(users2);
         log.info("테스트 유저 생성 완료");
 
         Users leader = userRepository.findByUserId(1L)

@@ -1,5 +1,6 @@
 package MathCaptain.weakness.User.service;
 
+import MathCaptain.weakness.Group.dto.response.UserResponseDto;
 import MathCaptain.weakness.User.dto.updateUserDto;
 import MathCaptain.weakness.User.dto.userDto;
 import MathCaptain.weakness.User.repository.UserRepository;
@@ -18,8 +19,17 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
-    // 회원가입
+    public Users getUserById(Long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 유저가 없습니다."));
+    }
 
+    public Users getUserByName(String name) {
+        return userRepository.findByName(name)
+                .orElseThrow(() -> new IllegalArgumentException("해당 유저가 없습니다."));
+    }
+
+    // 회원가입
     public long saveUser(userDto user) {
         Users users = Users.builder()
                 .email(user.getEmail())
@@ -61,7 +71,20 @@ public class UserService {
         return user;
     }
 
+    public UserResponseDto getUserInfo(Long userId) {
+        Users member = userRepository.findByUserId(userId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 유저가 없습니다."));
 
+        return UserResponseDto.builder()
+                .userId(member.getUserId())
+                .email(member.getEmail())
+                .name(member.getName())
+                .nickname(member.getNickname())
+                .phoneNumber(member.getPhoneNumber())
+                .build();
+    }
+
+    //==검증 로직==//
     private void validateDuplicateUser(Users user) {
 
         if (userRepository.existsByEmail(user.getEmail())) {
