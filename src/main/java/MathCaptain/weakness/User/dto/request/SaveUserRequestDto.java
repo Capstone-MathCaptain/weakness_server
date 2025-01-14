@@ -1,10 +1,10 @@
-package MathCaptain.weakness.User.dto;
+package MathCaptain.weakness.User.dto.request;
 
 import lombok.*;
 
 @Data
 @Builder(access = AccessLevel.PUBLIC)
-public class userDto {
+public class SaveUserRequestDto {
 
     private String email;
     private String password;

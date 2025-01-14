@@ -2,6 +2,8 @@ package MathCaptain.weakness.User.domain;
 
 import MathCaptain.weakness.Group.domain.Group;
 import MathCaptain.weakness.Group.domain.RelationBetweenUserAndGroup;
+import MathCaptain.weakness.Recruitment.domain.Comment;
+import MathCaptain.weakness.Recruitment.domain.Recruitment;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
@@ -48,6 +50,12 @@ public class Users {
 
     @OneToMany(mappedBy = "leader")
     private List<Group> group;
+
+    @OneToMany(mappedBy = "author")
+    private List<Comment> comment;
+
+    @OneToMany(mappedBy = "author")
+    private List<Recruitment> recruitment;
 
     //== jwt 토큰 추가 ==//
     @Column(length = 1000)

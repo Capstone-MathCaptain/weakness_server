@@ -1,8 +1,8 @@
 package MathCaptain.weakness.User.service;
 
-import MathCaptain.weakness.Group.dto.response.UserResponseDto;
-import MathCaptain.weakness.User.dto.updateUserDto;
-import MathCaptain.weakness.User.dto.userDto;
+import MathCaptain.weakness.User.dto.response.UserResponseDto;
+import MathCaptain.weakness.User.dto.request.UpdateUserRequestDto;
+import MathCaptain.weakness.User.dto.request.SaveUserRequestDto;
 import MathCaptain.weakness.User.repository.UserRepository;
 import MathCaptain.weakness.User.domain.Users;
 import jakarta.transaction.Transactional;
@@ -30,7 +30,7 @@ public class UserService {
     }
 
     // 회원가입
-    public long saveUser(userDto user) {
+    public UserResponseDto saveUser(SaveUserRequestDto user) {
         Users users = Users.builder()
                 .email(user.getEmail())
                 .password(passwordEncoder.encode(user.getPassword()))
@@ -38,50 +38,52 @@ public class UserService {
                 .nickname(user.getNickname())
                 .phoneNumber(user.getPhoneNumber())
                 .build();
+
         validateDuplicateUser(users);
-        return userRepository.save(users).getUserId();
+        userRepository.save(users);
+
+        return buildUserResponseDto(users);
     }
 
     public long deleteUser(long userId, String password) {
         Users user = userRepository.findByUserId(userId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 유저가 없습니다."));
+
         if (!passwordEncoder.matches(password, user.getPassword())) {
             throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
         }
+
         return user.getUserId();
     }
 
-    public userDto getUserInfo(long userId) {
-        Users user = userRepository.findByUserId(userId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 유저가 없습니다."));
-        return userDto.builder()
-                .email(user.getEmail())
-                .name(user.getName())
-                .nickname(user.getNickname())
-                .phoneNumber(user.getPhoneNumber())
-                .build();
-    }
-
-    public Users updateUser(updateUserDto updateUser) {
+    public UserResponseDto updateUser(Long userId ,UpdateUserRequestDto updateUser) {
         Users user = userRepository.findByEmail(updateUser.getEmail())
                 .orElseThrow(() -> new IllegalArgumentException("해당 유저가 없습니다."));
-        user.updateName(updateUser.getName());
-        user.updateNickname(updateUser.getNickname());
-        user.updatePhoneNumber(updateUser.getPhoneNumber());
-        return user;
+
+        if (!user.getUserId().equals(userId)) {
+            throw new IllegalArgumentException("유저가 일치하지 않습니다!");
+        }
+
+        if (!user.getName().equals(updateUser.getName())) {
+            user.updateName(updateUser.getName());
+        }
+
+        if (!user.getNickname().equals(updateUser.getNickname())) {
+            user.updateNickname(updateUser.getNickname());
+        }
+
+        if (!user.getPhoneNumber().equals(updateUser.getPhoneNumber())) {
+            user.updatePhoneNumber(updateUser.getPhoneNumber());
+        }
+
+        return buildUserResponseDto(user);
     }
 
     public UserResponseDto getUserInfo(Long userId) {
         Users member = userRepository.findByUserId(userId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 유저가 없습니다."));
 
-        return UserResponseDto.builder()
-                .userId(member.getUserId())
-                .email(member.getEmail())
-                .name(member.getName())
-                .nickname(member.getNickname())
-                .phoneNumber(member.getPhoneNumber())
-                .build();
+        return buildUserResponseDto(member);
     }
 
     //==검증 로직==//
@@ -96,5 +98,15 @@ public class UserService {
         if (userRepository.existsByNickname(user.getNickname())) {
             throw new IllegalStateException("이미 사용중인 닉네임입니다.");
         }
+    }
+
+    private UserResponseDto buildUserResponseDto(Users user) {
+        return UserResponseDto.builder()
+                .userId(user.getUserId())
+                .email(user.getEmail())
+                .name(user.getName())
+                .nickname(user.getNickname())
+                .phoneNumber(user.getPhoneNumber())
+                .build();
     }
 }

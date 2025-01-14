@@ -34,8 +34,8 @@ public class RelationBetweenUserAndGroup {
     private GroupRole groupRole;
 
     @ManyToOne
-    @JoinColumn(name = "group")
-    private Group group;
+    @JoinColumn(name = "joinGroup")
+    private Group joinGroup;
 
     @Column(nullable = false)
     private LocalDate joinDate;

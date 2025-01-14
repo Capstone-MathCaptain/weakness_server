@@ -1,8 +1,8 @@
 package MathCaptain.weakness.User.controller;
 
-import MathCaptain.weakness.User.dto.updateUserDto;
-import MathCaptain.weakness.User.dto.userDto;
-import MathCaptain.weakness.User.domain.Users;
+import MathCaptain.weakness.User.dto.response.UserResponseDto;
+import MathCaptain.weakness.User.dto.request.UpdateUserRequestDto;
+import MathCaptain.weakness.User.dto.request.SaveUserRequestDto;
 import MathCaptain.weakness.User.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -18,11 +18,11 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping("/signup")
-    public String saveUser(@Valid @RequestBody userDto user, BindingResult bindingResult) {
+    public UserResponseDto saveUser(@Valid @RequestBody SaveUserRequestDto user, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
-            return "error";
+            throw new IllegalStateException("잘못된 입력입니다.");
         }
-        return Long.toString(userService.saveUser(user));
+        return userService.saveUser(user);
     }
 
     @DeleteMapping("/user/{userId}")
@@ -31,13 +31,13 @@ public class UserController {
     }
 
     @GetMapping("/user/{userId}")
-    public userDto userInfo(@PathVariable long userId) {
+    public UserResponseDto userInfo(@PathVariable long userId) {
         return userService.getUserInfo(userId);
     }
 
     @PutMapping("/user/{userId}")
-    public Users updateUser(@RequestBody updateUserDto updateUser) {
-        return userService.updateUser(updateUser);
+    public UserResponseDto updateUser(@PathVariable Long userId, @RequestBody UpdateUserRequestDto updateUser) {
+        return userService.updateUser(userId, updateUser);
     }
 
 }

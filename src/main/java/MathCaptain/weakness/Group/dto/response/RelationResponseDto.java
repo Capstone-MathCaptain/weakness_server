@@ -1,6 +1,7 @@
 package MathCaptain.weakness.Group.dto.response;
 
 import MathCaptain.weakness.Group.enums.GroupRole;
+import MathCaptain.weakness.User.dto.response.UserResponseDto;
 import lombok.Builder;
 import lombok.Data;
 

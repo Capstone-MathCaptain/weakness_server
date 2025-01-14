@@ -6,13 +6,11 @@ import MathCaptain.weakness.Group.dto.request.GroupCreateRequestDto;
 import MathCaptain.weakness.Group.dto.request.GroupJoinRequestDto;
 import MathCaptain.weakness.Group.dto.request.GroupUpdateRequestDto;
 import MathCaptain.weakness.Group.dto.response.GroupResponseDto;
-import MathCaptain.weakness.Group.dto.response.RelationResponseDto;
-import MathCaptain.weakness.Group.dto.response.UserResponseDto;
+import MathCaptain.weakness.User.dto.response.UserResponseDto;
 import MathCaptain.weakness.Group.enums.GroupRole;
 import MathCaptain.weakness.Group.repository.GroupRepository;
 import MathCaptain.weakness.Group.repository.RelationRepository;
 import MathCaptain.weakness.User.domain.Users;
-import MathCaptain.weakness.User.repository.UserRepository;
 import MathCaptain.weakness.User.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -30,7 +28,6 @@ public class GroupService {
     private final RelationRepository relationRepository;
     private final RelationService relationService;
     private final UserService userService;
-    private final GroupService groupService;
 
     // 그룹 생성
     public Long createGroup(GroupCreateRequestDto groupCreateRequestDto) {
@@ -57,7 +54,7 @@ public class GroupService {
         RelationBetweenUserAndGroup leaderAndCreateGroup = RelationBetweenUserAndGroup.builder()
                 .member(leader)
                 .groupRole(GroupRole.LEADER)
-                .group(group)
+                .joinGroup(group)
                 .personalDailyGoal(groupCreateRequestDto.getPersonalDailyGoal())
                 .personalWeeklyGoal(groupCreateRequestDto.getPersonalWeeklyGoal())
                 .build();
@@ -69,22 +66,9 @@ public class GroupService {
 
     // 그룹 정보 조회
     public GroupResponseDto getGroupInfo(Long groupId) {
-        Group group =  groupService.getGroup(groupId);
+        Group group = getGroup(groupId);
 
-        return GroupResponseDto.builder()
-                .id(group.getId())
-                .leaderId(group.getLeader().getUserId())
-                .leaderName(group.getLeader().getName())
-                .groupName(group.getName())
-                .category(group.getCategory())
-                .min_daily_hours(group.getMin_daily_hours())
-                .min_weekly_days(group.getMin_weekly_days())
-                .group_point(group.getGroup_point())
-                .hashtags(group.getHashtags())
-                .disturb_mode(group.getDisturb_mode())
-                .created_date(group.getCreate_date())
-                .group_image_url(group.getGroup_image_url())
-                .build();
+        return buildGroupResponseDto(group);
     }
 
     // 그룹 참여
@@ -92,7 +76,7 @@ public class GroupService {
 
         Users joinUser = userService.getUserById(groupJoinRequestDto.getUserId());
 
-        Group group = groupService.getGroup(groupId);
+        Group group = getGroup(groupId);
 
         // 이미 가입한 경우 & 목표 조건 닭성 여부
         checkJoin(joinUser, group, groupJoinRequestDto);
@@ -102,7 +86,7 @@ public class GroupService {
 
     // 그룹 내 멤버 조회
     public List<UserResponseDto> getGroupMembers(Long groupId) {
-        Group group = groupService.getGroup(groupId);
+        Group group = getGroup(groupId);
 
         List<Users> members = relationRepository.findMembersByGroup(group);
 
@@ -117,6 +101,13 @@ public class GroupService {
                 .collect(Collectors.toList());
     }
 
+    public boolean isGroupMember(Long groupId, Long userId) {
+        Group group = getGroup(groupId);
+        Users member = userService.getUserById(userId);
+
+        return relationRepository.findByMemberAndJoinGroup(member, group).isPresent();
+    }
+
     // 그룹 정보 업데이트
     public GroupResponseDto updateGroupInfo(Long groupId, GroupUpdateRequestDto groupUpdateRequestDto) {
         Group group = groupRepository.findById(groupId)
@@ -124,20 +115,7 @@ public class GroupService {
 
         updateGroupInfo(group, groupUpdateRequestDto);
 
-        return GroupResponseDto.builder()
-                .id(group.getId())
-                .leaderId(group.getLeader().getUserId())
-                .leaderName(group.getLeader().getName())
-                .groupName(group.getName())
-                .category(group.getCategory())
-                .min_daily_hours(group.getMin_daily_hours())
-                .min_weekly_days(group.getMin_weekly_days())
-                .group_point(group.getGroup_point())
-                .hashtags(group.getHashtags())
-                .disturb_mode(group.getDisturb_mode())
-                .created_date(group.getCreate_date())
-                .group_image_url(group.getGroup_image_url())
-                .build();
+        return buildGroupResponseDto(group);
     }
 
     public Group getGroup(Long groupId) {
@@ -165,7 +143,7 @@ public class GroupService {
     //==업데이트==/
     private void updateGroupInfo(Group group, GroupUpdateRequestDto groupUpdateRequestDto) {
 
-        if (group.getName() != groupUpdateRequestDto.getGroupName()) {
+        if (!group.getName().equals(groupUpdateRequestDto.getGroupName())) {
             group.updateName(groupUpdateRequestDto.getGroupName());
         }
 
@@ -177,14 +155,32 @@ public class GroupService {
             group.updateMinWeeklyDays(groupUpdateRequestDto.getMin_weekly_days());
         }
 
-        if (group.getHashtags() != groupUpdateRequestDto.getHashtags()) {
+        if (!group.getHashtags().equals(groupUpdateRequestDto.getHashtags())) {
             group.updateHashtags(groupUpdateRequestDto.getHashtags());
         }
 
-        if (group.getGroup_image_url() != groupUpdateRequestDto.getGroup_image_url()) {
+        if (!group.getGroup_image_url().equals(groupUpdateRequestDto.getGroup_image_url())) {
             group.updateGroupImageUrl(groupUpdateRequestDto.getGroup_image_url());
         }
     }
+
+    private GroupResponseDto buildGroupResponseDto(Group group) {
+        return GroupResponseDto.builder()
+                .id(group.getId())
+                .leaderId(group.getLeader().getUserId())
+                .leaderName(group.getLeader().getName())
+                .groupName(group.getName())
+                .category(group.getCategory())
+                .min_daily_hours(group.getMin_daily_hours())
+                .min_weekly_days(group.getMin_weekly_days())
+                .group_point(group.getGroup_point())
+                .hashtags(group.getHashtags())
+                .disturb_mode(group.getDisturb_mode())
+                .created_date(group.getCreate_date())
+                .group_image_url(group.getGroup_image_url())
+                .build();
+    }
+
 
 
 }
