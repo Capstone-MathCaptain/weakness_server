@@ -1,15 +1,20 @@
 package MathCaptain.weakness.Security;
 
+import MathCaptain.weakness.Group.repository.RelationRepository;
+import MathCaptain.weakness.Group.service.GroupService;
+import MathCaptain.weakness.Group.service.RelationService;
 import MathCaptain.weakness.Security.jwt.JwtAuthenticationProcessingFilter;
 import MathCaptain.weakness.Security.jwt.JwtService;
 import MathCaptain.weakness.Login.LoginSuccessJWTProvideHandler;
 import MathCaptain.weakness.Login.LoginFailureHandler;
 import MathCaptain.weakness.User.service.UserDetailsServiceImpl;
 import MathCaptain.weakness.User.repository.UserRepository;
+import MathCaptain.weakness.User.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -34,6 +39,10 @@ public class SecurityConfig {
     private final ObjectMapper objectMapper;
     private final UserRepository userRepository;
     private final JwtService jwtService;
+    private final UserService userService;
+    private final GroupService groupService;
+    private final RelationService relationService;
+
 
     // 스프링 시큐리티 기능 비활성화 (H2 DB 접근을 위해)
 	@Bean
@@ -41,7 +50,9 @@ public class SecurityConfig {
 		return (web -> web.ignoring()
 				.requestMatchers(toH2Console())
 				.requestMatchers("/h2-console/**")
-                .requestMatchers("/group/**", "/user/**") // 접근 허용된 URL
+                .requestMatchers("/group/**", "/user/**", "/recruitment/**")
+                .requestMatchers(HttpMethod.DELETE, "/group/**", "/recruitment/**", "/user/**")// 접근 허용된 URL
+                .requestMatchers(HttpMethod.PUT, "/group/**", "/recruitment/**", "/user/**")// 접근 허용된 URL
 		);
 	}
 
@@ -68,7 +79,8 @@ public class SecurityConfig {
                 );
         http
                 .addFilterAfter(jsonUsernamePasswordLoginFilter(), LogoutFilter.class) // 커스터마이징 된 필터를 추가
-                .addFilterBefore(jwtAuthenticationProcessingFilter(), JsonUsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(jwtAuthenticationProcessingFilter(), JsonUsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(groupRoleFilter(), LogoutFilter.class);
         return http.build();
     }
 
@@ -127,6 +139,11 @@ public class SecurityConfig {
     @Bean
     public JwtAuthenticationProcessingFilter jwtAuthenticationProcessingFilter(){
         return new JwtAuthenticationProcessingFilter(jwtService, userRepository);
+    }
+
+    @Bean
+    public GroupRoleFilter groupRoleFilter(){
+        return new GroupRoleFilter(userService, groupService, relationService);
     }
 
 

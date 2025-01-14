@@ -1,6 +1,7 @@
 package MathCaptain.weakness.Group.domain;
 
 import MathCaptain.weakness.Group.enums.CategoryStatus;
+import MathCaptain.weakness.Recruitment.domain.Recruitment;
 import MathCaptain.weakness.User.domain.Users;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
@@ -31,7 +32,7 @@ public class Group {
     @JoinColumn(name = "leader")
     private Users leader;
 
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "group")
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "joinGroup")
     @Column(name = "members")
     private List<RelationBetweenUserAndGroup> relationBetweenUserAndGroup;
 
@@ -64,6 +65,9 @@ public class Group {
     private LocalDate create_date;
 
     private String group_image_url;
+
+    @OneToMany(mappedBy = "recruitGroup")
+    private List<Recruitment> recruitments;
 
     @PrePersist
     protected void onCreate() {

@@ -4,7 +4,7 @@ import MathCaptain.weakness.Group.dto.request.GroupJoinRequestDto;
 import MathCaptain.weakness.Group.dto.request.GroupUpdateRequestDto;
 import MathCaptain.weakness.Group.dto.response.GroupResponseDto;
 import MathCaptain.weakness.Group.dto.response.RelationResponseDto;
-import MathCaptain.weakness.Group.dto.response.UserResponseDto;
+import MathCaptain.weakness.User.dto.response.UserResponseDto;
 import MathCaptain.weakness.Group.service.GroupService;
 import MathCaptain.weakness.Group.dto.request.GroupCreateRequestDto;
 import MathCaptain.weakness.Group.service.RelationService;
@@ -28,7 +28,7 @@ public class GroupController {
     @PostMapping("/group")
     public String createGroup(@Valid @RequestBody GroupCreateRequestDto groupCreateRequestDto) {
         Long id = groupService.createGroup(groupCreateRequestDto);
-        return Long.toString(id) + "번 그룹이 생성되었습니다.";
+        return id + "번 그룹이 생성되었습니다.";
     }
 
     @PutMapping("/group/{groupId}")
