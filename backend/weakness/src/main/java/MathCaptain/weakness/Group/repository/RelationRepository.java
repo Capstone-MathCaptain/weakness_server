@@ -1,0 +1,22 @@
+package MathCaptain.weakness.Group.repository;
+
+import MathCaptain.weakness.Group.domain.Group;
+import MathCaptain.weakness.Group.domain.RelationBetweenUserAndGroup;
+import MathCaptain.weakness.User.domain.Users;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+
+@Repository
+public interface RelationRepository extends JpaRepository<RelationBetweenUserAndGroup, Long> {
+
+    @Query("SELECT r.member FROM RelationBetweenUserAndGroup r WHERE r.joinGroup = :group")
+    List<Users> findMembersByGroup(@Param("group") Group group);
+
+    Optional<RelationBetweenUserAndGroup> findByMemberAndJoinGroup(Users member, Group group);
+}
