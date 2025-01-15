@@ -3,7 +3,7 @@ package MathCaptain.weakness;
 import MathCaptain.weakness.Group.domain.Group;
 import MathCaptain.weakness.Group.enums.CategoryStatus;
 import MathCaptain.weakness.Group.repository.GroupRepository;
-import MathCaptain.weakness.Security.jwt.JwtTestUtil;
+import MathCaptain.weakness.global.Security.jwt.JwtTestUtil;
 import MathCaptain.weakness.User.domain.Users;
 import MathCaptain.weakness.User.repository.UserRepository;
 import jakarta.annotation.PostConstruct;

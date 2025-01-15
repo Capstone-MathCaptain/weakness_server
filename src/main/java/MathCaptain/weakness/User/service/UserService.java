@@ -5,6 +5,9 @@ import MathCaptain.weakness.User.dto.request.UpdateUserRequestDto;
 import MathCaptain.weakness.User.dto.request.SaveUserRequestDto;
 import MathCaptain.weakness.User.repository.UserRepository;
 import MathCaptain.weakness.User.domain.Users;
+import MathCaptain.weakness.global.Api.ApiResponse;
+import MathCaptain.weakness.global.exception.DuplicatedException;
+import MathCaptain.weakness.global.exception.ResourceNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -21,16 +24,16 @@ public class UserService {
 
     public Users getUserById(Long userId) {
         return userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 유저가 없습니다."));
+                .orElseThrow(() -> new ResourceNotFoundException("해당 유저가 없습니다."));
     }
 
     public Users getUserByName(String name) {
         return userRepository.findByName(name)
-                .orElseThrow(() -> new IllegalArgumentException("해당 유저가 없습니다."));
+                .orElseThrow(() -> new ResourceNotFoundException("해당 유저가 없습니다."));
     }
 
     // 회원가입
-    public UserResponseDto saveUser(SaveUserRequestDto user) {
+    public ApiResponse<UserResponseDto> saveUser(SaveUserRequestDto user) {
         Users users = Users.builder()
                 .email(user.getEmail())
                 .password(passwordEncoder.encode(user.getPassword()))
@@ -42,23 +45,23 @@ public class UserService {
         validateDuplicateUser(users);
         userRepository.save(users);
 
-        return buildUserResponseDto(users);
+        return ApiResponse.ok(buildUserResponseDto(users));
     }
 
-    public long deleteUser(long userId, String password) {
+    public ApiResponse<?> deleteUser(long userId, String password) {
         Users user = userRepository.findByUserId(userId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 유저가 없습니다."));
+                .orElseThrow(() -> new ResourceNotFoundException("해당 유저가 없습니다."));
 
         if (!passwordEncoder.matches(password, user.getPassword())) {
             throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
         }
 
-        return user.getUserId();
+        return ApiResponse.ok(null);
     }
 
-    public UserResponseDto updateUser(Long userId ,UpdateUserRequestDto updateUser) {
+    public ApiResponse<UserResponseDto> updateUser(Long userId ,UpdateUserRequestDto updateUser) {
         Users user = userRepository.findByEmail(updateUser.getEmail())
-                .orElseThrow(() -> new IllegalArgumentException("해당 유저가 없습니다."));
+                .orElseThrow(() -> new ResourceNotFoundException("해당 유저가 없습니다."));
 
         if (!user.getUserId().equals(userId)) {
             throw new IllegalArgumentException("유저가 일치하지 않습니다!");
@@ -76,27 +79,27 @@ public class UserService {
             user.updatePhoneNumber(updateUser.getPhoneNumber());
         }
 
-        return buildUserResponseDto(user);
+        return ApiResponse.ok(buildUserResponseDto(user));
     }
 
-    public UserResponseDto getUserInfo(Long userId) {
+    public ApiResponse<UserResponseDto> getUserInfo(Long userId) {
         Users member = userRepository.findByUserId(userId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 유저가 없습니다."));
+                .orElseThrow(() -> new ResourceNotFoundException("해당 유저가 없습니다."));
 
-        return buildUserResponseDto(member);
+        return ApiResponse.ok(buildUserResponseDto(member));
     }
 
     //==검증 로직==//
     private void validateDuplicateUser(Users user) {
 
         if (userRepository.existsByEmail(user.getEmail())) {
-            throw new IllegalStateException("이미 사용중인 이메일입니다.");
+            throw new DuplicatedException("이미 사용중인 이메일입니다.");
         }
         if (userRepository.existsByPhoneNumber(user.getPhoneNumber())) {
-            throw new IllegalStateException("이미 사용중인 전화번호입니다.");
+            throw new DuplicatedException("이미 사용중인 전화번호입니다.");
         }
         if (userRepository.existsByNickname(user.getNickname())) {
-            throw new IllegalStateException("이미 사용중인 닉네임입니다.");
+            throw new DuplicatedException("이미 사용중인 닉네임입니다.");
         }
     }
 

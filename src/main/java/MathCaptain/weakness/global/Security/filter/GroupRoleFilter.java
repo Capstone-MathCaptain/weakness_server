@@ -1,4 +1,4 @@
-package MathCaptain.weakness.Security;
+package MathCaptain.weakness.global.Security.filter;
 
 import MathCaptain.weakness.Group.domain.Group;
 import MathCaptain.weakness.Group.domain.RelationBetweenUserAndGroup;

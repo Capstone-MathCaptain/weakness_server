@@ -13,6 +13,8 @@ import MathCaptain.weakness.Recruitment.enums.RecruitmentStatus;
 import MathCaptain.weakness.Recruitment.repository.RecruitmentRepository;
 import MathCaptain.weakness.User.domain.Users;
 import MathCaptain.weakness.User.repository.UserRepository;
+import MathCaptain.weakness.global.Api.ApiResponse;
+import MathCaptain.weakness.global.exception.ResourceNotFoundException;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,47 +35,56 @@ public class RecruitmentService {
     private final GroupRepository groupRepository;
     private final CommentService commentService;
 
-    public RecruitmentResponseDto createRecruitment(CreateRecruitmentRequestDto createRecruitmentRequestDto) {
+    public ApiResponse<RecruitmentResponseDto> createRecruitment(CreateRecruitmentRequestDto createRecruitmentRequestDto) {
 
-        Users author = userRepository.findByUserId(createRecruitmentRequestDto.getAuthorId()).
-                orElseThrow(() -> new IllegalArgumentException("해당 유저가 없습니다."));
-
-        Group relatedGroup = groupRepository.findById(createRecruitmentRequestDto.getRecruitGroupId()).
-                orElseThrow(() -> new IllegalArgumentException("해당 그룹이 없습니다."));
-
-        Recruitment recruitment = Recruitment.builder()
-                .author(author)
-                .recruitGroup(relatedGroup)
-                .title(createRecruitmentRequestDto.getTitle())
-                .content(createRecruitmentRequestDto.getContent())
-                .category(createRecruitmentRequestDto.getCategory())
-                .lastModifiedTime(LocalDateTime.now())
-                .build();
+        Recruitment recruitment = buildRecruitment(createRecruitmentRequestDto);
 
         recruitmentRepository.save(recruitment);
 
         log.info("Recruitment created: {}", recruitment);
 
-        return buildRecruitmentResponseDto(recruitment);
+        return ApiResponse.ok(buildRecruitmentResponseDto(recruitment));
     }
 
-    public RecruitmentDetailResponseDto getRecruitment(Long recruitmentId) {
+    public ApiResponse<RecruitmentDetailResponseDto> getRecruitment(Long recruitmentId) {
         Recruitment recruitment = recruitmentRepository.findById(recruitmentId).
-                orElseThrow(() -> new IllegalArgumentException("해당 모집글이 없습니다."));
+                orElseThrow(() -> new ResourceNotFoundException("해당 모집글이 없습니다."));
 
         List<CommentResponseDto> comments = commentService.getComments(recruitmentId);
 
-        return buildRecruitmentDetailResponseDto(recruitment, comments);
+        return ApiResponse.ok(buildRecruitmentDetailResponseDto(recruitment, comments));
     }
 
-    public RecruitmentResponseDto updateRecruitment(Long recruitmentId, UpdateRecruitmentRequestDto updateRecruitmentRequestDto) {
+    public ApiResponse<RecruitmentResponseDto> updateRecruitment(Long recruitmentId, UpdateRecruitmentRequestDto updateRecruitmentRequestDto) {
         Recruitment recruitment = recruitmentRepository.findById(recruitmentId).
-                orElseThrow(() -> new IllegalArgumentException("해당 모집글이 없습니다."));
+                orElseThrow(() -> new ResourceNotFoundException("해당 모집글이 없습니다."));
 
-        if(!recruitment.getAuthor().getUserId().equals(updateRecruitmentRequestDto.getAuthorId())) {
+        checkUpdatePermission(recruitment, updateRecruitmentRequestDto.getAuthorId());
+
+        updateRecruitment(recruitment, updateRecruitmentRequestDto);
+
+        log.info("Recruitment updated: {}", recruitment);
+
+        return ApiResponse.ok(buildRecruitmentResponseDto(recruitment));
+    }
+
+    public ApiResponse<List<RecruitmentResponseDto>> getAllRecruitments() {
+        List<Recruitment> recruitments = recruitmentRepository.findAll();
+
+        return ApiResponse.ok(recruitments.stream()
+                .map(this::buildRecruitmentResponseDto)
+                .toList());
+    }
+
+    //== 비지니스 로직 ==//
+
+    private void checkUpdatePermission(Recruitment recruitment, Long authorId) {
+        if (!recruitment.getAuthor().getUserId().equals(authorId)) {
             throw new IllegalArgumentException("작성자만 수정할 수 있습니다.");
         }
+    }
 
+    private void updateRecruitment(Recruitment recruitment, UpdateRecruitmentRequestDto updateRecruitmentRequestDto) {
         if (!recruitment.getTitle().equals(updateRecruitmentRequestDto.getTitle())) {
             recruitment.updateTitle(updateRecruitmentRequestDto.getTitle());
         }
@@ -85,19 +96,9 @@ public class RecruitmentService {
         if (!recruitment.getRecruitmentStatus().equals(updateRecruitmentRequestDto.getRecruitmentStatus())) {
             recruitment.updateRecruitmentStatus(updateRecruitmentRequestDto.getRecruitmentStatus());
         }
-
-        log.info("Recruitment updated: {}", recruitment);
-
-        return buildRecruitmentResponseDto(recruitment);
     }
 
-    public List<RecruitmentResponseDto> getAllRecruitments() {
-        List<Recruitment> recruitments = recruitmentRepository.findAll();
-
-        return recruitments.stream()
-                .map(this::buildRecruitmentResponseDto)
-                .toList();
-    }
+    //== 빌드 메서드 ==//
 
     private RecruitmentResponseDto buildRecruitmentResponseDto(Recruitment recruitment) {
         return RecruitmentResponseDto.builder()
@@ -125,6 +126,23 @@ public class RecruitmentService {
                 .createdAt(recruitment.getPostTime())
                 .updatedAt(recruitment.getLastModifiedTime())
                 .comments(comments)
+                .build();
+    }
+
+    private Recruitment buildRecruitment(CreateRecruitmentRequestDto createRecruitmentRequestDto) {
+        Users author = userRepository.findByUserId(createRecruitmentRequestDto.getAuthorId()).
+                orElseThrow(() -> new ResourceNotFoundException("해당 유저가 없습니다."));
+
+        Group relatedGroup = groupRepository.findById(createRecruitmentRequestDto.getRecruitGroupId()).
+                orElseThrow(() -> new ResourceNotFoundException("해당 그룹이 없습니다."));
+
+        return Recruitment.builder()
+                .author(author)
+                .recruitGroup(relatedGroup)
+                .title(createRecruitmentRequestDto.getTitle())
+                .content(createRecruitmentRequestDto.getContent())
+                .category(createRecruitmentRequestDto.getCategory())
+                .lastModifiedTime(LocalDateTime.now())
                 .build();
     }
 

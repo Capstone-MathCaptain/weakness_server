@@ -36,22 +36,17 @@ public class Group {
     @Column(name = "members")
     private List<RelationBetweenUserAndGroup> relationBetweenUserAndGroup;
 
-    @NotNull
     @Column(nullable = false, unique = true)
     private String name;
 
-    @NotNull
     @Enumerated(EnumType.STRING)
     private CategoryStatus category;
 
     // 하루 최소 수행 시간
-    @Range(min = 1, max = 24)
     private int min_daily_hours;
 
-    @Range(min = 1)
     private int min_weekly_days;
 
-    @Range(min = 0)
     private Long group_point;
 
     @ElementCollection
@@ -59,7 +54,6 @@ public class Group {
     @Column(name = "hashtag")
     private List<String> hashtags;
 
-    @Column(nullable = false)
     private Boolean disturb_mode;
 
     private LocalDate create_date;

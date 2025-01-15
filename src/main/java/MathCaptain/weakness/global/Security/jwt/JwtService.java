@@ -1,4 +1,4 @@
-package MathCaptain.weakness.Security.jwt;
+package MathCaptain.weakness.global.Security.jwt;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

@@ -47,22 +47,15 @@ public class RelationService {
         RelationBetweenUserAndGroup relation = relationRepository.findById(relationId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 관계가 없습니다."));
 
-        GroupResponseDto group = GroupResponseDto.builder()
-                .id(relation.getJoinGroup().getId())
-                .leaderId(relation.getJoinGroup().getLeader().getUserId())
-                .leaderName(relation.getJoinGroup().getLeader().getName())
-                .groupName(relation.getJoinGroup().getName())
-                .category(relation.getJoinGroup().getCategory())
-                .min_daily_hours(relation.getJoinGroup().getMin_daily_hours())
-                .min_weekly_days(relation.getJoinGroup().getMin_weekly_days())
-                .group_point(relation.getJoinGroup().getGroup_point())
-                .hashtags(relation.getJoinGroup().getHashtags())
-                .disturb_mode(relation.getJoinGroup().getDisturb_mode())
-                .created_date(relation.getJoinGroup().getCreate_date())
-                .group_image_url(relation.getJoinGroup().getGroup_image_url())
-                .build();
+        GroupResponseDto group = buidGropuResponseDto(relation.getJoinGroup());
 
-        UserResponseDto member = userService.getUserInfo(relation.getJoinGroup().getId());
+        UserResponseDto member = UserResponseDto.builder()
+                .userId(relation.getMember().getUserId())
+                .email(relation.getMember().getEmail())
+                .name(relation.getMember().getName())
+                .nickname(relation.getMember().getNickname())
+                .phoneNumber(relation.getMember().getPhoneNumber())
+                .build();
 
         return RelationResponseDto.builder()
                 .id(relation.getId())
@@ -72,6 +65,23 @@ public class RelationService {
                 .joinDate(relation.getJoinDate())
                 .personalDailyGoal(relation.getPersonalDailyGoal())
                 .personalWeeklyGoal(relation.getPersonalWeeklyGoal())
+                .build();
+    }
+
+    private GroupResponseDto buidGropuResponseDto(Group group) {
+        return GroupResponseDto.builder()
+                .id(group.getId())
+                .leaderId(group.getLeader().getUserId())
+                .leaderName(group.getLeader().getName())
+                .groupName(group.getName())
+                .category(group.getCategory())
+                .min_daily_hours(group.getMin_daily_hours())
+                .min_weekly_days(group.getMin_weekly_days())
+                .group_point(group.getGroup_point())
+                .hashtags(group.getHashtags())
+                .disturb_mode(group.getDisturb_mode())
+                .created_date(group.getCreate_date())
+                .group_image_url(group.getGroup_image_url())
                 .build();
     }
 

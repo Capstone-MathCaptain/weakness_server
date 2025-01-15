@@ -1,6 +1,7 @@
 package MathCaptain.weakness.Login;
 
-import MathCaptain.weakness.Security.jwt.JwtService;
+import MathCaptain.weakness.global.Api.ApiResponse;
+import MathCaptain.weakness.global.Security.jwt.JwtService;
 import MathCaptain.weakness.User.repository.UserRepository;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -8,6 +9,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
