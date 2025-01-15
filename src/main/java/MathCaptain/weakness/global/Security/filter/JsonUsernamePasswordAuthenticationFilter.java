@@ -1,4 +1,4 @@
-package MathCaptain.weakness.Security;
+package MathCaptain.weakness.global.Security.filter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletException;

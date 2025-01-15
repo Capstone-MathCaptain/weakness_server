@@ -1,4 +1,4 @@
-package MathCaptain.weakness.Security.jwt;
+package MathCaptain.weakness.global.Security.jwt;
 
 import MathCaptain.weakness.User.repository.UserRepository;
 import com.auth0.jwt.JWT;

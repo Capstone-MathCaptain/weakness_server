@@ -8,6 +8,7 @@ import MathCaptain.weakness.Recruitment.dto.response.RecruitmentDetailResponseDt
 import MathCaptain.weakness.Recruitment.dto.response.RecruitmentResponseDto;
 import MathCaptain.weakness.Recruitment.service.CommentService;
 import MathCaptain.weakness.Recruitment.service.RecruitmentService;
+import MathCaptain.weakness.global.Api.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
@@ -25,22 +26,22 @@ public class RecruitmentController {
     private final CommentService commentService;
 
     @GetMapping
-    public List<RecruitmentResponseDto> recruitmentList() {
+    public ApiResponse<List<RecruitmentResponseDto>> recruitmentList() {
         return recruitmentService.getAllRecruitments();
     }
 
     @PostMapping
-    public RecruitmentResponseDto createRecruitment(@RequestBody CreateRecruitmentRequestDto createRecruitmentRequestDto) {
+    public ApiResponse<RecruitmentResponseDto> createRecruitment(@RequestBody CreateRecruitmentRequestDto createRecruitmentRequestDto) {
         return recruitmentService.createRecruitment(createRecruitmentRequestDto);
     }
 
     @GetMapping("/{recruitmentId}")
-    public RecruitmentDetailResponseDto recruitmentDetailInfo(@PathVariable Long recruitmentId) {
+    public ApiResponse<RecruitmentDetailResponseDto> recruitmentDetailInfo(@PathVariable Long recruitmentId) {
         return recruitmentService.getRecruitment(recruitmentId);
     }
 
     @PutMapping("/{recruitmentId}")
-    public RecruitmentResponseDto updateRecruitment(@PathVariable Long recruitmentId, @RequestBody UpdateRecruitmentRequestDto updateRecruitmentRequestDto) {
+    public ApiResponse<RecruitmentResponseDto> updateRecruitment(@PathVariable Long recruitmentId, @RequestBody UpdateRecruitmentRequestDto updateRecruitmentRequestDto) {
         return recruitmentService.updateRecruitment(recruitmentId, updateRecruitmentRequestDto);
     }
 

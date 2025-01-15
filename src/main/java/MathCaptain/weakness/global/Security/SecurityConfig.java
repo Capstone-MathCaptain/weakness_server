@@ -1,10 +1,11 @@
-package MathCaptain.weakness.Security;
+package MathCaptain.weakness.global.Security;
 
-import MathCaptain.weakness.Group.repository.RelationRepository;
 import MathCaptain.weakness.Group.service.GroupService;
 import MathCaptain.weakness.Group.service.RelationService;
-import MathCaptain.weakness.Security.jwt.JwtAuthenticationProcessingFilter;
-import MathCaptain.weakness.Security.jwt.JwtService;
+import MathCaptain.weakness.global.Security.filter.GroupRoleFilter;
+import MathCaptain.weakness.global.Security.filter.JsonUsernamePasswordAuthenticationFilter;
+import MathCaptain.weakness.global.Security.filter.JwtAuthenticationProcessingFilter;
+import MathCaptain.weakness.global.Security.jwt.JwtService;
 import MathCaptain.weakness.Login.LoginSuccessJWTProvideHandler;
 import MathCaptain.weakness.Login.LoginFailureHandler;
 import MathCaptain.weakness.User.service.UserDetailsServiceImpl;

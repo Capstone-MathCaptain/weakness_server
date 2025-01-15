@@ -26,23 +26,15 @@ public class Users {
     @Column(name = "user_id")
     private Long userId;
 
-    @Email
-    @NotEmpty(message = "이메일은 필수입니다!")
     @Column(nullable = false, unique = true, length = 30)
     private String email;
 
-    @NotNull(message = "비밀번호는 필수입니다!")
     private String password;
 
-    @NotNull(message = "이름은 필수입니다!")
-    @Size(min = 3, max = 15, message = "이름은 최소 3글자 이상, 15글자 이하입니다.")
     private String name;
 
-    @Size(min = 3, max = 15, message = "별명은 최소 3글자 ~ 15글자 이하입니다.")
-    @NotNull(message = "별명을 지정해주세요!")
     private String nickname;
 
-    @Size(min = 11, max = 13, message = "전화번호를 잘못입력하셨습니다! 다시 입력해주세요.")
     private String phoneNumber;
 
     @OneToOne(mappedBy = "member")

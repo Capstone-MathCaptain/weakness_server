@@ -4,6 +4,7 @@ import MathCaptain.weakness.User.dto.response.UserResponseDto;
 import MathCaptain.weakness.User.dto.request.UpdateUserRequestDto;
 import MathCaptain.weakness.User.dto.request.SaveUserRequestDto;
 import MathCaptain.weakness.User.service.UserService;
+import MathCaptain.weakness.global.Api.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,27 +18,28 @@ public class UserController {
 
     private final UserService userService;
 
-    @PostMapping("/signup")
-    public UserResponseDto saveUser(@Valid @RequestBody SaveUserRequestDto user, BindingResult bindingResult) {
-        if (bindingResult.hasErrors()) {
-            throw new IllegalStateException("잘못된 입력입니다.");
-        }
-        return userService.saveUser(user);
-    }
-
-    @DeleteMapping("/user/{userId}")
-    public String deleteUser(@PathVariable long userId, @RequestBody String password) {
-        return Long.toString(userService.deleteUser(userId, password));
-    }
-
+    // READ
     @GetMapping("/user/{userId}")
-    public UserResponseDto userInfo(@PathVariable long userId) {
+    public ApiResponse<UserResponseDto> userInfo(@PathVariable long userId) {
         return userService.getUserInfo(userId);
     }
 
+    // CREATE
+    @PostMapping("/user/signup")
+    public ApiResponse<UserResponseDto> saveUser(@Valid @RequestBody SaveUserRequestDto user) {
+        return userService.saveUser(user);
+    }
+
+    // UPDATE
     @PutMapping("/user/{userId}")
-    public UserResponseDto updateUser(@PathVariable Long userId, @RequestBody UpdateUserRequestDto updateUser) {
+    public ApiResponse<UserResponseDto> updateUser(@Valid @PathVariable Long userId, @RequestBody UpdateUserRequestDto updateUser) {
         return userService.updateUser(userId, updateUser);
+    }
+
+    // DELETE
+    @DeleteMapping("/user/{userId}")
+    public ApiResponse<?> deleteUser(@PathVariable long userId, @RequestBody String password) {
+        return userService.deleteUser(userId, password);
     }
 
 }
