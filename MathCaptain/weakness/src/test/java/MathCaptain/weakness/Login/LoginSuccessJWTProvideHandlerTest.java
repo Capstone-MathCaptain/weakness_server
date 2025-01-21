@@ -1,8 +1,8 @@
 package MathCaptain.weakness.Login;
 
-import MathCaptain.weakness.Security.jwt.JwtService;
 import MathCaptain.weakness.User.domain.Users;
 import MathCaptain.weakness.User.repository.UserRepository;
+import MathCaptain.weakness.global.Security.jwt.JwtService;
 import jakarta.servlet.ServletException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

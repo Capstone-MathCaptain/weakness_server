@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>새로운 비밀번호 설정</title>
+    <link href="../css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header text-center bg-primary text-white">
+                    <h2>비밀번호 변경</h2>
+                </div>
+                <div class="card-body">
+                    <form onsubmit="return validatePasswords()"
+                          method="post"
+                          id="resetPasswordForm"
+                          th:action="@{/user/reset/password}">
+                        <input type="hidden" name="uuid" th:value="${UUID}">
+                        <div class="form-group">
+                            <label for="newPassword">새로운 비밀번호</label>
+                            <input type="password" class="form-control" id="newPassword" name="newPassword" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="confirmPassword">새로운 비밀번호 확인</label>
+                            <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" required>
+                        </div>
+                        <div class="alert alert-danger" id="error-message" style="display: none;">
+                            비밀번호가 일치하지 않습니다!
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-block">Submit</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function validatePasswords() {
+        var password = document.getElementById("newPassword").value;
+        var confirmPassword = document.getElementById("confirmPassword").value;
+
+        // 비밀번호 길이 검증 추가
+        if (password.length < 5 || password.length > 20) {
+            document.getElementById("error-message").textContent = "비밀번호는 5~20자 사이여야 합니다.";
+            document.getElementById("error-message").style.display = "block";
+            return false;
+        }
+
+        if (password !== confirmPassword) {
+            document.getElementById("error-message").textContent = "비밀번호가 일치하지 않습니다!";
+            document.getElementById("error-message").style.display = "block";
+            return false;
+        }
+
+        return true;
+    }
+</script>
+
+
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

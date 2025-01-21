@@ -44,6 +44,8 @@ public class GroupService {
         int leaderDailyGoal = groupCreateRequestDto.getPersonalDailyGoal();
         int leaderWeeklyGoal = groupCreateRequestDto.getPersonalWeeklyGoal();
 
+        checkJoin(leader, group, leaderDailyGoal, leaderWeeklyGoal);
+
         // 리더 -> 생성그룹 가입
         RelationBetweenUserAndGroup leaderAndCreateGroup = buildLeaderRelation(leader, group, leaderDailyGoal, leaderWeeklyGoal);
         relationRepository.save(leaderAndCreateGroup);
@@ -76,7 +78,7 @@ public class GroupService {
         Group group = getGroup(groupId);
 
         // 이미 가입한 경우 & 목표 조건 달성 여부
-        checkJoin(joinUser, group, groupJoinRequestDto);
+        checkJoin(joinUser, group, groupJoinRequestDto.getPersonalDailyGoal(), groupJoinRequestDto.getPersonalWeeklyGoal());
 
         relationService.saveRelation(joinUser, group, groupJoinRequestDto);
 
@@ -114,19 +116,16 @@ public class GroupService {
     }
 
     //==검증 로직==/
-    private void checkJoin(Users member, Group joinGroup, GroupJoinRequestDto groupJoinRequestDto) {
+    private void checkJoin(Users member, Group joinGroup, int personalDailyGoal, int personalWeeklyGoal) {
 
         relationService.checkRelation(member, joinGroup);
 
-        int dailyGoal = groupJoinRequestDto.getPersonalDailyGoal();
-        int weeklyGoal = groupJoinRequestDto.getPersonalWeeklyGoal();
-
-        if (dailyGoal < joinGroup.getMin_daily_hours()) {
+        if (personalDailyGoal < joinGroup.getMin_daily_hours()) {
             throw new IllegalArgumentException("하루 목표 시간은 " + joinGroup.getMin_daily_hours() + "시간 이상이어야 합니다.");
         }
 
-        if (weeklyGoal < joinGroup.getMin_weekly_days() * joinGroup.getMin_daily_hours()) {
-            throw new IllegalArgumentException("주간 목표 시간은 " + joinGroup.getMin_weekly_days() * joinGroup.getMin_daily_hours() + "시간 이상이어야 합니다.");
+        if (personalWeeklyGoal < joinGroup.getMin_weekly_days()) {
+            throw new IllegalArgumentException("주간 목표 일수는 " + joinGroup.getMin_weekly_days() + "일 이상이어야 합니다.");
         }
     }
 

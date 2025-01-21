@@ -13,6 +13,7 @@ import MathCaptain.weakness.User.repository.UserRepository;
 import MathCaptain.weakness.User.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -49,11 +50,17 @@ public class SecurityConfig {
 	@Bean
 	public WebSecurityCustomizer configure() {
 		return (web -> web.ignoring()
+                .requestMatchers(PathRequest
+                        .toStaticResources()
+                        .atCommonLocations())
 				.requestMatchers(toH2Console())
 				.requestMatchers("/h2-console/**")
+                .requestMatchers("/static/**")
+                .requestMatchers("/templates/**")
                 .requestMatchers("/group/**", "/user/**", "/recruitment/**")
                 .requestMatchers(HttpMethod.DELETE, "/group/**", "/recruitment/**", "/user/**")// 접근 허용된 URL
                 .requestMatchers(HttpMethod.PUT, "/group/**", "/recruitment/**", "/user/**")// 접근 허용된 URL
+                .requestMatchers("/error")
 		);
 	}
 
@@ -65,7 +72,8 @@ public class SecurityConfig {
                 .formLogin(AbstractHttpConfigurer::disable) // Form Login 비활성화
                 .addFilterAfter(jsonUsernamePasswordLoginFilter(), LogoutFilter.class) // 추가 : 커스터마이징 된 필터를 SpringSecurityFilterChain에 등록
                 .authorizeHttpRequests((authorize) -> authorize
-                        .requestMatchers("/signup", "/", "/login").permitAll() // 접근 허용된 URL
+                        .requestMatchers("/static/**", "/templates/**").permitAll() // 정적 리소스 접근 허용
+                        .requestMatchers("/signup", "/", "/login", "/user/reset/password").permitAll() // 접근 허용된 URL
 //                        .requestMatchers("/group/**", "/user/**").authenticated() // 그룹 관련 URL은 인증된 사용자만 접근 가능
                         .anyRequest().authenticated())
                 // 폼 로그인은 현재 사용하지 않음
