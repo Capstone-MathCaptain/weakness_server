@@ -3,6 +3,11 @@ package MathCaptain.weakness;
 import MathCaptain.weakness.Group.domain.Group;
 import MathCaptain.weakness.Group.enums.CategoryStatus;
 import MathCaptain.weakness.Group.repository.GroupRepository;
+import MathCaptain.weakness.Recruitment.domain.Comment;
+import MathCaptain.weakness.Recruitment.domain.Recruitment;
+import MathCaptain.weakness.Recruitment.enums.RecruitmentStatus;
+import MathCaptain.weakness.Recruitment.repository.CommentRepository;
+import MathCaptain.weakness.Recruitment.repository.RecruitmentRepository;
 import MathCaptain.weakness.global.Security.jwt.JwtTestUtil;
 import MathCaptain.weakness.User.domain.Users;
 import MathCaptain.weakness.User.repository.UserRepository;
@@ -21,13 +26,15 @@ public class TestInit {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final GroupRepository groupRepository;
+    private final RecruitmentRepository recruitmentRepository;
+    private final CommentRepository commentRepository;
 
 
     @PostConstruct
     @Transactional
     public void init() {
 
-        String email1 = "test1@example.com";
+        String email1 = "dlwpdyd201@naver.com";
         String refreshToken1 = JwtTestUtil.createTestJwt(email1);
 
         String email2 = "test2@example.com";
@@ -77,5 +84,29 @@ public class TestInit {
 
         groupRepository.save(group);
         log.info("테스트 그룹 생성 완료");
+
+//        Recruitment recruitment = Recruitment.builder()
+//                .postId(1L)
+//                .author(leader)
+//                .recruitGroup(group)
+//                .title("테스트용 모집글")
+//                .content("테스트용 모집글입니다.")
+//                .category(CategoryStatus.STUDY)
+//                .build();
+//
+//        recruitmentRepository.save(recruitment);
+//        log.info("테스트 모집글 생성 완료");
+//
+//        Comment comment = Comment.builder()
+//                .author(leader)
+//                .post(recruitment)
+//                .content("테스트용 댓글입니다.")
+//                .build();
+//
+//        commentRepository.save(comment);
+//        log.info("테스트 댓글 생성 완료");
+//
+//        log.info("테스트 데이터 생성 완료");
+
     }
 }

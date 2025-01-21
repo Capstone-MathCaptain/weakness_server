@@ -84,4 +84,8 @@ public class Users {
         this.phoneNumber = phoneNumber;
     }
 
+    public void updatePassword(String password, PasswordEncoder passwordEncoder) {
+        this.password = passwordEncoder.encode(password);
+    }
+
 }

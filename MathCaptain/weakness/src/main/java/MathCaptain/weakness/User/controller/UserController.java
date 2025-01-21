@@ -1,5 +1,8 @@
 package MathCaptain.weakness.User.controller;
 
+import MathCaptain.weakness.User.dto.request.FindEmailRequestDto;
+import MathCaptain.weakness.User.dto.request.FindPwdRequestDto;
+import MathCaptain.weakness.User.dto.response.ChangePwdDto;
 import MathCaptain.weakness.User.dto.response.UserResponseDto;
 import MathCaptain.weakness.User.dto.request.UpdateUserRequestDto;
 import MathCaptain.weakness.User.dto.request.SaveUserRequestDto;
@@ -41,5 +44,26 @@ public class UserController {
     public ApiResponse<?> deleteUser(@PathVariable long userId, @RequestBody String password) {
         return userService.deleteUser(userId, password);
     }
+
+    @PostMapping("/user/find/email")
+    public ApiResponse<?> findEmail(@Valid @RequestBody FindEmailRequestDto findEmailRequestDto) {
+        return userService.findEmail(findEmailRequestDto);
+    }
+
+    @PostMapping("/user/find/password")
+    public ApiResponse<?> FindPwd(@Valid @RequestBody FindPwdRequestDto findPwdRequestDto) {
+        userService.findPwdRequest(findPwdRequestDto);
+        return ApiResponse.ok("이메일로 비밀번호 재설정 링크를 보냈습니다.");
+    }
+
+    @PostMapping("/user/reset/password")
+    public ApiResponse<?> ChangedPwd(@ModelAttribute ChangePwdDto changePwdDto) {
+        userService.changePwd(changePwdDto);
+        return ApiResponse.ok("비밀번호가 변경되었습니다.");
+//        로그인 페이지로 이동
+//        return "redirect:/login";
+    }
+
+
 
 }
