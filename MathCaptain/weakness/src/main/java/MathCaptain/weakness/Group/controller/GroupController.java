@@ -56,4 +56,10 @@ public class GroupController {
     public RelationResponseDto relationInfo(@PathVariable Long relationId) {
         return relationService.getRelationInfo(relationId);
     }
+
+    // 유저가 속한 그룹을 모두 보여줌
+    @GetMapping("/group")
+    public void getUsersGroups() {
+
+    }
 }

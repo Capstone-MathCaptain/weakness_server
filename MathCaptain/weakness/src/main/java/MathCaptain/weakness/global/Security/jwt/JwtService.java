@@ -3,6 +3,7 @@ package MathCaptain.weakness.global.Security.jwt;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface JwtService {
@@ -22,6 +23,8 @@ public interface JwtService {
     Optional<String> extractRefreshToken(HttpServletRequest request);
 
     Optional<String> extractEmail(String accessToken);
+
+    Optional<List<String>> extractGroupsId(String accessToken);
 
     void setAccessTokenHeader(HttpServletResponse response, String accessToken);
 

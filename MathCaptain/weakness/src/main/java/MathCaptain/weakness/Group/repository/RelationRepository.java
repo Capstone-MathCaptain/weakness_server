@@ -19,4 +19,10 @@ public interface RelationRepository extends JpaRepository<RelationBetweenUserAnd
     List<Users> findMembersByGroup(@Param("group") Group group);
 
     Optional<RelationBetweenUserAndGroup> findByMemberAndJoinGroup(Users member, Group group);
+
+    @Query("SELECT r FROM RelationBetweenUserAndGroup r WHERE r.member.userId = :userId and r.joinGroup.id = :groupId")
+    Optional<RelationBetweenUserAndGroup> findByMemberIdAndJoinGroupId(@Param("userId") Long userId, @Param("groupId") Long groupId);
+
+    @Query("SELECT r.joinGroup.id FROM RelationBetweenUserAndGroup r WHERE r.member.userId = :userId")
+    List<Long> findGroupsIdByUserId(@Param("userId") Long userId);
 }

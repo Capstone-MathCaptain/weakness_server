@@ -1,8 +1,12 @@
 package MathCaptain.weakness;
 
 import MathCaptain.weakness.Group.domain.Group;
+import MathCaptain.weakness.Group.domain.RelationBetweenUserAndGroup;
 import MathCaptain.weakness.Group.enums.CategoryStatus;
+import MathCaptain.weakness.Group.enums.GroupRole;
 import MathCaptain.weakness.Group.repository.GroupRepository;
+import MathCaptain.weakness.Group.repository.RelationRepository;
+import MathCaptain.weakness.Group.service.GroupService;
 import MathCaptain.weakness.Recruitment.domain.Comment;
 import MathCaptain.weakness.Recruitment.domain.Recruitment;
 import MathCaptain.weakness.Recruitment.enums.RecruitmentStatus;
@@ -28,6 +32,8 @@ public class TestInit {
     private final GroupRepository groupRepository;
     private final RecruitmentRepository recruitmentRepository;
     private final CommentRepository commentRepository;
+    private final GroupService groupService;
+    private final RelationRepository relationRepository;
 
 
     @PostConstruct
@@ -84,6 +90,16 @@ public class TestInit {
 
         groupRepository.save(group);
         log.info("테스트 그룹 생성 완료");
+
+        RelationBetweenUserAndGroup join = RelationBetweenUserAndGroup.builder()
+                .member(users1)
+                .groupRole(GroupRole.LEADER)
+                .joinGroup(group)
+                .personalDailyGoal(2)
+                .personalWeeklyGoal(3)
+                .build();
+
+        relationRepository.save(join);
 
 //        Recruitment recruitment = Recruitment.builder()
 //                .postId(1L)

@@ -9,6 +9,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.validator.constraints.Range;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -48,6 +49,12 @@ public class RelationBetweenUserAndGroup {
     @Range(min = 0)
     private int personalWeeklyGoal;
 
+    @Range(min = 0, max = 1440)
+    private Long personalDailyGoalAchieve;
+
+    @Range(min = 0, max = 7)
+    private int personalWeeklyGoalAchieve;
+
     // 기본값 설정
     @PrePersist
     protected void onPrePersist() {
@@ -57,5 +64,25 @@ public class RelationBetweenUserAndGroup {
         if (this.joinDate == null) {
             this.joinDate = LocalDate.now(); // joinDate의 기본값 설정 (필요 시)
         }
+    }
+
+    // 일간 목표 업데이트
+    public void updatePersonalDailyGoalAchieved(Long personalDailyGoalAchieved) {
+        this.personalDailyGoalAchieve = personalDailyGoalAchieved;
+    }
+
+    // 주간 목표 업데이트
+    public void updatePersonalWeeklyGoalAchieved(int personalWeeklyGoalAchieve) {
+        this.personalWeeklyGoalAchieve = personalWeeklyGoalAchieve;
+    }
+
+    // 일간 목표 초기화
+    public void resetPersonalDailyGoalAchieve() {
+        this.personalDailyGoalAchieve = 0L;
+    }
+
+    // 주간 목표 초기화
+    public void resetPersonalWeeklyGoalAchieve() {
+        this.personalWeeklyGoalAchieve = 0;
     }
 }

@@ -13,6 +13,7 @@ import MathCaptain.weakness.Group.repository.RelationRepository;
 import MathCaptain.weakness.User.domain.Users;
 import MathCaptain.weakness.User.service.UserService;
 import MathCaptain.weakness.global.Api.ApiResponse;
+import MathCaptain.weakness.global.Security.jwt.JwtService;
 import MathCaptain.weakness.global.exception.DuplicatedException;
 import MathCaptain.weakness.global.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -31,6 +32,7 @@ public class GroupService {
     private final RelationRepository relationRepository;
     private final RelationService relationService;
     private final UserService userService;
+    private final JwtService jwtService;
 
     // 그룹 생성 (CREATE)
     public ApiResponse<GroupResponseDto> createGroup(GroupCreateRequestDto groupCreateRequestDto) {
@@ -101,6 +103,16 @@ public class GroupService {
                         .build())
                 .collect(Collectors.toList()));
     }
+
+//    public ApiResponse<?> usersGroupList(String token) {
+//        Users user = userService.getUserById(String userId);
+//
+//        List<Group> groups = relationRepository.findGroupsByMember(user);
+//
+//        return ApiResponse.ok(groups.stream()
+//                .map(this::buildGroupResponseDto)
+//                .collect(Collectors.toList()));
+//    }
 
     //== 비지니스 로직 ==//
     public boolean isGroupMember(Long groupId, Long userId) {
