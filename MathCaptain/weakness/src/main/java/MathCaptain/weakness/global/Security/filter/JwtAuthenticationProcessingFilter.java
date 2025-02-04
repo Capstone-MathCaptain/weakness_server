@@ -75,7 +75,7 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
     private void saveAuthentication(Users users) {
         UserDetailsImpl userDetails = new UserDetailsImpl(users);
 
-        Authentication authentication = new UsernamePasswordAuthenticationToken(userDetails, null,authoritiesMapper.mapAuthorities(userDetails.getAuthorities()));
+        Authentication authentication = new UsernamePasswordAuthenticationToken(userDetails, null, authoritiesMapper.mapAuthorities(userDetails.getAuthorities()));
 
         SecurityContext context = SecurityContextHolder.createEmptyContext();
         context.setAuthentication(authentication);

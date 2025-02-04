@@ -42,6 +42,11 @@ public class UserService {
                 .orElseThrow(() -> new ResourceNotFoundException("해당 유저가 없습니다."));
     }
 
+    public Users getUserByEmail(String email) {
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("해당 유저가 없습니다."));
+    }
+
     // 회원가입
     public ApiResponse<UserResponseDto> saveUser(SaveUserRequestDto user) {
         Users users = Users.builder()

@@ -9,6 +9,7 @@ import java.util.Optional;
 public interface JwtService {
 
     String createAccessToken(String email);
+
     String createRefreshToken();
 
     void updateRefreshToken(String email, String refreshToken);
@@ -16,6 +17,7 @@ public interface JwtService {
     void destroyRefreshToken(String email);
 
     void sendAccessAndRefreshToken(HttpServletResponse response, String accessToken, String refreshToken);
+
     void sendAccessToken(HttpServletResponse response, String accessToken);
 
     Optional<String> extractAccessToken(HttpServletRequest request);

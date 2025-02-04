@@ -16,11 +16,17 @@ import MathCaptain.weakness.global.Api.ApiResponse;
 import MathCaptain.weakness.global.Security.jwt.JwtService;
 import MathCaptain.weakness.global.exception.DuplicatedException;
 import MathCaptain.weakness.global.exception.ResourceNotFoundException;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -35,31 +41,42 @@ public class GroupService {
     private final JwtService jwtService;
 
     // 그룹 생성 (CREATE)
-    public ApiResponse<GroupResponseDto> createGroup(GroupCreateRequestDto groupCreateRequestDto) {
+    public ApiResponse<GroupResponseDto> createGroup(GroupCreateRequestDto groupCreateRequestDto, HttpServletResponse response) {
 
         // 그룹 생성
         Group group = buildGroup(groupCreateRequestDto);
-        groupRepository.save(group);
+
+        if (groupRepository.existsByName(group.getName())) {
+            throw new DuplicatedException("이미 존재하는 그룹 이름입니다.");
+        }
+
+        Long groupId = groupRepository.save(group).getId();
 
         // 리더에 대한 정보 추출
         Users leader = userService.getUserById(groupCreateRequestDto.getLeader_id());
         int leaderDailyGoal = groupCreateRequestDto.getPersonalDailyGoal();
         int leaderWeeklyGoal = groupCreateRequestDto.getPersonalWeeklyGoal();
 
-        checkJoin(leader, group, leaderDailyGoal, leaderWeeklyGoal);
+        GroupJoinRequestDto joinLeader = GroupJoinRequestDto.builder()
+                .userId(leader.getUserId())
+                .personalDailyGoal(leaderDailyGoal)
+                .personalWeeklyGoal(leaderWeeklyGoal)
+                .build();
 
-        // 리더 -> 생성그룹 가입
-        RelationBetweenUserAndGroup leaderAndCreateGroup = buildLeaderRelation(leader, group, leaderDailyGoal, leaderWeeklyGoal);
-        relationRepository.save(leaderAndCreateGroup);
+        relationService.leaderJoin(groupId, joinLeader);
+
+        String accessToken = jwtService.createAccessToken(leader.getEmail());
+
+        response.setHeader("Authorization", "Bearer " + accessToken);
 
         return ApiResponse.ok(buildGroupResponseDto(group));
     }
 
     // 그룹 정보 조회 (READ)
-    public ApiResponse<GroupResponseDto> getGroupInfo(Long groupId) {
+    public GroupResponseDto getGroupInfo(Long groupId) {
         Group group = getGroup(groupId);
 
-        return ApiResponse.ok(buildGroupResponseDto(group));
+        return buildGroupResponseDto(group);
     }
 
     // 그룹 정보 업데이트 (UPDATE)
@@ -70,21 +87,6 @@ public class GroupService {
         updateGroupInfo(group, groupUpdateRequestDto);
 
         return ApiResponse.ok(buildGroupResponseDto(group));
-    }
-
-    // 그룹 참여
-    public ApiResponse<?> joinGroup(Long groupId, GroupJoinRequestDto groupJoinRequestDto) {
-
-        Users joinUser = userService.getUserById(groupJoinRequestDto.getUserId());
-
-        Group group = getGroup(groupId);
-
-        // 이미 가입한 경우 & 목표 조건 달성 여부
-        checkJoin(joinUser, group, groupJoinRequestDto.getPersonalDailyGoal(), groupJoinRequestDto.getPersonalWeeklyGoal());
-
-        relationService.saveRelation(joinUser, group, groupJoinRequestDto);
-
-        return ApiResponse.ok(null);
     }
 
     // 그룹 내 멤버 조회
@@ -104,15 +106,29 @@ public class GroupService {
                 .collect(Collectors.toList()));
     }
 
-//    public ApiResponse<?> usersGroupList(String token) {
-//        Users user = userService.getUserById(String userId);
-//
-//        List<Group> groups = relationRepository.findGroupsByMember(user);
-//
-//        return ApiResponse.ok(groups.stream()
-//                .map(this::buildGroupResponseDto)
-//                .collect(Collectors.toList()));
-//    }
+    public List<GroupResponseDto> getUsersGroups(String accessToken) {
+
+        if (!jwtService.isTokenValid(accessToken)) {
+            throw new IllegalArgumentException("유효하지 않은 토큰입니다.");
+        }
+
+        // 유저가 속한 그룹을 모두 보여줌
+        List<String> userGroupList = jwtService.extractGroupsId(accessToken)
+                .orElseThrow(() -> new ResourceNotFoundException("JWT에 그룹 정보가 없습니다."));
+
+        return userGroupList.stream()
+                .map(this::convertToGroupResponseDto) // 각 그룹 ID를 GroupResponseDto로 변환
+                .toList(); // 결과를 리스트로 변환
+    }
+
+    // 그룹 삭제
+    public ApiResponse<?> deleteGroup(Long groupId) {
+        Group group = getGroup(groupId);
+
+        groupRepository.delete(group);
+
+        return ApiResponse.ok("그룹이 삭제되었습니다.");
+    }
 
     //== 비지니스 로직 ==//
     public boolean isGroupMember(Long groupId, Long userId) {
@@ -127,19 +143,6 @@ public class GroupService {
                 .orElseThrow(() -> new ResourceNotFoundException("해당 그룹이 존재하지 않습니다."));
     }
 
-    //==검증 로직==/
-    private void checkJoin(Users member, Group joinGroup, int personalDailyGoal, int personalWeeklyGoal) {
-
-        relationService.checkRelation(member, joinGroup);
-
-        if (personalDailyGoal < joinGroup.getMin_daily_hours()) {
-            throw new IllegalArgumentException("하루 목표 시간은 " + joinGroup.getMin_daily_hours() + "시간 이상이어야 합니다.");
-        }
-
-        if (personalWeeklyGoal < joinGroup.getMin_weekly_days()) {
-            throw new IllegalArgumentException("주간 목표 일수는 " + joinGroup.getMin_weekly_days() + "일 이상이어야 합니다.");
-        }
-    }
 
     //==로직들==/
     private void updateGroupInfo(Group group, GroupUpdateRequestDto groupUpdateRequestDto) {
@@ -166,6 +169,15 @@ public class GroupService {
 
         if (!group.getGroup_image_url().equals(groupUpdateRequestDto.getGroup_image_url())) {
             group.updateGroupImageUrl(groupUpdateRequestDto.getGroup_image_url());
+        }
+    }
+
+    private GroupResponseDto convertToGroupResponseDto(String groupId) {
+        try {
+            // 그룹 정보를 조회하고 DTO로 변환
+            return getGroupInfo(Long.parseLong(groupId));
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("잘못된 그룹 ID 형식: " + groupId, e);
         }
     }
 

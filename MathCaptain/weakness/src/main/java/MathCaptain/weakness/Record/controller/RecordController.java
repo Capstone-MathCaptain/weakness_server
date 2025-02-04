@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/activity")
+@RequestMapping("/record/")
 public class RecordController {
 
     private final RecordService recordService;
@@ -20,9 +20,9 @@ public class RecordController {
         return ApiResponse.ok(recordId);
     }
 
-    @PostMapping("/end/{activityId}")
-    public ApiResponse<recordSummaryResponseDto> endActivity(@PathVariable Long activityId) {
-        recordSummaryResponseDto summary = recordService.endActivity(activityId);
+    @PostMapping("/end/{recordId}")
+    public ApiResponse<recordSummaryResponseDto> endActivity(@PathVariable Long recordId) {
+        recordSummaryResponseDto summary = recordService.endActivity(recordId);
         return ApiResponse.ok(summary);
     }
 }

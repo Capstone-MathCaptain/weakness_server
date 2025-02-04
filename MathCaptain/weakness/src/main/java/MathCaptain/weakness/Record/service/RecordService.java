@@ -47,26 +47,26 @@ public class RecordService {
     }
 
     // 기록 종료
-    public recordSummaryResponseDto endActivity(Long activityId) {
+    public recordSummaryResponseDto endActivity(Long recordId) {
         // 진행 중인 활동 찾기 (존재하지 않으면 예외 발생)
-        ActivityRecord activityRecord = recordRepository.findById(activityId)
+        ActivityRecord record = recordRepository.findById(recordId)
                 .orElseThrow(() -> new IllegalArgumentException("현재 진행중인 인증이 존재하지 않습니다."));
 
         // 종료 시간 업데이트
-        activityRecord.updateEndTime(LocalDateTime.now());
-        activityRecord.calculateDuration(); // 활동 시간 계산 (분 단위)
+        record.updateEndTime(LocalDateTime.now());
+        record.calculateDuration(); // 활동 시간 계산 (분 단위)
 
         RelationBetweenUserAndGroup relation = relationRepository.findByMemberIdAndJoinGroupId(
-                activityRecord.getUser().getUserId(),
-                activityRecord.getGroup().getId()
+                record.getUser().getUserId(),
+                record.getGroup().getId()
         ).orElseThrow(() -> new IllegalArgumentException("해당 그룹에 속하지 않은 사용자입니다."));
 
-        Long remainingDailyGoalMinutes = checkDailyGoalAchieved(activityRecord, relation);
-        int remainingWeeklyGoal = checkWeeklyGoalAchieved(activityRecord, relation);
+        Long remainingDailyGoalMinutes = checkDailyGoalAchieved(record, relation);
+        int remainingWeeklyGoal = checkWeeklyGoalAchieved(record, relation);
 
-        recordRepository.save(activityRecord);
+        recordRepository.save(record);
 
-        return buildRecordSummaryResponseDto(activityRecord, remainingDailyGoalMinutes, remainingWeeklyGoal);
+        return buildRecordSummaryResponseDto(record, remainingDailyGoalMinutes, remainingWeeklyGoal);
     }
 
     //==비지니스 로직==//
@@ -77,11 +77,14 @@ public class RecordService {
         long remainingDailyGoalMinutes = 0L;
 
         // 일간 달성 시간 업데이트 (분)
-        Long dailyAchieved = activityRecord.getDurationInMinutes() + relation.getPersonalDailyGoalAchieve();
-        relation.updatePersonalDailyGoalAchieved(dailyAchieved);
+        if (relation.getPersonalDailyGoalAchieve() == null) {
+            relation.updatePersonalDailyGoalAchieved(activityRecord.getDurationInMinutes());
+        } else {
+            relation.updatePersonalDailyGoalAchieved(activityRecord.getDurationInMinutes() + relation.getPersonalDailyGoalAchieve());
+        }
 
         // 일간 목표 시간 달성시
-        if (activityRecord.getDurationInMinutes() >= relation.getPersonalDailyGoal()) {
+        if (relation.getPersonalDailyGoalAchieve() >= relation.getPersonalDailyGoal()) {
             activityRecord.updateDailyGoalAchieved(true);
 
             // 주간 목표 + 1 (일간 목표 충족시 업데이트)
@@ -90,7 +93,7 @@ public class RecordService {
 
         // 일간 목표 시간 미달성시 남은 시간을 반환
         } else {
-            remainingDailyGoalMinutes = relation.getPersonalDailyGoal() - activityRecord.getDurationInMinutes();
+            remainingDailyGoalMinutes = (relation.getPersonalDailyGoal() * 60L) - activityRecord.getDurationInMinutes();
             activityRecord.updateDailyGoalAchieved(false);
         }
 

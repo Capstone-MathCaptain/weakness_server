@@ -26,7 +26,7 @@ public class RelationBetweenUserAndGroup {
     @Column(name = "relation_id")
     private Long id;
 
-    @OneToOne
+    @OneToOne(cascade = CascadeType.REMOVE)
     @JoinColumn(name = "member")
     private Users member;
 
@@ -34,7 +34,7 @@ public class RelationBetweenUserAndGroup {
     @Column(nullable = false)
     private GroupRole groupRole;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.REMOVE)
     @JoinColumn(name = "joinGroup")
     private Group joinGroup;
 
