@@ -11,6 +11,7 @@ import MathCaptain.weakness.Group.enums.GroupRole;
 import MathCaptain.weakness.Group.repository.GroupRepository;
 import MathCaptain.weakness.Group.repository.RelationRepository;
 import MathCaptain.weakness.User.domain.Users;
+import MathCaptain.weakness.User.repository.UserRepository;
 import MathCaptain.weakness.User.service.UserService;
 import MathCaptain.weakness.global.Api.ApiResponse;
 import MathCaptain.weakness.global.Security.jwt.JwtService;
@@ -18,17 +19,19 @@ import MathCaptain.weakness.global.exception.DuplicatedException;
 import MathCaptain.weakness.global.exception.ResourceNotFoundException;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
+import static MathCaptain.weakness.Group.service.RelationService.getGroupResponseDto;
+
+@Slf4j
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -36,38 +39,41 @@ public class GroupService {
 
     private final GroupRepository groupRepository;
     private final RelationRepository relationRepository;
+    private final UserRepository userRepository;
     private final RelationService relationService;
     private final UserService userService;
     private final JwtService jwtService;
 
     // 그룹 생성 (CREATE)
-    public ApiResponse<GroupResponseDto> createGroup(GroupCreateRequestDto groupCreateRequestDto, HttpServletResponse response) {
+    public ApiResponse<GroupResponseDto> createGroup(GroupCreateRequestDto groupCreateRequestDto, String accessToken, HttpServletResponse response) {
 
-        // 그룹 생성
-        Group group = buildGroup(groupCreateRequestDto);
-
-        if (groupRepository.existsByName(group.getName())) {
+        if (groupRepository.existsByName(groupCreateRequestDto.getGroup_name())) {
             throw new DuplicatedException("이미 존재하는 그룹 이름입니다.");
         }
 
+        String leaderEmail = jwtService.extractEmail(accessToken)
+                .orElseThrow(() -> new IllegalArgumentException("토큰이 유효하지 않습니다."));
+
+        Users leader = userRepository.findByEmail(leaderEmail)
+                .orElseThrow(() -> new ResourceNotFoundException("해당 이메일을 가진 사용자가 없습니다."));
+        // 그룹 생성
+        Group group = buildGroup(leader, groupCreateRequestDto);
+
         Long groupId = groupRepository.save(group).getId();
 
-        // 리더에 대한 정보 추출
-        Users leader = userService.getUserById(groupCreateRequestDto.getLeader_id());
         int leaderDailyGoal = groupCreateRequestDto.getPersonalDailyGoal();
         int leaderWeeklyGoal = groupCreateRequestDto.getPersonalWeeklyGoal();
 
         GroupJoinRequestDto joinLeader = GroupJoinRequestDto.builder()
-                .userId(leader.getUserId())
                 .personalDailyGoal(leaderDailyGoal)
                 .personalWeeklyGoal(leaderWeeklyGoal)
                 .build();
 
-        relationService.leaderJoin(groupId, joinLeader);
+        relationService.leaderJoin(groupId, leaderEmail, joinLeader);
 
-        String accessToken = jwtService.createAccessToken(leader.getEmail());
+        String newAccessToken = jwtService.createAccessToken(leader.getEmail());
 
-        response.setHeader("Authorization", "Bearer " + accessToken);
+        response.setHeader("Authorization", "Bearer " + newAccessToken);
 
         return ApiResponse.ok(buildGroupResponseDto(group));
     }
@@ -90,20 +96,20 @@ public class GroupService {
     }
 
     // 그룹 내 멤버 조회
-    public ApiResponse<List<UserResponseDto>> getGroupMembers(Long groupId) {
+    public List<UserResponseDto> getGroupMembers(Long groupId) {
         Group group = getGroup(groupId);
 
         List<Users> members = relationRepository.findMembersByGroup(group);
 
-        return ApiResponse.ok(members.stream()
-                .map(member -> UserResponseDto.builder()
-                        .userId(member.getUserId())
-                        .email(member.getEmail())
-                        .name(member.getName())
-                        .nickname(member.getNickname())
-                        .phoneNumber(member.getPhoneNumber())
+        return members.stream()
+                .map(user -> UserResponseDto.builder()
+                        .userId(user.getUserId())
+                        .name(user.getName())
+                        .nickname(user.getNickname())
+                        .email(user.getEmail())
+                        .phoneNumber(user.getPhoneNumber())
                         .build())
-                .collect(Collectors.toList()));
+                .collect(Collectors.toList());
     }
 
     public List<GroupResponseDto> getUsersGroups(String accessToken) {
@@ -120,6 +126,40 @@ public class GroupService {
                 .map(this::convertToGroupResponseDto) // 각 그룹 ID를 GroupResponseDto로 변환
                 .toList(); // 결과를 리스트로 변환
     }
+
+    public List<GroupResponseDto> getUsersGroups(List<String> groupIdList) {
+
+        return groupIdList.stream()
+                .map(this::convertToGroupResponseDto) // 각 그룹 ID를 GroupResponseDto로 변환
+                .toList(); // 결과를 리스트로 변환
+    }
+
+//    public List<String> getUsersGroupNames(String accessToken) {
+//
+//        if (!jwtService.isTokenValid(accessToken)) {
+//            throw new IllegalArgumentException("유효하지 않은 토큰입니다.");
+//        }
+//
+//        Set<String> groupsName = new HashSet<>();
+//
+//        // 유저가 속한 그룹을 모두 보여줌
+//        List<String> userGroupList = jwtService.extractGroupsId(accessToken)
+//                .orElseThrow(() -> new ResourceNotFoundException("JWT에 그룹 정보가 없습니다."));
+//
+//        for (String groupId : userGroupList) {
+//            String groupName = groupRepository.findById(Long.parseLong(groupId))
+//                    .orElseThrow(() -> new ResourceNotFoundException("해당 그룹이 존재하지 않습니다."))
+//                    .getName();
+//
+//            groupsName.add(groupName);
+//        }
+//
+//        return groupsName;
+////        return userGroupList.stream()
+////                .map(this::g) // 각 그룹 ID를 GroupResponseDto로 변환
+////                .map(GroupResponseDto::getGroupName)
+////                .toList(); // 결과를 리스트로 변환
+//    }
 
     // 그룹 삭제
     public ApiResponse<?> deleteGroup(Long groupId) {
@@ -183,24 +223,10 @@ public class GroupService {
 
     //==빌드==/
     private GroupResponseDto buildGroupResponseDto(Group group) {
-        return GroupResponseDto.builder()
-                .id(group.getId())
-                .leaderId(group.getLeader().getUserId())
-                .leaderName(group.getLeader().getName())
-                .groupName(group.getName())
-                .category(group.getCategory())
-                .min_daily_hours(group.getMin_daily_hours())
-                .min_weekly_days(group.getMin_weekly_days())
-                .group_point(group.getGroup_point())
-                .hashtags(group.getHashtags())
-                .disturb_mode(group.getDisturb_mode())
-                .created_date(group.getCreate_date())
-                .group_image_url(group.getGroup_image_url())
-                .build();
+        return getGroupResponseDto(group);
     }
 
-    private Group buildGroup(GroupCreateRequestDto groupCreateRequestDto) {
-        Users leader = userService.getUserById(groupCreateRequestDto.getLeader_id());
+    private Group buildGroup(Users leader, GroupCreateRequestDto groupCreateRequestDto) {
 
         return Group.builder()
                 .leader(leader)

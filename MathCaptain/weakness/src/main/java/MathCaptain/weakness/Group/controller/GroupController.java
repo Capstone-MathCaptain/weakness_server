@@ -11,11 +11,13 @@ import MathCaptain.weakness.Group.service.RelationService;
 import MathCaptain.weakness.global.Api.ApiResponse;
 import MathCaptain.weakness.global.Security.jwt.JwtService;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import lombok.RequiredArgsConstructor;
 import jakarta.validation.Valid;
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 public class GroupController {
@@ -33,8 +35,9 @@ public class GroupController {
 
     // CREATE
     @PostMapping("/group")
-    public ApiResponse<GroupResponseDto> createGroup(@Valid @RequestBody GroupCreateRequestDto groupCreateRequestDto, HttpServletResponse response) {
-        return groupService.createGroup(groupCreateRequestDto, response);
+    public ApiResponse<GroupResponseDto> createGroup(@Valid @RequestHeader("Authorization") String authorizationHeader, @RequestBody GroupCreateRequestDto groupCreateRequestDto, HttpServletResponse response) {
+        String accessToken = authorizationHeader.replace("Bearer ", "");
+        return groupService.createGroup(groupCreateRequestDto, accessToken, response);
     }
 
     // UPDATE
@@ -45,8 +48,9 @@ public class GroupController {
 
     // JOIN
     @PostMapping("/group/join/{groupId}")
-    public ApiResponse<?> joinGroup(@Valid @PathVariable long groupId, @RequestBody GroupJoinRequestDto groupJoinRequestDto, HttpServletResponse response) {
-        return relationService.joinGroup(groupId, groupJoinRequestDto, response);
+    public ApiResponse<?> joinGroup(@Valid @PathVariable long groupId, @RequestHeader("Authorization") String authorizationHeader, @RequestBody GroupJoinRequestDto groupJoinRequestDto, HttpServletResponse response) {
+        String accessToken = authorizationHeader.replace("Bearer ", "");
+        return relationService.joinGroup(groupId, accessToken, groupJoinRequestDto, response);
     }
 
     // LEAVE
@@ -59,7 +63,8 @@ public class GroupController {
     // READ
     @GetMapping("/group/members/{groupId}")
     public ApiResponse<List<UserResponseDto>> groupMembers(@PathVariable long groupId) {
-        return groupService.getGroupMembers(groupId);
+        List<UserResponseDto> members = groupService.getGroupMembers(groupId);
+        return ApiResponse.ok(members);
     }
 
     // READ

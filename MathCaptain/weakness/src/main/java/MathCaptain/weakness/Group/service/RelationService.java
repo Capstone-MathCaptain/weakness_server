@@ -29,9 +29,11 @@ public class RelationService {
     private final JwtService jwtService;
 
     // 그룹 참여
-    public ApiResponse<?> joinGroup(Long groupId, GroupJoinRequestDto groupJoinRequestDto, HttpServletResponse response) {
+    public ApiResponse<?> joinGroup(Long groupId, String accessToken, GroupJoinRequestDto groupJoinRequestDto, HttpServletResponse response) {
 
-        Users joinUser = userService.getUserById(groupJoinRequestDto.getUserId());
+        Users joinUser = jwtService.extractEmail(accessToken)
+                .map(userService::getUserByEmail)
+                .orElseThrow(() -> new IllegalArgumentException("토큰이 유효하지 않습니다."));
 
         Group group = groupRepository.findById(groupId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 그룹이 존재하지 않습니다."));
@@ -41,9 +43,9 @@ public class RelationService {
 
         saveRelation(joinUser, group, groupJoinRequestDto);
 
-        String accessToken = jwtService.createAccessToken(joinUser.getEmail());
+        String newAccessToken = jwtService.createAccessToken(joinUser.getEmail());
 
-        response.setHeader("Authorization", "Bearer " + accessToken);
+        response.setHeader("Authorization", newAccessToken);
 
         return ApiResponse.ok("그룹 가입이 완료되었습니다.");
     }
@@ -62,13 +64,13 @@ public class RelationService {
 
         String newAccessToken = jwtService.createAccessToken(member.getEmail());
 
-        response.setHeader("Authorization", "Bearer " + newAccessToken);
+        response.setHeader("Authorization", newAccessToken);
 
         return ApiResponse.ok("그룹 탈퇴가 완료되었습니다.");
     }
 
-    public void leaderJoin(Long groupId, GroupJoinRequestDto groupJoinRequestDto) {
-        Users leader = userService.getUserById(groupJoinRequestDto.getUserId());
+    public void leaderJoin(Long groupId, String leaderEmail, GroupJoinRequestDto groupJoinRequestDto) {
+        Users leader = userService.getUserByEmail(leaderEmail);
         Group group = groupRepository.findById(groupId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 그룹이 존재하지 않습니다."));
 
@@ -115,7 +117,7 @@ public class RelationService {
         RelationBetweenUserAndGroup relation = relationRepository.findById(relationId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 관계가 없습니다."));
 
-        GroupResponseDto group = buidGropuResponseDto(relation.getJoinGroup());
+        GroupResponseDto group = getGroupResponseDto(relation.getJoinGroup());
 
         UserResponseDto member = UserResponseDto.builder()
                 .userId(relation.getMember().getUserId())
@@ -136,7 +138,7 @@ public class RelationService {
                 .build();
     }
 
-    private GroupResponseDto buidGropuResponseDto(Group group) {
+    static GroupResponseDto getGroupResponseDto(Group group) {
         return GroupResponseDto.builder()
                 .id(group.getId())
                 .leaderId(group.getLeader().getUserId())
