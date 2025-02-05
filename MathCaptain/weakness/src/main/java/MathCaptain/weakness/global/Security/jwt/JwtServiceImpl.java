@@ -1,5 +1,7 @@
 package MathCaptain.weakness.global.Security.jwt;
 
+import MathCaptain.weakness.Group.repository.RelationRepository;
+import MathCaptain.weakness.User.domain.Users;
 import MathCaptain.weakness.User.repository.UserRepository;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
@@ -14,10 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -50,12 +49,20 @@ public class JwtServiceImpl implements JwtService{
 
     private final UserRepository usersRepository;
     private final ObjectMapper objectMapper;
+    private final RelationRepository relationRepository;
+
 
     //== 메서드 ==//
 
     // AccessToken 생성 (사용자의 email 기반)
     @Override
     public String createAccessToken(String email) {
+        Users user = usersRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("해당 유저가 없습니다."));
+
+        // RelationRepository를 통해 유저의 그룹 이름 조회
+        List<Long> groupsId = relationRepository.findGroupsIdByUserId(user.getUserId());
+
         return JWT.create()
                 // 빌더를 통해 JWT의 Subject 설정 : AccessToken
                 .withSubject(ACCESS_TOKEN_SUBJECT)
@@ -63,6 +70,7 @@ public class JwtServiceImpl implements JwtService{
                 .withExpiresAt(new Date(System.currentTimeMillis() + accessTokenValidityInSeconds * 1000))
                 // claim으로 email 설정
                 .withClaim(USERNAME_CLAIM, email)
+                .withClaim("groups", groupsId)
                 // HMA512 알고리즘을 사용하여, secret키로 암호화
                 .sign(Algorithm.HMAC512(secret));
     }
@@ -155,15 +163,33 @@ public class JwtServiceImpl implements JwtService{
     @Override
     public Optional<String> extractEmail(String accessToken) {
         try {
-            return Optional.ofNullable(
+            Optional<String> email = Optional.ofNullable(
                     // JWT 라이브러리를 이용해 accessToken 속 email을 추출 (USERNAME_CLAIM)
                     JWT.require(Algorithm.HMAC512(secret)).build().verify(accessToken).getClaim(USERNAME_CLAIM)
                             .asString());
+
+            log.info("email: {}", email);
+            return email;
         } catch (Exception e) {
             log.error(e.getMessage());
             return Optional.empty();
         }
     }
+
+    // AccessToken에서 groupNames를 추출
+    @Override
+    public Optional<List<String>> extractGroupsId(String accessToken) {
+        try {
+            return Optional.ofNullable(
+                    // JWT 라이브러리를 이용해 accessToken 속 groupName을 추출
+                    JWT.require(Algorithm.HMAC512(secret)).build().verify(accessToken).getClaim("groups")
+                            .asList(String.class));
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            return Optional.empty();
+        }
+    }
+
 
     @Override
     public void setAccessTokenHeader(HttpServletResponse response, String accessToken) {

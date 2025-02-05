@@ -1,8 +1,12 @@
 package MathCaptain.weakness.Login;
 
+import MathCaptain.weakness.Group.dto.response.GroupResponseDto;
+import MathCaptain.weakness.Group.repository.RelationRepository;
+import MathCaptain.weakness.Group.service.GroupService;
 import MathCaptain.weakness.global.Api.ApiResponse;
 import MathCaptain.weakness.global.Security.jwt.JwtService;
 import MathCaptain.weakness.User.repository.UserRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -15,6 +19,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 
 import java.io.IOException;
+import java.util.List;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -22,7 +27,10 @@ import java.io.IOException;
 public class LoginSuccessJWTProvideHandler extends SimpleUrlAuthenticationSuccessHandler {
 
     private final JwtService jwtService;
+    private final GroupService groupService;
+    private final RelationRepository relationRepository;
     private final UserRepository userRepository;
+    private final ObjectMapper objectMapper;
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
@@ -36,13 +44,31 @@ public class LoginSuccessJWTProvideHandler extends SimpleUrlAuthenticationSucces
                 user -> user.updateRefreshToken(refreshToken)
         );
 
+        List<String> groupsId = relationRepository.findAllByMember_Email(email)
+                .orElseThrow(() -> new IllegalArgumentException("해당 사용자의 그룹이 존재하지 않습니다."))
+                        .stream()
+                                .map(relation -> relation.getJoinGroup().getId().toString())
+                                .toList();
+
+        List<GroupResponseDto> groupResponseDtoList = groupService.getUsersGroups(groupsId);
+
+        // groupResponseDtoList를 JSON 형태로 변환
+        ApiResponse<List<GroupResponseDto>> apiResponse = ApiResponse.ok(groupResponseDtoList);
+
+        // ApiResponse를 JSON 형식으로 변환
+        String jsonResponse = objectMapper.writeValueAsString(apiResponse);
+
+        // JSON 응답 설정 및 전송
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+        // JSON 형태로 변환된 데이터를 응답
+        response.getWriter().write(jsonResponse);
+
         log.info( "로그인에 성공합니다. email: {}" , email);
         log.info( "AccessToken 을 발급합니다. AccessToken: {}" ,accessToken);
         log.info( "RefreshToken 을 발급합니다. RefreshToken: {}" ,refreshToken);
+        log.info( "사용자의 그룹 정보를 조회합니다. 사용자가 속한 그룹들의 ID: {}" ,groupsId);
 
-        response.getWriter().write("success");
-        // /main 페이지로 리다이렉트 -> 프론트 구현시 연결
-//        response.sendRedirect("/main");
     }
 
     private String extractEmail(Authentication authentication) {

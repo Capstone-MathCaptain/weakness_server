@@ -1,5 +1,6 @@
 package MathCaptain.weakness.global.Security;
 
+import MathCaptain.weakness.Group.repository.RelationRepository;
 import MathCaptain.weakness.Group.service.GroupService;
 import MathCaptain.weakness.Group.service.RelationService;
 import MathCaptain.weakness.global.Security.filter.GroupRoleFilter;
@@ -40,6 +41,7 @@ public class SecurityConfig {
     private final UserDetailsServiceImpl userDetailsService;
     private final ObjectMapper objectMapper;
     private final UserRepository userRepository;
+    private final RelationRepository relationRepository;
     private final JwtService jwtService;
     private final UserService userService;
     private final GroupService groupService;
@@ -57,7 +59,7 @@ public class SecurityConfig {
 				.requestMatchers("/h2-console/**")
                 .requestMatchers("/static/**")
                 .requestMatchers("/templates/**")
-                .requestMatchers("/group/**", "/user/**", "/recruitment/**")
+                .requestMatchers("/group/**", "/user/**", "/recruitment/**", "/record/**")
                 .requestMatchers(HttpMethod.DELETE, "/group/**", "/recruitment/**", "/user/**")// 접근 허용된 URL
                 .requestMatchers(HttpMethod.PUT, "/group/**", "/recruitment/**", "/user/**")// 접근 허용된 URL
                 .requestMatchers("/error")
@@ -127,7 +129,7 @@ public class SecurityConfig {
     // JWT를 통한 로그인 성공 Handler 등록
     @Bean
     public LoginSuccessJWTProvideHandler loginSuccessJWTProvideHandler(){
-        return new LoginSuccessJWTProvideHandler(jwtService, userRepository);
+        return new LoginSuccessJWTProvideHandler(jwtService, groupService, relationRepository, userRepository, objectMapper);
     }
 
     // JWT 통한 로그인 실패 Handler 등록

@@ -38,10 +38,10 @@ public class GroupRoleFilter extends OncePerRequestFilter {
 
             // 현재 인증된 사용자 정보 가져오기
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            String username = authentication.getName();
+            String userEmail = authentication.getName();
 
             // RelationBetweenUserAndGroup에서 역할 확인
-            Users member = userService.getUserByName(username);
+            Users member = userService.getUserByEmail(userEmail);
 
             Group group = groupService.getGroup(groupId);
 

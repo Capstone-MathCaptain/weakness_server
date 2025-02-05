@@ -1,8 +1,6 @@
-package MathCaptain.weakness.global;
+package MathCaptain.weakness.global.exception;
 
 import MathCaptain.weakness.global.Api.ApiResponse;
-import MathCaptain.weakness.global.exception.DuplicatedException;
-import MathCaptain.weakness.global.exception.ResourceNotFoundException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;

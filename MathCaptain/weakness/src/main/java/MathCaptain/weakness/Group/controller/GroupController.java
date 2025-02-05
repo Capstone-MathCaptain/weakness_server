@@ -9,28 +9,35 @@ import MathCaptain.weakness.Group.service.GroupService;
 import MathCaptain.weakness.Group.dto.request.GroupCreateRequestDto;
 import MathCaptain.weakness.Group.service.RelationService;
 import MathCaptain.weakness.global.Api.ApiResponse;
+import MathCaptain.weakness.global.Security.jwt.JwtService;
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import lombok.RequiredArgsConstructor;
 import jakarta.validation.Valid;
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 public class GroupController {
 
     private final GroupService groupService;
     private final RelationService relationService;
+    private final JwtService jwtService;
 
     // READ
     @GetMapping("/group/{groupId}")
     public ApiResponse<GroupResponseDto> groupInfo(@PathVariable long groupId) {
-        return groupService.getGroupInfo(groupId);
+        GroupResponseDto groupResponseDto = groupService.getGroupInfo(groupId);
+        return ApiResponse.ok(groupResponseDto);
     }
 
     // CREATE
     @PostMapping("/group")
-    public ApiResponse<GroupResponseDto> createGroup(@Valid @RequestBody GroupCreateRequestDto groupCreateRequestDto) {
-        return groupService.createGroup(groupCreateRequestDto);
+    public ApiResponse<GroupResponseDto> createGroup(@Valid @RequestHeader("Authorization") String authorizationHeader, @RequestBody GroupCreateRequestDto groupCreateRequestDto, HttpServletResponse response) {
+        String accessToken = authorizationHeader.replace("Bearer ", "");
+        return groupService.createGroup(groupCreateRequestDto, accessToken, response);
     }
 
     // UPDATE
@@ -41,19 +48,35 @@ public class GroupController {
 
     // JOIN
     @PostMapping("/group/join/{groupId}")
-    public ApiResponse<?> joinGroup(@Valid @PathVariable long groupId, @RequestBody GroupJoinRequestDto groupJoinRequestDto) {
-        return groupService.joinGroup(groupId, groupJoinRequestDto);
+    public ApiResponse<?> joinGroup(@Valid @PathVariable long groupId, @RequestHeader("Authorization") String authorizationHeader, @RequestBody GroupJoinRequestDto groupJoinRequestDto, HttpServletResponse response) {
+        String accessToken = authorizationHeader.replace("Bearer ", "");
+        return relationService.joinGroup(groupId, accessToken, groupJoinRequestDto, response);
+    }
+
+    // LEAVE
+    @DeleteMapping("/group/leave/{groupId}")
+    public ApiResponse<?> leaveGroup(@RequestHeader("Authorization") String authorizationHeader, @PathVariable long groupId, HttpServletResponse response) {
+        String accessToken = authorizationHeader.replace("Bearer ", "");
+        return relationService.leaveGroup(accessToken, groupId, response);
     }
 
     // READ
     @GetMapping("/group/members/{groupId}")
     public ApiResponse<List<UserResponseDto>> groupMembers(@PathVariable long groupId) {
-        return groupService.getGroupMembers(groupId);
+        List<UserResponseDto> members = groupService.getGroupMembers(groupId);
+        return ApiResponse.ok(members);
     }
 
     // READ
     @GetMapping("/group/relation/{relationId}")
     public RelationResponseDto relationInfo(@PathVariable Long relationId) {
         return relationService.getRelationInfo(relationId);
+    }
+
+    // 유저가 속한 그룹을 모두 보여줌
+    @GetMapping("/group")
+    public ApiResponse<List<GroupResponseDto>> getUsersGroups(@RequestHeader("Authorization") String authorizationHeader) {
+        String accessToken = authorizationHeader.replace("Bearer ", "");
+        return ApiResponse.ok(groupService.getUsersGroups(accessToken));
     }
 }
