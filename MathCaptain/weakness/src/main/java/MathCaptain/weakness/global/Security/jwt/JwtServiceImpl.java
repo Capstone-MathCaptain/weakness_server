@@ -163,10 +163,13 @@ public class JwtServiceImpl implements JwtService{
     @Override
     public Optional<String> extractEmail(String accessToken) {
         try {
-            return Optional.ofNullable(
+            Optional<String> email = Optional.ofNullable(
                     // JWT 라이브러리를 이용해 accessToken 속 email을 추출 (USERNAME_CLAIM)
                     JWT.require(Algorithm.HMAC512(secret)).build().verify(accessToken).getClaim(USERNAME_CLAIM)
                             .asString());
+
+            log.info("email: {}", email);
+            return email;
         } catch (Exception e) {
             log.error(e.getMessage());
             return Optional.empty();
