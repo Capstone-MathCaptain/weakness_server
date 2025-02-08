@@ -44,11 +44,7 @@ public class LoginSuccessJWTProvideHandler extends SimpleUrlAuthenticationSucces
                 user -> user.updateRefreshToken(refreshToken)
         );
 
-        List<String> groupsId = relationRepository.findAllByMember_Email(email)
-                .orElseThrow(() -> new IllegalArgumentException("해당 사용자의 그룹이 존재하지 않습니다."))
-                        .stream()
-                                .map(relation -> relation.getJoinGroup().getId().toString())
-                                .toList();
+        List<Long> groupsId = relationRepository.findGroupsIdByEmail(email);
 
         List<GroupResponseDto> groupResponseDtoList = groupService.getUsersGroups(groupsId);
 

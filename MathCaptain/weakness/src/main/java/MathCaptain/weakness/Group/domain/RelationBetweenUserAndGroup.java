@@ -26,7 +26,7 @@ public class RelationBetweenUserAndGroup {
     @Column(name = "relation_id")
     private Long id;
 
-    @OneToOne(cascade = CascadeType.REMOVE)
+    @ManyToOne(cascade = CascadeType.REMOVE)
     @JoinColumn(name = "member")
     private Users member;
 
@@ -78,7 +78,7 @@ public class RelationBetweenUserAndGroup {
 
     // 일간 목표 초기화
     public void resetPersonalDailyGoalAchieve() {
-        this.personalDailyGoalAchieve = 0L;
+        this.personalDailyGoalAchieve = (Long) 0L;
     }
 
     // 주간 목표 초기화

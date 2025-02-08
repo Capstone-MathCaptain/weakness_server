@@ -1,5 +1,6 @@
 package MathCaptain.weakness.global.Security;
 
+import MathCaptain.weakness.Group.repository.GroupRepository;
 import MathCaptain.weakness.Group.repository.RelationRepository;
 import MathCaptain.weakness.Group.service.GroupService;
 import MathCaptain.weakness.Group.service.RelationService;
@@ -38,14 +39,15 @@ import static org.springframework.boot.autoconfigure.security.servlet.PathReques
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final UserDetailsServiceImpl userDetailsService;
     private final ObjectMapper objectMapper;
-    private final UserRepository userRepository;
-    private final RelationRepository relationRepository;
     private final JwtService jwtService;
     private final UserService userService;
-    private final GroupService groupService;
     private final RelationService relationService;
+    private final UserDetailsServiceImpl userDetailsService;
+    private final GroupService groupService;
+    private final UserRepository userRepository;
+    private final GroupRepository groupRepository;
+    private final RelationRepository relationRepository;
 
 
     // 스프링 시큐리티 기능 비활성화 (H2 DB 접근을 위해)
@@ -75,7 +77,7 @@ public class SecurityConfig {
                 .addFilterAfter(jsonUsernamePasswordLoginFilter(), LogoutFilter.class) // 추가 : 커스터마이징 된 필터를 SpringSecurityFilterChain에 등록
                 .authorizeHttpRequests((authorize) -> authorize
                         .requestMatchers("/static/**", "/templates/**").permitAll() // 정적 리소스 접근 허용
-                        .requestMatchers("/signup", "/", "/login", "/user/reset/password").permitAll() // 접근 허용된 URL
+                        .requestMatchers("/user/signup", "/", "/login", "/user/reset/password").permitAll() // 접근 허용된 URL
 //                        .requestMatchers("/group/**", "/user/**").authenticated() // 그룹 관련 URL은 인증된 사용자만 접근 가능
                         .anyRequest().authenticated())
                 // 폼 로그인은 현재 사용하지 않음
@@ -154,7 +156,7 @@ public class SecurityConfig {
 
     @Bean
     public GroupRoleFilter groupRoleFilter(){
-        return new GroupRoleFilter(userService, groupService, relationService);
+        return new GroupRoleFilter(userRepository, groupRepository, relationRepository);
     }
 
 

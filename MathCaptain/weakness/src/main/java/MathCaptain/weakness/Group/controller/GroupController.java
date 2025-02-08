@@ -28,7 +28,7 @@ public class GroupController {
 
     // READ
     @GetMapping("/group/{groupId}")
-    public ApiResponse<GroupResponseDto> groupInfo(@PathVariable long groupId) {
+    public ApiResponse<GroupResponseDto> groupInfo(@PathVariable Long groupId) {
         GroupResponseDto groupResponseDto = groupService.getGroupInfo(groupId);
         return ApiResponse.ok(groupResponseDto);
     }
@@ -42,27 +42,29 @@ public class GroupController {
 
     // UPDATE
     @PutMapping("/group/{groupId}")
-    public ApiResponse<GroupResponseDto> updateGroup(@Valid @PathVariable long groupId, @RequestBody GroupUpdateRequestDto groupUpdateRequestDto) {
+    public ApiResponse<GroupResponseDto> updateGroup(@Valid @PathVariable Long groupId, @RequestBody GroupUpdateRequestDto groupUpdateRequestDto) {
         return groupService.updateGroupInfo(groupId, groupUpdateRequestDto);
     }
 
     // JOIN
     @PostMapping("/group/join/{groupId}")
-    public ApiResponse<?> joinGroup(@Valid @PathVariable long groupId, @RequestHeader("Authorization") String authorizationHeader, @RequestBody GroupJoinRequestDto groupJoinRequestDto, HttpServletResponse response) {
+    public ApiResponse<?> joinGroup(@Valid @PathVariable Long groupId,
+                                    @RequestHeader("Authorization") String authorizationHeader,
+                                    @RequestBody GroupJoinRequestDto groupJoinRequestDto) {
         String accessToken = authorizationHeader.replace("Bearer ", "");
-        return relationService.joinGroup(groupId, accessToken, groupJoinRequestDto, response);
+        return relationService.joinGroup(groupId, accessToken, groupJoinRequestDto);
     }
 
     // LEAVE
     @DeleteMapping("/group/leave/{groupId}")
-    public ApiResponse<?> leaveGroup(@RequestHeader("Authorization") String authorizationHeader, @PathVariable long groupId, HttpServletResponse response) {
+    public ApiResponse<?> leaveGroup(@RequestHeader("Authorization") String authorizationHeader, @PathVariable Long groupId) {
         String accessToken = authorizationHeader.replace("Bearer ", "");
-        return relationService.leaveGroup(accessToken, groupId, response);
+        return relationService.leaveGroup(accessToken, groupId);
     }
 
     // READ
     @GetMapping("/group/members/{groupId}")
-    public ApiResponse<List<UserResponseDto>> groupMembers(@PathVariable long groupId) {
+    public ApiResponse<List<UserResponseDto>> groupMembers(@PathVariable Long groupId) {
         List<UserResponseDto> members = groupService.getGroupMembers(groupId);
         return ApiResponse.ok(members);
     }

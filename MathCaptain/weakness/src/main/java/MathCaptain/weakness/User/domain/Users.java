@@ -33,8 +33,8 @@ public class Users {
 
     private String phoneNumber;
 
-    @OneToOne(mappedBy = "member")
-    private RelationBetweenUserAndGroup relationBetweenUserAndGroup;
+    @OneToMany(mappedBy = "member")
+    private List<RelationBetweenUserAndGroup> relationBetweenUserAndGroup;
 
     @OneToMany(mappedBy = "leader")
     private List<Group> group;

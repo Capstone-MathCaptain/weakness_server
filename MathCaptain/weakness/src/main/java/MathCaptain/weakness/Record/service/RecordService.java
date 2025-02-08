@@ -3,8 +3,12 @@ package MathCaptain.weakness.Record.service;
 import MathCaptain.weakness.Group.domain.RelationBetweenUserAndGroup;
 import MathCaptain.weakness.Group.repository.RelationRepository;
 import MathCaptain.weakness.Record.domain.ActivityRecord;
+import MathCaptain.weakness.Record.dto.response.recordStartResponseDto;
 import MathCaptain.weakness.Record.dto.response.recordSummaryResponseDto;
 import MathCaptain.weakness.Record.repository.RecordRepository;
+import MathCaptain.weakness.User.domain.Users;
+import MathCaptain.weakness.User.repository.UserRepository;
+import MathCaptain.weakness.global.Security.jwt.JwtService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -21,11 +25,16 @@ public class RecordService {
 
     private final RecordRepository recordRepository;
     private final RelationRepository relationRepository;
+    private final UserRepository userRepository;
+    private final JwtService jwtService;
 
     // 기록 시작
-    public Long startRecord(Long userId, Long groupId) {
+    public recordStartResponseDto startRecord(String accessToken, Long groupId) {
+        // 사용자 식별
+        String userEmail = jwtService.extractEmail(accessToken)
+                .orElseThrow(() -> new IllegalArgumentException("토큰이 유효하지 않습니다."));
 
-        RelationBetweenUserAndGroup relation = relationRepository.findByMemberIdAndJoinGroupId(userId, groupId)
+        RelationBetweenUserAndGroup relation = relationRepository.findByMember_EmailAndJoinGroup_Id(userEmail, groupId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 관계가 존재하지 않습니다."));
 
         // 기존 미완료된 활동이 있는지 확인
@@ -43,7 +52,12 @@ public class RecordService {
                 .startTime(LocalDateTime.now())
                 .build();
 
-        return recordRepository.save(record).getId();
+        Long recordId = recordRepository.save(record).getId();
+
+        return recordStartResponseDto.builder()
+                .recordId(recordId)
+                .userDailyGoal(relation.getPersonalDailyGoal() * 60L)
+                .build();
     }
 
     // 기록 종료

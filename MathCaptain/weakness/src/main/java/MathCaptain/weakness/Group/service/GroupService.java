@@ -29,8 +29,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static MathCaptain.weakness.Group.service.RelationService.getGroupResponseDto;
-
 @Slf4j
 @Service
 @Transactional
@@ -41,7 +39,6 @@ public class GroupService {
     private final RelationRepository relationRepository;
     private final UserRepository userRepository;
     private final RelationService relationService;
-    private final UserService userService;
     private final JwtService jwtService;
 
     // 그룹 생성 (CREATE)
@@ -71,9 +68,9 @@ public class GroupService {
 
         relationService.leaderJoin(groupId, leaderEmail, joinLeader);
 
-        String newAccessToken = jwtService.createAccessToken(leader.getEmail());
-
-        response.setHeader("Authorization", "Bearer " + newAccessToken);
+//        String newAccessToken = jwtService.createAccessToken(leader.getEmail());
+//
+//        response.setHeader("Authorization", "Bearer " + newAccessToken);
 
         return ApiResponse.ok(buildGroupResponseDto(group));
     }
@@ -81,7 +78,6 @@ public class GroupService {
     // 그룹 정보 조회 (READ)
     public GroupResponseDto getGroupInfo(Long groupId) {
         Group group = getGroup(groupId);
-
         return buildGroupResponseDto(group);
     }
 
@@ -118,18 +114,20 @@ public class GroupService {
             throw new IllegalArgumentException("유효하지 않은 토큰입니다.");
         }
 
-        // 유저가 속한 그룹을 모두 보여줌
-        List<String> userGroupList = jwtService.extractGroupsId(accessToken)
-                .orElseThrow(() -> new ResourceNotFoundException("JWT에 그룹 정보가 없습니다."));
+        String userEmail = jwtService.extractEmail(accessToken)
+                .orElseThrow(() -> new ResourceNotFoundException("JWT에 이메일 정보가 없습니다."));
 
-        return userGroupList.stream()
+        // 유저가 속한 그룹을 모두 보여줌
+        List<Long> groupsIdByEmail = relationRepository.findGroupsIdByEmail(userEmail);
+
+        return groupsIdByEmail.stream()
                 .map(this::convertToGroupResponseDto) // 각 그룹 ID를 GroupResponseDto로 변환
                 .toList(); // 결과를 리스트로 변환
     }
 
-    public List<GroupResponseDto> getUsersGroups(List<String> groupIdList) {
+    public List<GroupResponseDto> getUsersGroups(List<Long> groupId) {
 
-        return groupIdList.stream()
+        return groupId.stream()
                 .map(this::convertToGroupResponseDto) // 각 그룹 ID를 GroupResponseDto로 변환
                 .toList(); // 결과를 리스트로 변환
     }
@@ -173,7 +171,9 @@ public class GroupService {
     //== 비지니스 로직 ==//
     public boolean isGroupMember(Long groupId, Long userId) {
         Group group = getGroup(groupId);
-        Users member = userService.getUserById(userId);
+
+        Users member = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("해당 유저가 존재하지 않습니다."));
 
         return relationRepository.findByMemberAndJoinGroup(member, group).isPresent();
     }
@@ -212,10 +212,10 @@ public class GroupService {
         }
     }
 
-    private GroupResponseDto convertToGroupResponseDto(String groupId) {
+    private GroupResponseDto convertToGroupResponseDto(Long groupId) {
         try {
             // 그룹 정보를 조회하고 DTO로 변환
-            return getGroupInfo(Long.parseLong(groupId));
+            return getGroupInfo(groupId);
         } catch (NumberFormatException e) {
             throw new IllegalArgumentException("잘못된 그룹 ID 형식: " + groupId, e);
         }
@@ -223,7 +223,20 @@ public class GroupService {
 
     //==빌드==/
     private GroupResponseDto buildGroupResponseDto(Group group) {
-        return getGroupResponseDto(group);
+        return GroupResponseDto.builder()
+                .groupId(group.getId())
+                .leaderId(group.getLeader().getUserId())
+                .leaderName(group.getLeader().getName())
+                .groupName(group.getName())
+                .category(group.getCategory())
+                .min_daily_hours(group.getMin_daily_hours())
+                .min_weekly_days(group.getMin_weekly_days())
+                .group_point(group.getGroup_point())
+                .hashtags(group.getHashtags())
+                .disturb_mode(group.getDisturb_mode())
+                .created_date(group.getCreate_date())
+                .group_image_url(group.getGroup_image_url())
+                .build();
     }
 
     private Group buildGroup(Users leader, GroupCreateRequestDto groupCreateRequestDto) {
@@ -240,17 +253,5 @@ public class GroupService {
                 .group_image_url(groupCreateRequestDto.getGroup_image_url())
                 .build();
     }
-
-    private RelationBetweenUserAndGroup buildLeaderRelation(Users leader, Group group, int dailyGoal, int weeklyGoal) {
-        return RelationBetweenUserAndGroup.builder()
-                .member(leader)
-                .groupRole(GroupRole.LEADER)
-                .joinGroup(group)
-                .personalDailyGoal(dailyGoal)
-                .personalWeeklyGoal(weeklyGoal)
-                .build();
-    }
-
-
 
 }

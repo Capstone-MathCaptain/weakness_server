@@ -57,17 +57,9 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
     }
 
     private void checkAccessTokenAndAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        jwtService.extractAccessToken(request).filter(jwtService::isTokenValid).ifPresent(
-                // AccessToken이 존재하고 유효하다면
-                // AccessToken에서 email을 추출하고, email로 유저 정보를 찾아서 인증처리
-                accessToken -> jwtService.extractEmail(accessToken).ifPresent(
-
-                        email -> userRepository.findByEmail(email).ifPresent(
-
-                                users -> saveAuthentication(users)
-                        )
-                )
-        );
+        // AccessToken이 존재하고 유효하다면
+        // AccessToken에서 email을 추출하고, email로 유저 정보를 찾아서 인증처리
+        jwtService.extractAccessToken(request).filter(jwtService::isTokenValid).flatMap(jwtService::extractEmail).flatMap(userRepository::findByEmail).ifPresent(this::saveAuthentication);
 
         filterChain.doFilter(request,response);
     }

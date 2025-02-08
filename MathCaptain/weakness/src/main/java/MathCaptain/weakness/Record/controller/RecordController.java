@@ -1,6 +1,7 @@
 package MathCaptain.weakness.Record.controller;
 
 import MathCaptain.weakness.Record.dto.request.recordStartRequestDto;
+import MathCaptain.weakness.Record.dto.response.recordStartResponseDto;
 import MathCaptain.weakness.Record.dto.response.recordSummaryResponseDto;
 import MathCaptain.weakness.Record.service.RecordService;
 import MathCaptain.weakness.global.Api.ApiResponse;
@@ -14,10 +15,11 @@ public class RecordController {
 
     private final RecordService recordService;
 
-    @PostMapping("/start")
-    public ApiResponse<Long> startRecord(@RequestBody recordStartRequestDto requestDto) {
-        Long recordId = recordService.startRecord(requestDto.getUserId(), requestDto.getGroupId());
-        return ApiResponse.ok(recordId);
+    @PostMapping("/start/{groupId}")
+    public ApiResponse<recordStartResponseDto> startRecord(@RequestHeader("Authorization") String authorizationHeader, @PathVariable Long groupId) {
+        String accessToken = authorizationHeader.replace("Bearer ", "");
+        recordStartResponseDto startResponse = recordService.startRecord(accessToken, groupId);
+        return ApiResponse.ok(startResponse);
     }
 
     @PostMapping("/end/{recordId}")

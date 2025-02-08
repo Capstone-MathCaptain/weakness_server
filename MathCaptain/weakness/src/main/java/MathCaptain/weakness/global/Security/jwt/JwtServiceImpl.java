@@ -60,9 +60,6 @@ public class JwtServiceImpl implements JwtService{
         Users user = usersRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("해당 유저가 없습니다."));
 
-        // RelationRepository를 통해 유저의 그룹 이름 조회
-        List<Long> groupsId = relationRepository.findGroupsIdByUserId(user.getUserId());
-
         return JWT.create()
                 // 빌더를 통해 JWT의 Subject 설정 : AccessToken
                 .withSubject(ACCESS_TOKEN_SUBJECT)
@@ -70,7 +67,6 @@ public class JwtServiceImpl implements JwtService{
                 .withExpiresAt(new Date(System.currentTimeMillis() + accessTokenValidityInSeconds * 1000))
                 // claim으로 email 설정
                 .withClaim(USERNAME_CLAIM, email)
-                .withClaim("groups", groupsId)
                 // HMA512 알고리즘을 사용하여, secret키로 암호화
                 .sign(Algorithm.HMAC512(secret));
     }
@@ -175,21 +171,6 @@ public class JwtServiceImpl implements JwtService{
             return Optional.empty();
         }
     }
-
-    // AccessToken에서 groupNames를 추출
-    @Override
-    public Optional<List<String>> extractGroupsId(String accessToken) {
-        try {
-            return Optional.ofNullable(
-                    // JWT 라이브러리를 이용해 accessToken 속 groupName을 추출
-                    JWT.require(Algorithm.HMAC512(secret)).build().verify(accessToken).getClaim("groups")
-                            .asList(String.class));
-        } catch (Exception e) {
-            log.error(e.getMessage());
-            return Optional.empty();
-        }
-    }
-
 
     @Override
     public void setAccessTokenHeader(HttpServletResponse response, String accessToken) {

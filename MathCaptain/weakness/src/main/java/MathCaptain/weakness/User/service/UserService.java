@@ -1,5 +1,9 @@
 package MathCaptain.weakness.User.service;
 
+import MathCaptain.weakness.Group.dto.response.GroupResponseDto;
+import MathCaptain.weakness.Group.repository.RelationRepository;
+import MathCaptain.weakness.Group.service.GroupService;
+import MathCaptain.weakness.Group.service.RelationService;
 import MathCaptain.weakness.User.dto.request.FindEmailRequestDto;
 import MathCaptain.weakness.User.dto.response.ChangePwdDto;
 import MathCaptain.weakness.User.dto.response.FindEmailResponseDto;
@@ -18,6 +22,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 
@@ -29,23 +34,10 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final MailService mailService;
+    private final GroupService groupService;
+    private final RelationRepository relationRepository;
 
     ConcurrentHashMap<String, String> emailMap = new ConcurrentHashMap<>();
-
-    public Users getUserById(Long userId) {
-        return userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("해당 유저가 없습니다."));
-    }
-
-    public Users getUserByName(String name) {
-        return userRepository.findByName(name)
-                .orElseThrow(() -> new ResourceNotFoundException("해당 유저가 없습니다."));
-    }
-
-    public Users getUserByEmail(String email) {
-        return userRepository.findByEmail(email)
-                .orElseThrow(() -> new ResourceNotFoundException("해당 유저가 없습니다."));
-    }
 
     // 회원가입
     public ApiResponse<UserResponseDto> saveUser(SaveUserRequestDto user) {
@@ -94,14 +86,20 @@ public class UserService {
             user.updatePhoneNumber(updateUser.getPhoneNumber());
         }
 
-        return ApiResponse.ok(buildUserResponseDto(user));
+        List<Long> joinedGroupsId = relationRepository.findGroupsIdByUserId(user.getUserId());
+        List<GroupResponseDto> groupResponseDtoList = groupService.getUsersGroups(joinedGroupsId);
+
+        return ApiResponse.ok(buildUserResponseDto(user, groupResponseDtoList));
     }
 
     public ApiResponse<UserResponseDto> getUserInfo(Long userId) {
         Users member = userRepository.findByUserId(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("해당 유저가 없습니다."));
 
-        return ApiResponse.ok(buildUserResponseDto(member));
+        List<Long> joinedGroupsId = relationRepository.findGroupsIdByUserId(member.getUserId());
+        List<GroupResponseDto> groupResponseDtoList = groupService.getUsersGroups(joinedGroupsId);
+
+        return ApiResponse.ok(buildUserResponseDto(member, groupResponseDtoList));
     }
 
     public ApiResponse<FindEmailResponseDto> findEmail(FindEmailRequestDto findEmailRequestDto) {
@@ -169,6 +167,17 @@ public class UserService {
                 .name(user.getName())
                 .nickname(user.getNickname())
                 .phoneNumber(user.getPhoneNumber())
+                .build();
+    }
+
+    private UserResponseDto buildUserResponseDto(Users user, List<GroupResponseDto> joinedGroups) {
+        return UserResponseDto.builder()
+                .userId(user.getUserId())
+                .email(user.getEmail())
+                .name(user.getName())
+                .nickname(user.getNickname())
+                .phoneNumber(user.getPhoneNumber())
+                .joinedGroups(joinedGroups)
                 .build();
     }
 }

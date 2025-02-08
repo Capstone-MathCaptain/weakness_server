@@ -26,8 +26,6 @@ public interface JwtService {
 
     Optional<String> extractEmail(String accessToken);
 
-    Optional<List<String>> extractGroupsId(String accessToken);
-
     void setAccessTokenHeader(HttpServletResponse response, String accessToken);
 
     void setRefreshTokenHeader(HttpServletResponse response, String refreshToken);
