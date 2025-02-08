@@ -18,12 +18,15 @@ public class UpdateUserRequestDto {
     @NotNull(message = "이메일은 필수입니다!")
     private String email;
 
+    @NotNull
     @Size(min = 3, max = 15, message = "이름은 최소 3글자 이상, 15글자 이하입니다.")
     private String name;
 
+    @NotNull
     @Size(min = 3, max = 15, message = "별명은 최소 3글자 ~ 15글자 이하입니다.")
     private String nickname;
 
+    @NotNull
     @Size(min = 11, max = 13, message = "전화번호를 잘못입력하셨습니다! 다시 입력해주세요.")
     private String phoneNumber;
 

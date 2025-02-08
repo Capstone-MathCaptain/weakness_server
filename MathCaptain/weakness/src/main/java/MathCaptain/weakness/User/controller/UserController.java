@@ -23,7 +23,7 @@ public class UserController {
 
     // READ
     @GetMapping("/user/{userId}")
-    public ApiResponse<UserResponseDto> userInfo(@PathVariable long userId) {
+    public ApiResponse<UserResponseDto> userInfo(@PathVariable Long userId) {
         return userService.getUserInfo(userId);
     }
 
