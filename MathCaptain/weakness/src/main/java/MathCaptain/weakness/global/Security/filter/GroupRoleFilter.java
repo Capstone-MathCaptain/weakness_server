@@ -3,9 +3,12 @@ package MathCaptain.weakness.global.Security.filter;
 import MathCaptain.weakness.Group.domain.Group;
 import MathCaptain.weakness.Group.domain.RelationBetweenUserAndGroup;
 import MathCaptain.weakness.Group.enums.GroupRole;
+import MathCaptain.weakness.Group.repository.GroupRepository;
+import MathCaptain.weakness.Group.repository.RelationRepository;
 import MathCaptain.weakness.Group.service.GroupService;
 import MathCaptain.weakness.Group.service.RelationService;
 import MathCaptain.weakness.User.domain.Users;
+import MathCaptain.weakness.User.repository.UserRepository;
 import MathCaptain.weakness.User.service.UserService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -21,9 +24,9 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class GroupRoleFilter extends OncePerRequestFilter {
 
-    private final UserService userService;
-    private final GroupService groupService;
-    private final RelationService relationService;
+    private final UserRepository userRepository;
+    private final GroupRepository groupRepository;
+    private final RelationRepository relationRepository;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
@@ -32,20 +35,22 @@ public class GroupRoleFilter extends OncePerRequestFilter {
         String httpMethod = request.getMethod();
 
         // PUT 요청만 처리
+        // 그룹 정보 수정 요청인 경우 (그룹 리더만 가능)
         if (httpMethod.equalsIgnoreCase("PUT") && requestURI.matches("^/group/\\d+$")) {
             // groupId 추출
-            Long groupId = Long.parseLong(requestURI.split("/")[2]);
+            Long groupId = (Long) Long.parseLong(requestURI.split("/")[2]);
 
             // 현재 인증된 사용자 정보 가져오기
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             String userEmail = authentication.getName();
 
             // RelationBetweenUserAndGroup에서 역할 확인
-            Users member = userService.getUserByEmail(userEmail);
+            Users member = userRepository.findByEmail(userEmail).orElseThrow(() -> new IllegalArgumentException("해당 유저가 존재하지 않습니다."));
 
-            Group group = groupService.getGroup(groupId);
+            Group group = groupRepository.findById(groupId).orElseThrow(() -> new IllegalArgumentException("해당 그룹이 존재하지 않습니다."));
 
-            RelationBetweenUserAndGroup relation = relationService.getRelation(member, group);
+            RelationBetweenUserAndGroup relation = relationRepository.findByMemberAndJoinGroup(member, group)
+                    .orElseThrow(() -> new IllegalArgumentException("해당 유저가 해당 그룹에 가입하지 않았습니다."));
 
             if (relation == null || relation.getGroupRole() != GroupRole.LEADER) {
                 response.setStatus(HttpServletResponse.SC_FORBIDDEN);
