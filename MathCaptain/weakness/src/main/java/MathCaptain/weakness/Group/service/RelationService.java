@@ -10,6 +10,7 @@ import MathCaptain.weakness.User.dto.response.UserResponseDto;
 import MathCaptain.weakness.Group.enums.GroupRole;
 import MathCaptain.weakness.Group.repository.RelationRepository;
 import MathCaptain.weakness.User.domain.Users;
+import MathCaptain.weakness.User.repository.UserRepository;
 import MathCaptain.weakness.User.service.UserService;
 import MathCaptain.weakness.global.Api.ApiResponse;
 import MathCaptain.weakness.global.Security.jwt.JwtService;
@@ -25,14 +26,15 @@ public class RelationService {
 
     private final RelationRepository relationRepository;
     private final GroupRepository groupRepository;
-    private final UserService userService;
+    private final UserRepository userRepository;
     private final JwtService jwtService;
 
     // 그룹 참여
-    public ApiResponse<?> joinGroup(Long groupId, String accessToken, GroupJoinRequestDto groupJoinRequestDto, HttpServletResponse response) {
+    public ApiResponse<?> joinGroup(Long groupId, String accessToken, GroupJoinRequestDto groupJoinRequestDto) {
 
         Users joinUser = jwtService.extractEmail(accessToken)
-                .map(userService::getUserByEmail)
+                .map(userRepository::findByEmail)
+                .map(user -> user.orElseThrow(() -> new IllegalArgumentException("해당 유저가 존재하지 않습니다.")))
                 .orElseThrow(() -> new IllegalArgumentException("토큰이 유효하지 않습니다."));
 
         Group group = groupRepository.findById(groupId)
@@ -43,34 +45,40 @@ public class RelationService {
 
         saveRelation(joinUser, group, groupJoinRequestDto);
 
-        String newAccessToken = jwtService.createAccessToken(joinUser.getEmail());
-
-        response.setHeader("Authorization", newAccessToken);
-
         return ApiResponse.ok("그룹 가입이 완료되었습니다.");
     }
 
     // 그룹 탈퇴
-    public ApiResponse<?> leaveGroup(String accessToken, Long groupId, HttpServletResponse response) {
+    public ApiResponse<?> leaveGroup(String accessToken, Long groupId) {
+
         String userEmail = jwtService.extractEmail(accessToken)
                 .orElseThrow(() -> new IllegalArgumentException("토큰이 유효하지 않습니다."));
 
-        Users member = userService.getUserByEmail(userEmail);
+        Users member = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new IllegalArgumentException("해당 유저가 존재하지 않습니다."));
+
         Group group = groupRepository.findById(groupId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 그룹이 존재하지 않습니다."));
 
         RelationBetweenUserAndGroup relation = getRelation(member, group);
+
+        if (relation.getGroupRole().equals(GroupRole.LEADER)) {
+            throw new IllegalArgumentException("리더는 그룹을 탈퇴할 수 없습니다.");
+        }
+
         relationRepository.delete(relation);
-
-        String newAccessToken = jwtService.createAccessToken(member.getEmail());
-
-        response.setHeader("Authorization", newAccessToken);
 
         return ApiResponse.ok("그룹 탈퇴가 완료되었습니다.");
     }
 
+    // TODO
+    // 그룹장 넘겨주기 기능 ?
+
     public void leaderJoin(Long groupId, String leaderEmail, GroupJoinRequestDto groupJoinRequestDto) {
-        Users leader = userService.getUserByEmail(leaderEmail);
+
+        Users leader = userRepository.findByEmail(leaderEmail)
+                .orElseThrow(() -> new IllegalArgumentException("해당 유저가 존재하지 않습니다."));
+
         Group group = groupRepository.findById(groupId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 그룹이 존재하지 않습니다."));
 
@@ -117,7 +125,17 @@ public class RelationService {
         RelationBetweenUserAndGroup relation = relationRepository.findById(relationId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 관계가 없습니다."));
 
-        GroupResponseDto group = getGroupResponseDto(relation.getJoinGroup());
+        GroupResponseDto group = GroupResponseDto.builder()
+                .groupId(relation.getJoinGroup().getId())
+                .groupName(relation.getJoinGroup().getName())
+                .category(relation.getJoinGroup().getCategory())
+                .min_daily_hours(relation.getJoinGroup().getMin_daily_hours())
+                .min_weekly_days(relation.getJoinGroup().getMin_weekly_days())
+                .group_point(relation.getJoinGroup().getGroup_point())
+                .hashtags(relation.getJoinGroup().getHashtags())
+                .disturb_mode(relation.getJoinGroup().getDisturb_mode())
+                .group_image_url(relation.getJoinGroup().getGroup_image_url())
+                .build();
 
         UserResponseDto member = UserResponseDto.builder()
                 .userId(relation.getMember().getUserId())
@@ -138,20 +156,14 @@ public class RelationService {
                 .build();
     }
 
-    static GroupResponseDto getGroupResponseDto(Group group) {
-        return GroupResponseDto.builder()
-                .id(group.getId())
-                .leaderId(group.getLeader().getUserId())
-                .leaderName(group.getLeader().getName())
-                .groupName(group.getName())
-                .category(group.getCategory())
-                .min_daily_hours(group.getMin_daily_hours())
-                .min_weekly_days(group.getMin_weekly_days())
-                .group_point(group.getGroup_point())
-                .hashtags(group.getHashtags())
-                .disturb_mode(group.getDisturb_mode())
-                .created_date(group.getCreate_date())
-                .group_image_url(group.getGroup_image_url())
+    //==빌드==//
+    private RelationBetweenUserAndGroup buildLeaderRelation(Users leader, Group group, int dailyGoal, int weeklyGoal) {
+        return RelationBetweenUserAndGroup.builder()
+                .member(leader)
+                .groupRole(GroupRole.LEADER)
+                .joinGroup(group)
+                .personalDailyGoal(dailyGoal)
+                .personalWeeklyGoal(weeklyGoal)
                 .build();
     }
 

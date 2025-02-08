@@ -11,7 +11,7 @@ import java.util.List;
 @Builder
 public class GroupResponseDto {
 
-    private Long id;
+    private Long groupId;
 
     private Long leaderId;
 
