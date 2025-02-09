@@ -41,20 +41,40 @@ public class GroupRoleFilter extends OncePerRequestFilter {
             Long groupId = (Long) Long.parseLong(requestURI.split("/")[2]);
 
             // 현재 인증된 사용자 정보 가져오기
-            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            String userEmail = authentication.getName();
+            String userEmail = getAuthenticatedUserEmail();
 
-            // RelationBetweenUserAndGroup에서 역할 확인
-            Users member = userRepository.findByEmail(userEmail).orElseThrow(() -> new IllegalArgumentException("해당 유저가 존재하지 않습니다."));
 
-            Group group = groupRepository.findById(groupId).orElseThrow(() -> new IllegalArgumentException("해당 그룹이 존재하지 않습니다."));
+            if (isGroupLeader(userEmail, groupId)) {
+                String message = "Access Denied: 그룹 리더만 관리할 수 있습니다!";
+                denyAccess(response, message);
+                return; // 필터 체인 중단
+            }
+        }
 
-            RelationBetweenUserAndGroup relation = relationRepository.findByMemberAndJoinGroup(member, group)
-                    .orElseThrow(() -> new IllegalArgumentException("해당 유저가 해당 그룹에 가입하지 않았습니다."));
+        // 그룹 가입 요청 리스트 조회는 리더만 가능
+        if (httpMethod.equalsIgnoreCase("GET") && requestURI.matches("^/group/join/\\d+$")) {
+            // groupId 추출
+            Long groupId = (Long) Long.parseLong(requestURI.split("/")[3]);
+            // 현재 인증된 사용자 정보 가져오기
+            String userEmail = getAuthenticatedUserEmail();
 
-            if (relation == null || relation.getGroupRole() != GroupRole.LEADER) {
-                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-                response.getWriter().write("Access Denied: 그룹 리더만 수정할 수 있습니다!");
+            if (isGroupLeader(userEmail, groupId)) {
+                String message = "Access Denied: 그룹 리더만 관리할 수 있습니다!";
+                denyAccess(response, message);
+                return; // 필터 체인 중단
+            }
+        }
+
+        // 그룹 가입 요청 승인/거절은 리더만 가능
+        if (httpMethod.equalsIgnoreCase("POST") && requestURI.matches("^/group/join/[a-zA-Z]+/\\d+$")) {
+            // groupId 추출
+            Long groupId = (Long) Long.parseLong(requestURI.split("/")[4]);
+            // 현재 인증된 사용자 정보 가져오기
+            String userEmail = getAuthenticatedUserEmail();
+
+            if (isGroupLeader(userEmail, groupId)) {
+                String message = "Access Denied: 그룹 리더만 관리할 수 있습니다!";
+                denyAccess(response, message);
                 return; // 필터 체인 중단
             }
         }
@@ -63,5 +83,24 @@ public class GroupRoleFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
+    private String getAuthenticatedUserEmail() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        return authentication.getName();
+    }
 
+    private boolean isGroupLeader(String userEmail, Long groupId) {
+        Users member = userRepository.findByEmail(userEmail).orElseThrow(() -> new IllegalArgumentException("해당 유저가 존재하지 않습니다."));
+
+        Group group = groupRepository.findById(groupId).orElseThrow(() -> new IllegalArgumentException("해당 그룹이 존재하지 않습니다."));
+
+        RelationBetweenUserAndGroup relation = relationRepository.findByMemberAndJoinGroup(member, group)
+                .orElseThrow(() -> new IllegalArgumentException("해당 유저가 해당 그룹에 가입하지 않았습니다."));
+
+        return relation.getGroupRole() == GroupRole.LEADER;
+    }
+
+    private void denyAccess(HttpServletResponse response, String message) throws IOException {
+        response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+        response.getWriter().write(message);
+    }
 }
