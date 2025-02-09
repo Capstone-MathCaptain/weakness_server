@@ -4,6 +4,7 @@ import MathCaptain.weakness.Group.dto.request.GroupJoinRequestDto;
 import MathCaptain.weakness.Group.dto.request.GroupUpdateRequestDto;
 import MathCaptain.weakness.Group.dto.response.GroupResponseDto;
 import MathCaptain.weakness.Group.dto.response.RelationResponseDto;
+import MathCaptain.weakness.Group.service.GroupJoinService;
 import MathCaptain.weakness.User.dto.response.UserResponseDto;
 import MathCaptain.weakness.Group.service.GroupService;
 import MathCaptain.weakness.Group.dto.request.GroupCreateRequestDto;
@@ -25,6 +26,7 @@ public class GroupController {
     private final GroupService groupService;
     private final RelationService relationService;
     private final JwtService jwtService;
+    private final GroupJoinService groupJoinService;
 
     // READ
     @GetMapping("/group/{groupId}")
@@ -53,19 +55,31 @@ public class GroupController {
                                     @RequestHeader("Authorization") String authorizationHeader,
                                     @RequestBody GroupJoinRequestDto groupJoinRequestDto) {
         String accessToken = authorizationHeader.replace("Bearer ", "");
-        return relationService.joinGroupRequest(groupId, accessToken, groupJoinRequestDto);
+        return groupJoinService.joinGroupRequest(groupId, accessToken, groupJoinRequestDto);
     }
 
     // 가입 요청 수락
     @PostMapping("/group/join/accept/{groupId}/{joinRequestId}")
     public ApiResponse<?> acceptJoinRequest(@PathVariable Long groupId, @PathVariable Long joinRequestId) {
-        return relationService.acceptJoinRequest(groupId, joinRequestId);
+        return groupJoinService.acceptJoinRequest(groupId, joinRequestId);
     }
 
     // 가입 요청 거절
     @PostMapping("/group/join/reject/{joinRequestId}")
     public ApiResponse<?> rejectJoinRequest(@PathVariable Long joinRequestId) {
-        return relationService.rejectJoinRequest(joinRequestId);
+        return groupJoinService.rejectJoinRequest(joinRequestId);
+    }
+
+    // 가입 요청 취소
+    @DeleteMapping("/group/join/cancel/{joinRequestId}")
+    public ApiResponse<?> cancelJoinRequest(@PathVariable Long joinRequestId) {
+        return groupJoinService.cancelJoinRequest(joinRequestId);
+    }
+
+    // 가입 요청 조회
+    @GetMapping("/group/join/{groupId}")
+    public ApiResponse<?> getJoinRequest(@PathVariable Long groupId) {
+        return groupJoinService.getJoinRequestList(groupId);
     }
 
     // LEAVE
