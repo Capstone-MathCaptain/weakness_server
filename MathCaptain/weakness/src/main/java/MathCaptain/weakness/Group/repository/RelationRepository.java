@@ -2,6 +2,7 @@ package MathCaptain.weakness.Group.repository;
 
 import MathCaptain.weakness.Group.domain.Group;
 import MathCaptain.weakness.Group.domain.RelationBetweenUserAndGroup;
+import MathCaptain.weakness.Group.enums.GroupRole;
 import MathCaptain.weakness.User.domain.Users;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -32,6 +33,8 @@ public interface RelationRepository extends JpaRepository<RelationBetweenUserAnd
     Optional<List<RelationBetweenUserAndGroup>> findAllByMember_Email(String email);
 
     Optional<RelationBetweenUserAndGroup> findByMember_EmailAndJoinGroup_Id(String memberEmail, Long joinGroupId);
+
+    Optional<RelationBetweenUserAndGroup> findByMember_EmailAndGroupRole(String memberEmail, GroupRole groupRole);
 
 }
 

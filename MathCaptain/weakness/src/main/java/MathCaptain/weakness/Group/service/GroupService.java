@@ -183,6 +183,12 @@ public class GroupService {
                 .orElseThrow(() -> new ResourceNotFoundException("해당 그룹이 존재하지 않습니다."));
     }
 
+    public Group findGroupRoleLeader(String email) {
+        RelationBetweenUserAndGroup relation = relationRepository.findByMember_EmailAndGroupRole(email, GroupRole.LEADER)
+                .orElseThrow(() -> new ResourceNotFoundException("유저가 그룹장으로 속한 그룹이 존재하지 않습니다!"));
+
+        return relation.getJoinGroup();
+    }
 
     //==로직들==/
     private void updateGroupInfo(Group group, GroupUpdateRequestDto groupUpdateRequestDto) {

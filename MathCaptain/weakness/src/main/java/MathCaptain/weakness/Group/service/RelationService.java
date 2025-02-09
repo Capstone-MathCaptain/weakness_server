@@ -1,10 +1,13 @@
 package MathCaptain.weakness.Group.service;
 
 import MathCaptain.weakness.Group.domain.Group;
+import MathCaptain.weakness.Group.domain.GroupJoin;
 import MathCaptain.weakness.Group.domain.RelationBetweenUserAndGroup;
 import MathCaptain.weakness.Group.dto.request.GroupJoinRequestDto;
 import MathCaptain.weakness.Group.dto.response.GroupResponseDto;
 import MathCaptain.weakness.Group.dto.response.RelationResponseDto;
+import MathCaptain.weakness.Group.enums.RequestStatus;
+import MathCaptain.weakness.Group.repository.GroupJoinRepository;
 import MathCaptain.weakness.Group.repository.GroupRepository;
 import MathCaptain.weakness.User.dto.response.UserResponseDto;
 import MathCaptain.weakness.Group.enums.GroupRole;
@@ -27,10 +30,11 @@ public class RelationService {
     private final RelationRepository relationRepository;
     private final GroupRepository groupRepository;
     private final UserRepository userRepository;
+    private final GroupJoinRepository groupJoinRepository;
     private final JwtService jwtService;
 
     // 그룹 참여
-    public ApiResponse<?> joinGroup(Long groupId, String accessToken, GroupJoinRequestDto groupJoinRequestDto) {
+    public ApiResponse<?> joinGroupRequest(Long groupId, String accessToken, GroupJoinRequestDto groupJoinRequestDto) {
 
         Users joinUser = jwtService.extractEmail(accessToken)
                 .map(userRepository::findByEmail)
@@ -43,9 +47,52 @@ public class RelationService {
         // 이미 가입한 경우 & 목표 조건 달성 여부
         checkJoin(joinUser, group, groupJoinRequestDto.getPersonalDailyGoal(), groupJoinRequestDto.getPersonalWeeklyGoal());
 
-        saveRelation(joinUser, group, groupJoinRequestDto);
+        // 그룹 가입 요청 저장
+        saveJoinRequest(joinUser, group, groupJoinRequestDto);
 
-        return ApiResponse.ok("그룹 가입이 완료되었습니다.");
+        // TODO
+        // 해당 그룹장에게 알림 보내기
+
+        return ApiResponse.ok("그룹 가입 신청이 완료되었습니다.");
+    }
+
+    // 그룹 가입 요청 수락
+    public ApiResponse<?> acceptJoinRequest(Long groupId, Long joinRequestId) {
+
+        Group group = groupRepository.findById(groupId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 그룹이 존재하지 않습니다."));
+
+        GroupJoin joinRequest = groupJoinRepository.findById(joinRequestId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 가입 요청이 존재하지 않습니다."));
+
+        Users joinUser = joinRequest.getUser();
+
+        // 가입 요청 수락
+        saveRelation(joinUser, group, GroupJoinRequestDto.builder()
+                .personalDailyGoal(joinRequest.getPersonalDailyGoal())
+                .personalWeeklyGoal(joinRequest.getPersonalWeeklyGoal())
+                .build());
+
+        joinRequest.updateRequestStatus(RequestStatus.ACCEPTED);
+
+        // TODO
+        // 회원에게 그룹 가입 알림 보내기
+
+        return ApiResponse.ok("가입 요청이 수락되었습니다.");
+    }
+
+    // 그룹 가입 요청 거절
+    public ApiResponse<?> rejectJoinRequest(Long joinRequestId) {
+
+        GroupJoin joinRequest = groupJoinRepository.findById(joinRequestId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 가입 요청이 존재하지 않습니다."));
+
+        joinRequest.updateRequestStatus(RequestStatus.REJECTED);
+
+        // TODO
+        // 회원에게 가입 거절 알림 보내기
+
+        return ApiResponse.ok("가입 요청이 거절되었습니다.");
     }
 
     // 그룹 탈퇴
@@ -92,6 +139,16 @@ public class RelationService {
                 .joinGroup(group)
                 .personalDailyGoal(groupJoinRequestDto.getPersonalDailyGoal())
                 .personalWeeklyGoal(groupJoinRequestDto.getPersonalWeeklyGoal())
+                .build());
+    }
+
+    public void saveJoinRequest(Users member, Group group, GroupJoinRequestDto groupJoinRequestDto) {
+        groupJoinRepository.save(GroupJoin.builder()
+                .user(member)
+                .group(group)
+                .personalDailyGoal(groupJoinRequestDto.getPersonalDailyGoal())
+                .personalWeeklyGoal(groupJoinRequestDto.getPersonalWeeklyGoal())
+                .requestStatus(RequestStatus.WAITING)
                 .build());
     }
 

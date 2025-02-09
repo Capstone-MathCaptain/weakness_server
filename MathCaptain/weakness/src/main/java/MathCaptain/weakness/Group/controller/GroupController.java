@@ -46,13 +46,26 @@ public class GroupController {
         return groupService.updateGroupInfo(groupId, groupUpdateRequestDto);
     }
 
-    // JOIN
+    // 회의 후 수정 필요
+    // 가입 요청 보내기
     @PostMapping("/group/join/{groupId}")
     public ApiResponse<?> joinGroup(@Valid @PathVariable Long groupId,
                                     @RequestHeader("Authorization") String authorizationHeader,
                                     @RequestBody GroupJoinRequestDto groupJoinRequestDto) {
         String accessToken = authorizationHeader.replace("Bearer ", "");
-        return relationService.joinGroup(groupId, accessToken, groupJoinRequestDto);
+        return relationService.joinGroupRequest(groupId, accessToken, groupJoinRequestDto);
+    }
+
+    // 가입 요청 수락
+    @PostMapping("/group/join/accept/{groupId}/{joinRequestId}")
+    public ApiResponse<?> acceptJoinRequest(@PathVariable Long groupId, @PathVariable Long joinRequestId) {
+        return relationService.acceptJoinRequest(groupId, joinRequestId);
+    }
+
+    // 가입 요청 거절
+    @PostMapping("/group/join/reject/{joinRequestId}")
+    public ApiResponse<?> rejectJoinRequest(@PathVariable Long joinRequestId) {
+        return relationService.rejectJoinRequest(joinRequestId);
     }
 
     // LEAVE
