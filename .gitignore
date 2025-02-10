@@ -39,6 +39,10 @@ out/
 ### DS STORE ###
 .DS_Store
 
+### DATABASE ###
+.weakness.mv.db
+.weakness.trace.db
+
 ### Secret key ###
 src/main/resources/secret.properties
 src/main/resources/application-jwt.yml
