@@ -65,7 +65,7 @@ public class GroupController {
     }
 
     // 가입 요청 거절
-    @PostMapping("/group/join/reject/{joinRequestId}")
+    @PostMapping("/group/join/reject/{groupId}/{joinRequestId}")
     public ApiResponse<?> rejectJoinRequest(@PathVariable Long joinRequestId) {
         return groupJoinService.rejectJoinRequest(joinRequestId);
     }
