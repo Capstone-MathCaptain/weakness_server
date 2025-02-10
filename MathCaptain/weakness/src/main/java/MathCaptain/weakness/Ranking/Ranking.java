@@ -13,6 +13,7 @@ public class Ranking {
     private Long rankingId;
 
     private Integer categoryId1;
+
     private Integer categoryId2;
 
     @Column(nullable = false)

@@ -99,6 +99,12 @@ public class GroupJoinService {
         GroupJoin joinRequest = groupJoinRepository.findById(joinRequestId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 가입 요청이 존재하지 않습니다."));
 
+        if (joinRequest.getRequestStatus() == RequestStatus.ACCEPTED) {
+            throw new IllegalArgumentException("이미 그룹에 가입되어 취소할 수 없습니다.");
+        } else if (joinRequest.getRequestStatus() == RequestStatus.REJECTED) {
+            throw new IllegalArgumentException("이미 거절된 요청입니다.");
+        }
+
         joinRequest.updateRequestStatus(RequestStatus.CANCELED);
 
         return ApiResponse.ok("가입 요청이 취소되었습니다.");
