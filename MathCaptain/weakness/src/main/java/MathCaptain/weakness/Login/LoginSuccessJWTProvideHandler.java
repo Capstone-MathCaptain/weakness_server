@@ -44,6 +44,9 @@ public class LoginSuccessJWTProvideHandler extends SimpleUrlAuthenticationSucces
                 user -> user.updateRefreshToken(refreshToken)
         );
 
+        // TODO
+        // 사용자의 그룹 정보 조회를 리다이렉트를 이용하여 옮기는 것이 좋아보임
+
         List<Long> groupsId = relationRepository.findGroupsIdByEmail(email);
 
         List<GroupResponseDto> groupResponseDtoList = groupService.getUsersGroups(groupsId);
