@@ -1,31 +1,23 @@
 package MathCaptain.weakness.global.Security.filter;
 
-import MathCaptain.weakness.Group.domain.Group;
 import MathCaptain.weakness.Group.domain.RelationBetweenUserAndGroup;
 import MathCaptain.weakness.Group.enums.GroupRole;
-import MathCaptain.weakness.Group.repository.GroupRepository;
 import MathCaptain.weakness.Group.repository.RelationRepository;
-import MathCaptain.weakness.Group.service.GroupService;
-import MathCaptain.weakness.Group.service.RelationService;
-import MathCaptain.weakness.User.domain.Users;
-import MathCaptain.weakness.User.repository.UserRepository;
-import MathCaptain.weakness.User.service.UserService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-
+@Slf4j
 @RequiredArgsConstructor
 public class GroupRoleFilter extends OncePerRequestFilter {
 
-    private final UserRepository userRepository;
-    private final GroupRepository groupRepository;
     private final RelationRepository relationRepository;
 
     @Override
@@ -44,7 +36,21 @@ public class GroupRoleFilter extends OncePerRequestFilter {
             String userEmail = getAuthenticatedUserEmail();
 
 
-            if (isGroupLeader(userEmail, groupId)) {
+            if (isNotGroupLeader(userEmail, groupId)) {
+                String message = "Access Denied: 그룹 리더만 관리할 수 있습니다!";
+                denyAccess(response, message);
+                return; // 필터 체인 중단
+            }
+        }
+
+        // 그룹 삭제는 리더만 가능
+        if (httpMethod.equalsIgnoreCase("DELETE") && requestURI.matches("^/group/\\d+$")) {
+            // groupId 추출
+            Long groupId = (Long) Long.parseLong(requestURI.split("/")[2]);
+            // 현재 인증된 사용자 정보 가져오기
+            String userEmail = getAuthenticatedUserEmail();
+
+            if (isNotGroupLeader(userEmail, groupId)) {
                 String message = "Access Denied: 그룹 리더만 관리할 수 있습니다!";
                 denyAccess(response, message);
                 return; // 필터 체인 중단
@@ -58,7 +64,7 @@ public class GroupRoleFilter extends OncePerRequestFilter {
             // 현재 인증된 사용자 정보 가져오기
             String userEmail = getAuthenticatedUserEmail();
 
-            if (isGroupLeader(userEmail, groupId)) {
+            if (isNotGroupLeader(userEmail, groupId)) {
                 String message = "Access Denied: 그룹 리더만 관리할 수 있습니다!";
                 denyAccess(response, message);
                 return; // 필터 체인 중단
@@ -72,7 +78,7 @@ public class GroupRoleFilter extends OncePerRequestFilter {
             // 현재 인증된 사용자 정보 가져오기
             String userEmail = getAuthenticatedUserEmail();
 
-            if (isGroupLeader(userEmail, groupId)) {
+            if (isNotGroupLeader(userEmail, groupId)) {
                 String message = "Access Denied: 그룹 리더만 관리할 수 있습니다!";
                 denyAccess(response, message);
                 return; // 필터 체인 중단
@@ -88,15 +94,13 @@ public class GroupRoleFilter extends OncePerRequestFilter {
         return authentication.getName();
     }
 
-    private boolean isGroupLeader(String userEmail, Long groupId) {
-        Users member = userRepository.findByEmail(userEmail).orElseThrow(() -> new IllegalArgumentException("해당 유저가 존재하지 않습니다."));
-
-        Group group = groupRepository.findById(groupId).orElseThrow(() -> new IllegalArgumentException("해당 그룹이 존재하지 않습니다."));
-
-        RelationBetweenUserAndGroup relation = relationRepository.findByMemberAndJoinGroup(member, group)
+    private boolean isNotGroupLeader(String userEmail, Long groupId) {
+        RelationBetweenUserAndGroup relation = relationRepository.findByMember_EmailAndJoinGroup_Id(userEmail, groupId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 유저가 해당 그룹에 가입하지 않았습니다."));
 
-        return relation.getGroupRole() == GroupRole.LEADER;
+        log.info("사용자의 그룹 역할: {}", relation.getGroupRole());
+        log.info("{}", relation.getGroupRole() == GroupRole.LEADER);
+        return relation.getGroupRole() != GroupRole.LEADER;
     }
 
     private void denyAccess(HttpServletResponse response, String message) throws IOException {
