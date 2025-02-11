@@ -46,6 +46,9 @@ public class TestInit {
         String email2 = "test2@example.com";
         String refreshToken2 = JwtTestUtil.createTestJwt(email2);
 
+        String email3 = "test";
+        String refreshToken3 = JwtTestUtil.createTestJwt(email3);
+
         // 테스트 유저 생성
         Users users1 = Users.builder()
                 .userId(1L)
@@ -67,9 +70,20 @@ public class TestInit {
                 .refreshToken(refreshToken2)
                 .build();
 
+        Users users3 = Users.builder()
+                .userId(3L)
+                .email(email3)
+                .password(passwordEncoder.encode("test"))
+                .name("tester")
+                .nickname("tester")
+                .phoneNumber("01011111111")
+                .refreshToken(refreshToken3)
+                .build();
+
 
         userRepository.save(users1);
         userRepository.save(users2);
+        userRepository.save(users3);
         log.info("테스트 유저 생성 완료");
 
         Users leader = userRepository.findByUserId(1L)
