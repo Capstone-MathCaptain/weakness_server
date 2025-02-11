@@ -6,8 +6,10 @@ import MathCaptain.weakness.Recruitment.domain.Comment;
 import MathCaptain.weakness.Recruitment.domain.Recruitment;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.validator.constraints.Range;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Entity
@@ -32,6 +34,9 @@ public class Users {
     private String nickname;
 
     private String phoneNumber;
+
+    @Range(min = 0)
+    private Long userPoint;
 
     @OneToMany(mappedBy = "member")
     private List<RelationBetweenUserAndGroup> relationBetweenUserAndGroup;
@@ -64,6 +69,11 @@ public class Users {
 
     public boolean matchPassword(PasswordEncoder passwordEncoder, String checkPassword) {
         return passwordEncoder.matches(checkPassword, getPassword());
+    }
+
+    @PrePersist
+    protected void onCreate() {
+        this.userPoint = 0L;
     }
 
     //== 수정 로직 ==//
