@@ -36,5 +36,7 @@ public interface RelationRepository extends JpaRepository<RelationBetweenUserAnd
 
     Optional<RelationBetweenUserAndGroup> findByMember_EmailAndGroupRole(String memberEmail, GroupRole groupRole);
 
+    Optional<List<RelationBetweenUserAndGroup>> findAllByJoinGroup_id(Long joinGroupId);
+
 }
 

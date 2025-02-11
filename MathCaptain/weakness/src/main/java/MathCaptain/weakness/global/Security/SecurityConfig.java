@@ -41,12 +41,9 @@ public class SecurityConfig {
 
     private final ObjectMapper objectMapper;
     private final JwtService jwtService;
-    private final UserService userService;
-    private final RelationService relationService;
     private final UserDetailsServiceImpl userDetailsService;
     private final GroupService groupService;
     private final UserRepository userRepository;
-    private final GroupRepository groupRepository;
     private final RelationRepository relationRepository;
 
 
@@ -156,7 +153,7 @@ public class SecurityConfig {
 
     @Bean
     public GroupRoleFilter groupRoleFilter(){
-        return new GroupRoleFilter(userRepository, groupRepository, relationRepository);
+        return new GroupRoleFilter(relationRepository);
     }
 
 

@@ -32,7 +32,7 @@ public class Group {
     @JoinColumn(name = "leader")
     private Users leader;
 
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "joinGroup")
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "joinGroup", cascade = CascadeType.REMOVE)
     @Column(name = "members")
     private List<RelationBetweenUserAndGroup> relationBetweenUserAndGroup;
 

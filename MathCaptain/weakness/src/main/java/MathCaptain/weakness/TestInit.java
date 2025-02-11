@@ -6,12 +6,6 @@ import MathCaptain.weakness.Group.enums.CategoryStatus;
 import MathCaptain.weakness.Group.enums.GroupRole;
 import MathCaptain.weakness.Group.repository.GroupRepository;
 import MathCaptain.weakness.Group.repository.RelationRepository;
-import MathCaptain.weakness.Group.service.GroupService;
-import MathCaptain.weakness.Recruitment.domain.Comment;
-import MathCaptain.weakness.Recruitment.domain.Recruitment;
-import MathCaptain.weakness.Recruitment.enums.RecruitmentStatus;
-import MathCaptain.weakness.Recruitment.repository.CommentRepository;
-import MathCaptain.weakness.Recruitment.repository.RecruitmentRepository;
 import MathCaptain.weakness.global.Security.jwt.JwtTestUtil;
 import MathCaptain.weakness.User.domain.Users;
 import MathCaptain.weakness.User.repository.UserRepository;
@@ -30,9 +24,6 @@ public class TestInit {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final GroupRepository groupRepository;
-    private final RecruitmentRepository recruitmentRepository;
-    private final CommentRepository commentRepository;
-    private final GroupService groupService;
     private final RelationRepository relationRepository;
 
 

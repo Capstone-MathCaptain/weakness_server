@@ -58,11 +58,17 @@ public class GroupJoinService {
     // 그룹 가입 요청 수락
     public ApiResponse<?> acceptJoinRequest(Long groupId, Long joinRequestId) {
 
-        Group group = groupRepository.findById(groupId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 그룹이 존재하지 않습니다."));
-
         GroupJoin joinRequest = groupJoinRepository.findById(joinRequestId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 가입 요청이 존재하지 않습니다."));
+
+        if (joinRequest.getRequestStatus() == RequestStatus.REJECTED) {
+            throw new IllegalArgumentException("이미 거절된 요청입니다.");
+        } else if (joinRequest.getRequestStatus() == RequestStatus.CANCELED) {
+            throw new IllegalArgumentException("이미 취소된 요청입니다.");
+        }
+
+        Group group = groupRepository.findById(groupId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 그룹이 존재하지 않습니다."));
 
         Users joinUser = joinRequest.getUser();
 
@@ -85,6 +91,12 @@ public class GroupJoinService {
 
         GroupJoin joinRequest = groupJoinRepository.findById(joinRequestId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 가입 요청이 존재하지 않습니다."));
+
+        if (joinRequest.getRequestStatus() == RequestStatus.ACCEPTED) {
+            throw new IllegalArgumentException("이미 가입된 요청입니다.");
+        } else if (joinRequest.getRequestStatus() == RequestStatus.CANCELED) {
+            throw new IllegalArgumentException("이미 취소된 요청입니다.");
+        }
 
         joinRequest.updateRequestStatus(RequestStatus.REJECTED);
 
