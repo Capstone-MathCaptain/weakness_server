@@ -4,6 +4,7 @@ import MathCaptain.weakness.Group.domain.Group;
 import MathCaptain.weakness.Group.domain.GroupJoin;
 import MathCaptain.weakness.Group.domain.RelationBetweenUserAndGroup;
 import MathCaptain.weakness.Group.dto.request.GroupJoinRequestDto;
+import MathCaptain.weakness.Group.dto.response.GroupMemberListResponseDto;
 import MathCaptain.weakness.Group.dto.response.GroupResponseDto;
 import MathCaptain.weakness.Group.dto.response.RelationResponseDto;
 import MathCaptain.weakness.Group.enums.RequestStatus;
@@ -17,10 +18,14 @@ import MathCaptain.weakness.User.repository.UserRepository;
 import MathCaptain.weakness.User.service.UserService;
 import MathCaptain.weakness.global.Api.ApiResponse;
 import MathCaptain.weakness.global.Security.jwt.JwtService;
+import MathCaptain.weakness.global.exception.ResourceNotFoundException;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -82,10 +87,26 @@ public class RelationService {
                 .build());
     }
 
+    // 그룹 멤버 리스트 (그룹 상세 페이지)
+    public List<GroupMemberListResponseDto> getGroupMemberList(Long groupId) {
 
+        List<RelationBetweenUserAndGroup> relations = relationRepository.findAllByJoinGroup_id(groupId)
+                .orElseThrow(() -> new ResourceNotFoundException("해당 그룹에 멤버가 없습니다."));
 
-    //==검증 로직==/
+        return relations.stream()
+                .map(relation -> GroupMemberListResponseDto.builder()
+                        .userId(relation.getMember().getUserId())
+                        .userName(relation.getMember().getName())
+//                        .userImage(relation.getMember().getImage())
+                        .userRole(relation.getGroupRole())
+                        .userPoint(relation.getMember().getUserPoint())
+                        .userWeeklyGoal(relation.getPersonalWeeklyGoal())
+                        .isAchieveWeeklyGoal(relation.getIsWeeklyGoalAchieved())
+                        .build())
+                .collect(Collectors.toList());
+    }
 
+    ///  검증 로직
 
     public RelationBetweenUserAndGroup getRelation(Users member, Group group) {
         return relationRepository.findByMemberAndJoinGroup(member, group)
@@ -128,7 +149,8 @@ public class RelationService {
                 .build();
     }
 
-    //==빌드==//
+    /// 빌드
+
     private RelationBetweenUserAndGroup buildLeaderRelation(Users leader, Group group, int dailyGoal, int weeklyGoal) {
         return RelationBetweenUserAndGroup.builder()
                 .member(leader)

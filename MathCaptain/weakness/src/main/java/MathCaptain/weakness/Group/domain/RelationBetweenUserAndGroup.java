@@ -3,6 +3,7 @@ package MathCaptain.weakness.Group.domain;
 import MathCaptain.weakness.Group.enums.GroupRole;
 import MathCaptain.weakness.User.domain.Users;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -55,6 +56,10 @@ public class RelationBetweenUserAndGroup {
     @Range(min = 0, max = 7)
     private int personalWeeklyGoalAchieve;
 
+    private Boolean isWeeklyGoalAchieved;
+
+    private Boolean isDailyGoalAchieved;
+
     // 기본값 설정
     @PrePersist
     protected void onPrePersist() {
@@ -63,6 +68,14 @@ public class RelationBetweenUserAndGroup {
         }
         if (this.joinDate == null) {
             this.joinDate = LocalDate.now(); // joinDate의 기본값 설정 (필요 시)
+        }
+
+        if (this.isWeeklyGoalAchieved == null) {
+            this.isWeeklyGoalAchieved = false;
+        }
+
+        if (this.isDailyGoalAchieved == null) {
+            this.isDailyGoalAchieved = false;
         }
     }
 
