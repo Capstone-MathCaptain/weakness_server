@@ -1,11 +1,8 @@
 package MathCaptain.weakness.User.controller;
 
-import MathCaptain.weakness.User.dto.request.FindEmailRequestDto;
-import MathCaptain.weakness.User.dto.request.FindPwdRequestDto;
+import MathCaptain.weakness.User.dto.request.*;
 import MathCaptain.weakness.User.dto.response.ChangePwdDto;
 import MathCaptain.weakness.User.dto.response.UserResponseDto;
-import MathCaptain.weakness.User.dto.request.UpdateUserRequestDto;
-import MathCaptain.weakness.User.dto.request.SaveUserRequestDto;
 import MathCaptain.weakness.User.service.UserService;
 import MathCaptain.weakness.global.Api.ApiResponse;
 import jakarta.validation.Valid;
@@ -41,8 +38,8 @@ public class UserController {
 
     // DELETE
     @DeleteMapping("/user/{userId}")
-    public ApiResponse<?> deleteUser(@PathVariable long userId, @RequestBody String password) {
-        return userService.deleteUser(userId, password);
+    public ApiResponse<?> deleteUser(@PathVariable Long userId, @RequestBody UserDeleteRequestDto userDeleteRequestDto) {
+        return userService.deleteUser(userId, userDeleteRequestDto);
     }
 
     @PostMapping("/user/find/email")
