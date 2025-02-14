@@ -4,6 +4,8 @@ import MathCaptain.weakness.Group.repository.GroupRepository;
 import MathCaptain.weakness.Group.repository.RelationRepository;
 import MathCaptain.weakness.Group.service.GroupService;
 import MathCaptain.weakness.Group.service.RelationService;
+import MathCaptain.weakness.Recruitment.repository.CommentRepository;
+import MathCaptain.weakness.Recruitment.repository.RecruitmentRepository;
 import MathCaptain.weakness.global.Security.filter.GroupRoleFilter;
 import MathCaptain.weakness.global.Security.filter.JsonUsernamePasswordAuthenticationFilter;
 import MathCaptain.weakness.global.Security.filter.JwtAuthenticationProcessingFilter;
@@ -45,6 +47,8 @@ public class SecurityConfig {
     private final GroupService groupService;
     private final UserRepository userRepository;
     private final RelationRepository relationRepository;
+    private final RecruitmentRepository recruitmentRepository;
+    private final CommentRepository commentRepository;
 
 
     // 스프링 시큐리티 기능 비활성화 (H2 DB 접근을 위해)
@@ -58,9 +62,9 @@ public class SecurityConfig {
 				.requestMatchers("/h2-console/**")
                 .requestMatchers("/static/**")
                 .requestMatchers("/templates/**")
-                .requestMatchers("/group/**", "/user/**", "/recruitment/**", "/record/**")
-                .requestMatchers(HttpMethod.DELETE, "/group/**", "/recruitment/**", "/user/**")// 접근 허용된 URL
-                .requestMatchers(HttpMethod.PUT, "/group/**", "/recruitment/**", "/user/**")// 접근 허용된 URL
+//                .requestMatchers("/group/**", "/user/**", "/recruitment/**", "/record/**")
+//                .requestMatchers(HttpMethod.DELETE, "/group/**", "/recruitment/**", "/user/**")// 접근 허용된 URL
+//                .requestMatchers(HttpMethod.PUT, "/group/**", "/recruitment/**", "/user/**")// 접근 허용된 URL
                 .requestMatchers("/error")
 		);
 	}
@@ -74,13 +78,8 @@ public class SecurityConfig {
                 .addFilterAfter(jsonUsernamePasswordLoginFilter(), LogoutFilter.class) // 추가 : 커스터마이징 된 필터를 SpringSecurityFilterChain에 등록
                 .authorizeHttpRequests((authorize) -> authorize
                         .requestMatchers("/static/**", "/templates/**").permitAll() // 정적 리소스 접근 허용
-                        .requestMatchers("/user/signup", "/", "/login", "/user/reset/password").permitAll() // 접근 허용된 URL
-//                        .requestMatchers("/group/**", "/user/**").authenticated() // 그룹 관련 URL은 인증된 사용자만 접근 가능
-                        .anyRequest().authenticated())
-                // 폼 로그인은 현재 사용하지 않음
-//				.formLogin(formLogin -> formLogin
-//						.loginPage("/login")
-//						.defaultSuccessUrl("/home"))
+                        .requestMatchers("/user/signup", "/login", "/user/reset/password", "/user/find/password").permitAll() // 접근 허용된 URL
+                        .anyRequest().authenticated()) // 나머지 URL은 인증된 사용자만 접근 가능
                 .logout((logout) -> logout
                         .logoutSuccessUrl("/login")
                         .invalidateHttpSession(true)) // 로그아웃 이후 전체 세션 삭제 여부
@@ -90,10 +89,9 @@ public class SecurityConfig {
         http
                 .addFilterAfter(jsonUsernamePasswordLoginFilter(), LogoutFilter.class) // 커스터마이징 된 필터를 추가
                 .addFilterBefore(jwtAuthenticationProcessingFilter(), JsonUsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(groupRoleFilter(), LogoutFilter.class);
+                .addFilterAfter(groupRoleFilter(), JwtAuthenticationProcessingFilter.class);
         return http.build();
     }
-
 
 //    @Bean
 //    public BCryptPasswordEncoder bCryptPasswordEncoder() {
@@ -146,6 +144,7 @@ public class SecurityConfig {
         return jsonUsernamePasswordLoginFilter;
     }
 
+    // JWT 토큰을 추출하여 인증 객체(Authentication)를 생성
     @Bean
     public JwtAuthenticationProcessingFilter jwtAuthenticationProcessingFilter(){
         return new JwtAuthenticationProcessingFilter(jwtService, userRepository);
@@ -153,8 +152,7 @@ public class SecurityConfig {
 
     @Bean
     public GroupRoleFilter groupRoleFilter(){
-        return new GroupRoleFilter(relationRepository);
+        return new GroupRoleFilter(relationRepository, userRepository, recruitmentRepository, commentRepository);
     }
-
 
 }
