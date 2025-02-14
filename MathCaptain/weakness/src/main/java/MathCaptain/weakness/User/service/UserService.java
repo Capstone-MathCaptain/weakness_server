@@ -4,28 +4,26 @@ import MathCaptain.weakness.Group.dto.response.GroupResponseDto;
 import MathCaptain.weakness.Group.repository.RelationRepository;
 import MathCaptain.weakness.Group.service.GroupService;
 import MathCaptain.weakness.Group.service.RelationService;
-import MathCaptain.weakness.User.dto.request.FindEmailRequestDto;
+import MathCaptain.weakness.User.dto.request.*;
 import MathCaptain.weakness.User.dto.response.ChangePwdDto;
 import MathCaptain.weakness.User.dto.response.FindEmailResponseDto;
 import MathCaptain.weakness.User.dto.response.UserResponseDto;
-import MathCaptain.weakness.User.dto.request.UpdateUserRequestDto;
-import MathCaptain.weakness.User.dto.request.SaveUserRequestDto;
 import MathCaptain.weakness.User.repository.UserRepository;
 import MathCaptain.weakness.User.domain.Users;
 import MathCaptain.weakness.global.Api.ApiResponse;
-import MathCaptain.weakness.User.dto.request.FindPwdRequestDto;
 import MathCaptain.weakness.global.Mail.MailService;
 import MathCaptain.weakness.global.exception.DuplicatedException;
 import MathCaptain.weakness.global.exception.ResourceNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
-
+@Slf4j
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -55,15 +53,17 @@ public class UserService {
         return ApiResponse.ok(buildUserResponseDto(users));
     }
 
-    public ApiResponse<?> deleteUser(long userId, String password) {
+    public ApiResponse<?> deleteUser(Long userId, UserDeleteRequestDto userDeleteRequestDto) {
         Users user = userRepository.findByUserId(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("해당 유저가 없습니다."));
+                .orElseThrow(() -> new ResourceNotFoundException("해당 유저가 존재하지 않습니다."));
 
-        if (!passwordEncoder.matches(password, user.getPassword())) {
+        if (!passwordEncoder.matches(userDeleteRequestDto.getPassword(), user.getPassword())) {
             throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
         }
 
-        return ApiResponse.ok(null);
+        userRepository.delete(user);
+
+        return ApiResponse.ok("회원 탈퇴가 완료되었습니다.");
     }
 
     public ApiResponse<UserResponseDto> updateUser(Long userId ,UpdateUserRequestDto updateUser) {

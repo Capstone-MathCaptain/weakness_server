@@ -15,10 +15,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class UpdateRecruitmentRequestDto {
 
-    @NotNull(message = "작성자를 입력해주세요!")
-    @NotEmpty(message = "작성자를 입력해주세요!")
-    private Long authorId;
-
     @NotNull(message = "그룹을 입력해주세요!")
     @NotEmpty(message = "그룹을 입력해주세요!")
     private Long recruitGroupId;

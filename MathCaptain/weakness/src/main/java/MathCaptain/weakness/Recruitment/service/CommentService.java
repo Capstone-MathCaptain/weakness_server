@@ -9,6 +9,7 @@ import MathCaptain.weakness.Recruitment.repository.CommentRepository;
 import MathCaptain.weakness.Recruitment.repository.RecruitmentRepository;
 import MathCaptain.weakness.User.domain.Users;
 import MathCaptain.weakness.User.repository.UserRepository;
+import MathCaptain.weakness.global.Security.jwt.JwtService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -26,29 +27,36 @@ public class CommentService {
     private final CommentRepository commentRepository;
     private final UserRepository userRepository;
     private final RecruitmentRepository recruitmentRepository;
+    private final JwtService jwtService;
 
-    public Long createComment(Long recuritmentId, CreateCommentRequestDto createCommentRequestDto) {
+    /// 댓글 CRUD
 
-        Users author = userRepository.findById(createCommentRequestDto.getAuthorId())
-                .orElseThrow(() -> new IllegalArgumentException("해당 유저가 없습니다."));
+    // 댓글 생성
+    public Long createComment(String accessToken, Long recruitmentId, CreateCommentRequestDto createCommentRequestDto) {
 
-        Recruitment recruitment = recruitmentRepository.findById(recuritmentId)
+        String email = jwtService.extractEmail(accessToken)
+                .orElseThrow(() -> new IllegalArgumentException("토큰이 유효하지 않습니다."));
+
+        Users author = userRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("해당 이메일을 가진 사용자가 없습니다."));
+
+        Recruitment recruitment = recruitmentRepository.findById(recruitmentId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 모집글이 없습니다."));
+
+        String content = createCommentRequestDto.getContent();
 
         Comment comment = Comment.builder()
                 .post(recruitment)
                 .author(author)
-                .content(createCommentRequestDto.getContent())
-                .lastModifiedTime(LocalDateTime.now())
+                .content(content)
                 .build();
 
         commentRepository.save(comment);
 
-        log.info("createComment");
-
         return comment.getCommentId();
     }
 
+    // 댓글 수정
     public void updateComment(Long recruitmentId, Long commentId, UpdateCommentRequestDto updateCommentRequestDto) {
 
         Comment comment = commentRepository.findById(commentId)
@@ -62,9 +70,23 @@ public class CommentService {
             comment.updateContent(updateCommentRequestDto.getContent());
         }
 
+        // 알림 기능 추가
         log.info("updateComment");
     }
 
+    // 댓글 삭제
+    public void deleteComment(Long recruitmentId, Long commentId) {
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 댓글이 없습니다."));
+
+        if (!recruitmentId.equals(comment.getPost().getPostId())) {
+            throw new IllegalArgumentException("해당 댓글이 해당 모집글에 속해있지 않습니다.");
+        }
+
+        commentRepository.delete(comment);
+    }
+
+    // 댓글 조회
     public List<CommentResponseDto> getComments(Long recruitmentId) {
         Recruitment recruitment = recruitmentRepository.findById(recruitmentId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 모집글이 없습니다."));
@@ -76,16 +98,7 @@ public class CommentService {
                 .toList();
     }
 
-    public void deleteComment(Long recruitmentId, Long commentId) {
-        Comment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 댓글이 없습니다."));
-
-        if (!recruitmentId.equals(comment.getPost().getPostId())) {
-            throw new IllegalArgumentException("해당 댓글이 해당 모집글에 속해있지 않습니다.");
-        }
-
-        commentRepository.delete(comment);
-    }
+    /// 빌더
 
     private CommentResponseDto buildCommentResponseDto(Comment comment) {
         return CommentResponseDto.builder()

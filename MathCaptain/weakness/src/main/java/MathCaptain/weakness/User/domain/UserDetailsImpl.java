@@ -1,20 +1,18 @@
 package MathCaptain.weakness.User.domain;
 
+import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 
+@Getter
 public class UserDetailsImpl implements UserDetails {
 
     private final Users users;
 
     public UserDetailsImpl(Users users) {
         this.users = users;
-    }
-
-    public Users getUsers() {
-        return users;
     }
 
     @Override
@@ -32,7 +30,7 @@ public class UserDetailsImpl implements UserDetails {
         return users.getEmail();
     }
 
-    public String getEmail() {return users.getEmail();}
+    public String getEmail() { return users.getEmail(); }
 
     @Override
     public boolean isAccountNonExpired() {

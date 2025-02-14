@@ -1,12 +1,16 @@
 package MathCaptain.weakness.Recruitment.service;
 
 import MathCaptain.weakness.Group.domain.Group;
+import MathCaptain.weakness.Group.domain.RelationBetweenUserAndGroup;
+import MathCaptain.weakness.Group.enums.GroupRole;
 import MathCaptain.weakness.Group.repository.GroupRepository;
+import MathCaptain.weakness.Group.repository.RelationRepository;
 import MathCaptain.weakness.Recruitment.domain.Comment;
 import MathCaptain.weakness.Recruitment.domain.Recruitment;
 import MathCaptain.weakness.Recruitment.dto.request.CreateRecruitmentRequestDto;
 import MathCaptain.weakness.Recruitment.dto.request.UpdateRecruitmentRequestDto;
 import MathCaptain.weakness.Recruitment.dto.response.CommentResponseDto;
+import MathCaptain.weakness.Recruitment.dto.response.RecruitmentCreateResponseDto;
 import MathCaptain.weakness.Recruitment.dto.response.RecruitmentDetailResponseDto;
 import MathCaptain.weakness.Recruitment.dto.response.RecruitmentResponseDto;
 import MathCaptain.weakness.Recruitment.enums.RecruitmentStatus;
@@ -14,6 +18,7 @@ import MathCaptain.weakness.Recruitment.repository.RecruitmentRepository;
 import MathCaptain.weakness.User.domain.Users;
 import MathCaptain.weakness.User.repository.UserRepository;
 import MathCaptain.weakness.global.Api.ApiResponse;
+import MathCaptain.weakness.global.Security.jwt.JwtService;
 import MathCaptain.weakness.global.exception.ResourceNotFoundException;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
@@ -33,19 +38,42 @@ public class RecruitmentService {
     private final RecruitmentRepository recruitmentRepository;
     private final UserRepository userRepository;
     private final GroupRepository groupRepository;
+    private final RelationRepository relationRepository;
     private final CommentService commentService;
+    private final JwtService jwtService;
 
-    public ApiResponse<RecruitmentResponseDto> createRecruitment(CreateRecruitmentRequestDto createRecruitmentRequestDto) {
+    /// 모집 CRUD
+    // 모집글 작성 요청 (그룹 정보 반환)
+    public ApiResponse<RecruitmentCreateResponseDto> createRequest(String accessToken) {
 
-        Recruitment recruitment = buildRecruitment(createRecruitmentRequestDto);
+        String email = jwtService.extractEmail(accessToken)
+                .orElseThrow(() -> new IllegalArgumentException("토큰이 유효하지 않습니다."));
 
-        recruitmentRepository.save(recruitment);
+        RelationBetweenUserAndGroup relation = relationRepository.findByMember_EmailAndGroupRole(email, GroupRole.LEADER)
+                .orElseThrow(() -> new IllegalArgumentException("그룹장만 모집글을 작성할 수 있습니다."));
 
-        log.info("Recruitment created: {}", recruitment);
-
-        return ApiResponse.ok(buildRecruitmentResponseDto(recruitment));
+        return ApiResponse.ok(RecruitmentCreateResponseDto.builder()
+                    .groupId(relation.getJoinGroup().getId())
+                    .groupName(relation.getJoinGroup().getName())
+                    .leaderName(relation.getMember().getName())
+                    .build());
     }
 
+    // 모집글 생성
+    public Long createRecruitment(String accessToken, CreateRecruitmentRequestDto createRecruitmentRequestDto) {
+
+        String email = jwtService.extractEmail(accessToken)
+                .orElseThrow(() -> new IllegalArgumentException("토큰이 유효하지 않습니다."));
+
+        Users author = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("해당 유저가 없습니다."));
+
+        Recruitment recruitment = buildRecruitment(author, createRecruitmentRequestDto);
+
+        return recruitmentRepository.save(recruitment).getPostId();
+    }
+
+    // 모집글 조회
     public ApiResponse<RecruitmentDetailResponseDto> getRecruitment(Long recruitmentId) {
         Recruitment recruitment = recruitmentRepository.findById(recruitmentId).
                 orElseThrow(() -> new ResourceNotFoundException("해당 모집글이 없습니다."));
@@ -55,19 +83,25 @@ public class RecruitmentService {
         return ApiResponse.ok(buildRecruitmentDetailResponseDto(recruitment, comments));
     }
 
-    public ApiResponse<RecruitmentResponseDto> updateRecruitment(Long recruitmentId, UpdateRecruitmentRequestDto updateRecruitmentRequestDto) {
+    // 모집글 수정
+    public void updateRecruitment(Long recruitmentId, UpdateRecruitmentRequestDto updateRecruitmentRequestDto) {
+
         Recruitment recruitment = recruitmentRepository.findById(recruitmentId).
                 orElseThrow(() -> new ResourceNotFoundException("해당 모집글이 없습니다."));
 
-        checkUpdatePermission(recruitment, updateRecruitmentRequestDto.getAuthorId());
-
         updateRecruitment(recruitment, updateRecruitmentRequestDto);
 
-        log.info("Recruitment updated: {}", recruitment);
-
-        return ApiResponse.ok(buildRecruitmentResponseDto(recruitment));
+        log.info("모집글 수정 완료, 모집글 ID : {}", recruitmentId);
     }
 
+    public void deleteRecruitment(Long recruitmentId) {
+        Recruitment recruitment = recruitmentRepository.findById(recruitmentId)
+                .orElseThrow(() -> new ResourceNotFoundException("해당 모집글이 없습니다."));
+
+        recruitmentRepository.delete(recruitment);
+    }
+
+    // 모집글 전체 조회
     public ApiResponse<List<RecruitmentResponseDto>> getAllRecruitments() {
         List<Recruitment> recruitments = recruitmentRepository.findAll();
 
@@ -76,14 +110,9 @@ public class RecruitmentService {
                 .toList());
     }
 
-    //== 비지니스 로직 ==//
+    /// 비지니스 로직
 
-    private void checkUpdatePermission(Recruitment recruitment, Long authorId) {
-        if (!recruitment.getAuthor().getUserId().equals(authorId)) {
-            throw new IllegalArgumentException("작성자만 수정할 수 있습니다.");
-        }
-    }
-
+    // 모집글 수정 로직
     private void updateRecruitment(Recruitment recruitment, UpdateRecruitmentRequestDto updateRecruitmentRequestDto) {
         if (!recruitment.getTitle().equals(updateRecruitmentRequestDto.getTitle())) {
             recruitment.updateTitle(updateRecruitmentRequestDto.getTitle());
@@ -98,7 +127,7 @@ public class RecruitmentService {
         }
     }
 
-    //== 빌드 메서드 ==//
+    /// 빌드
 
     private RecruitmentResponseDto buildRecruitmentResponseDto(Recruitment recruitment) {
         return RecruitmentResponseDto.builder()
@@ -129,9 +158,7 @@ public class RecruitmentService {
                 .build();
     }
 
-    private Recruitment buildRecruitment(CreateRecruitmentRequestDto createRecruitmentRequestDto) {
-        Users author = userRepository.findByUserId(createRecruitmentRequestDto.getAuthorId()).
-                orElseThrow(() -> new ResourceNotFoundException("해당 유저가 없습니다."));
+    private Recruitment buildRecruitment(Users author, CreateRecruitmentRequestDto createRecruitmentRequestDto) {
 
         Group relatedGroup = groupRepository.findById(createRecruitmentRequestDto.getRecruitGroupId()).
                 orElseThrow(() -> new ResourceNotFoundException("해당 그룹이 없습니다."));
@@ -141,7 +168,7 @@ public class RecruitmentService {
                 .recruitGroup(relatedGroup)
                 .title(createRecruitmentRequestDto.getTitle())
                 .content(createRecruitmentRequestDto.getContent())
-                .category(createRecruitmentRequestDto.getCategory())
+                .category(relatedGroup.getCategory())
                 .lastModifiedTime(LocalDateTime.now())
                 .build();
     }

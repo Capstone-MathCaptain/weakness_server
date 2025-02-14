@@ -57,8 +57,6 @@ public class JwtServiceImpl implements JwtService{
     // AccessToken 생성 (사용자의 email 기반)
     @Override
     public String createAccessToken(String email) {
-        Users user = usersRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalArgumentException("해당 유저가 없습니다."));
 
         return JWT.create()
                 // 빌더를 통해 JWT의 Subject 설정 : AccessToken
@@ -138,11 +136,21 @@ public class JwtServiceImpl implements JwtService{
     // 클라이언트에게서 전달받은 AccessToken을 HTTP 헤더에서 추출
     @Override
     public Optional<String> extractAccessToken(HttpServletRequest request) {
-        return Optional.ofNullable(request.getHeader(accessHeader)).filter(
-                // BEARER 접두사로 시작하는 AccessToken을 확인
-                accessToken -> accessToken.startsWith(BEARER)
-                // 찾으면 BEARER 부분을 제외한 AccessToken을 반환
-        ).map(accessToken -> accessToken.replace(BEARER, ""));
+        String headerValue = request.getHeader(accessHeader);
+
+        if (headerValue == null || headerValue.isBlank()) {
+            log.warn("Authorization 헤더가 비어있거나 존재하지 않습니다.");
+            return Optional.empty();
+        }
+
+        // "Bearer " 접두사가 있는 경우 제거
+        if (headerValue.startsWith(BEARER)) {
+            return Optional.of(headerValue.replace(BEARER, "").trim());
+        }
+
+        // "Bearer " 접두사가 없는 경우도 허용 (로그 경고 출력)
+        log.warn("Authorization 헤더에 'Bearer ' 접두사가 없습니다. 원본 값: {}", headerValue);
+        return Optional.of(headerValue.trim());
     }
 
     // 클라이언트에게서 전달받은 RefreshToken을 HTTP 헤더에서 추출
@@ -186,6 +194,7 @@ public class JwtServiceImpl implements JwtService{
     @Override
     public boolean isTokenValid(String token) {
         try {
+            log.info("검증 중인 토큰: {}", token);
             JWT.require(Algorithm.HMAC512(secret)).build().verify(token);
             return true;
         } catch (Exception e) {

@@ -11,16 +11,9 @@ import lombok.Data;
 @Builder
 public class CreateRecruitmentRequestDto {
 
-    @NotNull(message = "작성자를 입력해주세요!")
-    @NotEmpty(message = "작성자를 입력해주세요!")
-    private Long authorId;
-
     @NotNull(message = "그룹을 입력해주세요!")
     @NotEmpty(message = "그룹을 입력해주세요!")
     private Long recruitGroupId;
-
-    @NotNull(message = "모집 여부를 선택해주세요!")
-    private CategoryStatus category;
 
     @NotNull(message = "제목을 입력해주세요!")
     @NotEmpty(message = "제목을 입력해주세요!")

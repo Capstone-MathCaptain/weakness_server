@@ -50,7 +50,7 @@ public class Recruitment {
     // 좋아요 개수
     private Long interestCount;
 
-    @OneToMany(mappedBy = "post")
+    @OneToMany(mappedBy = "post", cascade = CascadeType.REMOVE)
     private List<Comment> comments;
 
     @Column(nullable = false)
@@ -62,6 +62,7 @@ public class Recruitment {
     @PrePersist
     protected void onCreate() {
         this.postTime = LocalDateTime.now();
+        this.lastModifiedTime = LocalDateTime.now();
         this.recruitmentStatus = RecruitmentStatus.RECRUITING;
         this.interestCount = 0L;
     }

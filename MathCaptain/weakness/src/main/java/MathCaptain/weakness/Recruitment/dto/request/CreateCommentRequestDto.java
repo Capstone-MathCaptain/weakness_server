@@ -4,16 +4,14 @@ import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
-@Builder
+@NoArgsConstructor
 public class CreateCommentRequestDto {
 
-        @NotNull
-        @NotEmpty
-        private Long authorId;
+    @NotNull(message = "내용을 입력해주세요!")
+    @NotEmpty(message = "내용을 입력해주세요!")
+    private String content;
 
-        @NotNull
-        @NotEmpty(message = "댓글을 입력해주세요!")
-        private String content;
 }

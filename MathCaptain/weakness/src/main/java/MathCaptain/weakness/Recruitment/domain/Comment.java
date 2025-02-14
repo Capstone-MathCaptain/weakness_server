@@ -41,6 +41,7 @@ public class Comment {
     @PrePersist
     protected void onCreate() {
         this.commentTime = LocalDateTime.now();
+        this.lastModifiedTime = LocalDateTime.now();
     }
 
     //==수정==//
