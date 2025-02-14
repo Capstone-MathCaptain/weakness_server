@@ -38,5 +38,6 @@ public interface RelationRepository extends JpaRepository<RelationBetweenUserAnd
 
     Optional<List<RelationBetweenUserAndGroup>> findAllByJoinGroup_id(Long joinGroupId);
 
+    boolean existsByMember_EmailAndGroupRole(String memberEmail, GroupRole groupRole);
 }
 
