@@ -1,6 +1,7 @@
 package MathCaptain.weakness.Record.service;
 
 import MathCaptain.weakness.Group.domain.RelationBetweenUserAndGroup;
+import MathCaptain.weakness.Group.repository.GroupRepository;
 import MathCaptain.weakness.Group.repository.RelationRepository;
 import MathCaptain.weakness.Record.domain.ActivityRecord;
 import MathCaptain.weakness.Record.dto.response.recordStartResponseDto;
@@ -14,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
@@ -26,6 +28,7 @@ public class RecordService {
     private final RecordRepository recordRepository;
     private final RelationRepository relationRepository;
     private final UserRepository userRepository;
+    private final GroupRepository groupRepository;
     private final JwtService jwtService;
 
     // 기록 시작
@@ -67,8 +70,11 @@ public class RecordService {
                 .orElseThrow(() -> new IllegalArgumentException("현재 진행중인 인증이 존재하지 않습니다."));
 
         // 종료 시간 업데이트
-        record.updateEndTime(LocalDateTime.now());
+        LocalDateTime endTime = LocalDateTime.now();
+
+        record.updateEndTime(endTime);
         record.calculateDuration(); // 활동 시간 계산 (분 단위)
+        record.updateDayOfWeek(endTime.getDayOfWeek());
 
         RelationBetweenUserAndGroup relation = relationRepository.findByMemberIdAndJoinGroupId(
                 record.getUser().getUserId(),
@@ -101,6 +107,9 @@ public class RecordService {
         if (relation.getPersonalDailyGoalAchieve() >= relation.getPersonalDailyGoal()) {
             activityRecord.updateDailyGoalAchieved(true);
 
+            // 그룹의 요일 목표 수행 카운트 증가
+            increaseWeeklyGoalAchieveCount(relation.getJoinGroup().getId(), activityRecord.getDayOfWeek());
+
             // 주간 목표 + 1 (일간 목표 충족시 업데이트)
             int weeklyAchieved = relation.getPersonalWeeklyGoalAchieve() + 1;
             relation.updatePersonalWeeklyGoalAchieved(weeklyAchieved);
@@ -132,6 +141,15 @@ public class RecordService {
 
         return remainingWeeklyGoal;
     }
+
+    // 그룹의 요일 목표 수행 카운트 증가
+    public void increaseWeeklyGoalAchieveCount(Long groupId, DayOfWeek dayOfWeek) {
+        groupRepository.findById(groupId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 그룹이 존재하지 않습니다."))
+                .increaseWeeklyGoalAchieve(dayOfWeek);
+    }
+
+    /// 빌더
 
     private recordSummaryResponseDto buildRecordSummaryResponseDto(ActivityRecord activityRecord, Long remainingDailyGoalMinutes, int remainingWeeklyGoal) {
         return recordSummaryResponseDto.builder()

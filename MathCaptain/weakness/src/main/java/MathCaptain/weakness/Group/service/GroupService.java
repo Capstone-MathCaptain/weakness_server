@@ -5,6 +5,7 @@ import MathCaptain.weakness.Group.domain.RelationBetweenUserAndGroup;
 import MathCaptain.weakness.Group.dto.request.GroupCreateRequestDto;
 import MathCaptain.weakness.Group.dto.request.GroupJoinRequestDto;
 import MathCaptain.weakness.Group.dto.request.GroupUpdateRequestDto;
+import MathCaptain.weakness.Group.dto.response.GroupDetailResponseDto;
 import MathCaptain.weakness.Group.dto.response.GroupMemberListResponseDto;
 import MathCaptain.weakness.Group.dto.response.GroupResponseDto;
 import MathCaptain.weakness.User.dto.response.UserResponseDto;
@@ -109,6 +110,14 @@ public class GroupService {
                         .phoneNumber(user.getPhoneNumber())
                         .build())
                 .collect(Collectors.toList());
+    }
+
+    // 그룹 상세 정보 조회
+    public GroupDetailResponseDto getGroupDetail(Long groupId) {
+        Group group = groupRepository.findById(groupId)
+                .orElseThrow(() -> new ResourceNotFoundException("해당 그룹이 없습니다."));
+
+        return buildGroupDetailResponseDto(group);
     }
 
     public List<GroupResponseDto> getUsersGroups(String accessToken) {
@@ -223,6 +232,21 @@ public class GroupService {
                 .hashtags(groupCreateRequestDto.getHashtags())
                 .disturb_mode(groupCreateRequestDto.getDisturb_mode())
                 .group_image_url(groupCreateRequestDto.getGroup_image_url())
+                .build();
+    }
+
+    private GroupDetailResponseDto buildGroupDetailResponseDto(Group group) {
+        return GroupDetailResponseDto.builder()
+                .groupId(group.getId())
+                .groupName(group.getName())
+                .leaderId(group.getLeader().getUserId())
+                .leaderName(group.getLeader().getName())
+                .minDailyHours(group.getMin_daily_hours())
+                .minWeeklyDays(group.getMin_weekly_days())
+                .groupPoint(group.getGroup_point())
+                .hashtags(group.getHashtags())
+                .group_image_url(group.getGroup_image_url())
+                .weeklyGoalAcheive(group.getWeeklyGoalAchieve())
                 .build();
     }
 

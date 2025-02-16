@@ -8,6 +8,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.DayOfWeek;
 import java.time.Duration;
 import java.time.LocalDateTime;
 
@@ -40,6 +41,8 @@ public class ActivityRecord {
 
     private boolean weeklyGoalAchieved; // 주간 목표 달성 여부
 
+    private DayOfWeek dayOfWeek; // 요일
+
     @PrePersist
     public void calculateDuration() {
         if (startTime != null && endTime != null) {
@@ -58,6 +61,10 @@ public class ActivityRecord {
 
     public void updateWeeklyGoalAchieved(boolean weeklyGoalAchieved) {
         this.weeklyGoalAchieved = weeklyGoalAchieved;
+    }
+
+    public void updateDayOfWeek(DayOfWeek dayOfWeek) {
+        this.dayOfWeek = dayOfWeek;
     }
 
     public void updateDurationInMinutes(long durationInMinutes) {

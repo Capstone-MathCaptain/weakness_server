@@ -11,9 +11,12 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.validator.constraints.Range;
 
+import java.time.DayOfWeek;
 import java.time.Duration;
 import java.time.LocalDate;
+import java.util.EnumMap;
 import java.util.List;
+import java.util.Map;
 
 @Entity
 @Getter
@@ -60,12 +63,26 @@ public class Group {
 
     private String group_image_url;
 
+    // 요일별 목표 인증을 완료한 멤버들의 수를 저장하는 Map
+    @ElementCollection
+    @CollectionTable(name = "group_weekly_goal_achieve", joinColumns = @JoinColumn(name = "group_id"))
+    @MapKeyColumn(name = "day_of_week") // 요일을 키로 사용
+    @Column(name = "goal_count") // 카운트를 값으로 사용
+    private Map<DayOfWeek, Integer> weeklyGoalAchieve = new EnumMap<>(DayOfWeek.class);
+
     @OneToMany(mappedBy = "recruitGroup")
     private List<Recruitment> recruitments;
 
     @PrePersist
     protected void onCreate() {
         this.create_date = LocalDate.now();
+
+        if (this.weeklyGoalAchieve == null) {
+            this.weeklyGoalAchieve = new EnumMap<>(DayOfWeek.class);
+        }
+        for (DayOfWeek dayOfWeek : DayOfWeek.values()) {
+            weeklyGoalAchieve.put(dayOfWeek, 0);
+        }
     }
 
     //==수정 로직==//
@@ -100,5 +117,19 @@ public class Group {
 
     public void updateGroupImageUrl(String group_image_url) {
         this.group_image_url = group_image_url;
+    }
+
+    public void updateWeeklyGoalAchieve(DayOfWeek dayOfWeek, int goalCount) {
+        weeklyGoalAchieve.put(dayOfWeek, goalCount);
+    }
+
+    public void increaseWeeklyGoalAchieve(DayOfWeek day) {
+        weeklyGoalAchieve.put(day, weeklyGoalAchieve.get(day) + 1);
+    }
+
+    public void resetWeeklyGoalAchieve() {
+        for (DayOfWeek dayOfWeek : DayOfWeek.values()) {
+            weeklyGoalAchieve.put(dayOfWeek, 0);
+        }
     }
 }
