@@ -3,6 +3,7 @@ package MathCaptain.weakness.Group.controller;
 import MathCaptain.weakness.Group.dto.request.GroupJoinRequestDto;
 import MathCaptain.weakness.Group.dto.request.GroupSearchRequestDto;
 import MathCaptain.weakness.Group.dto.request.GroupUpdateRequestDto;
+import MathCaptain.weakness.Group.dto.response.GroupDetailResponseDto;
 import MathCaptain.weakness.Group.dto.response.GroupMemberListResponseDto;
 import MathCaptain.weakness.Group.dto.response.GroupResponseDto;
 import MathCaptain.weakness.Group.dto.response.RelationResponseDto;
@@ -116,6 +117,12 @@ public class GroupController {
     public ApiResponse<List<GroupResponseDto>> getUsersGroups(@RequestHeader("Authorization") String authorizationHeader) {
         String accessToken = authorizationHeader.replace("Bearer ", "");
         return ApiResponse.ok(groupService.getUsersGroups(accessToken));
+    }
+
+    // 그룹 상세 정보
+    @GetMapping("/group/detail/{groupId}")
+    public ApiResponse<GroupDetailResponseDto> groupDetail(@PathVariable Long groupId) {
+        return ApiResponse.ok(groupService.getGroupDetail(groupId));
     }
 
     // 그룹 멤버 리스트 (그룹 상세 페이지)

@@ -1,4 +1,4 @@
-package MathCaptain.weakness.Record.service;
+package MathCaptain.weakness.global.Scheduler;
 
 import MathCaptain.weakness.Group.domain.RelationBetweenUserAndGroup;
 import MathCaptain.weakness.Group.repository.RelationRepository;
