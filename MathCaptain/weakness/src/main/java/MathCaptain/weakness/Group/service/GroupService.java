@@ -1,15 +1,12 @@
 package MathCaptain.weakness.Group.service;
 
 import MathCaptain.weakness.Group.domain.Group;
-import MathCaptain.weakness.Group.domain.RelationBetweenUserAndGroup;
 import MathCaptain.weakness.Group.dto.request.GroupCreateRequestDto;
 import MathCaptain.weakness.Group.dto.request.GroupJoinRequestDto;
 import MathCaptain.weakness.Group.dto.request.GroupUpdateRequestDto;
 import MathCaptain.weakness.Group.dto.response.GroupDetailResponseDto;
-import MathCaptain.weakness.Group.dto.response.GroupMemberListResponseDto;
 import MathCaptain.weakness.Group.dto.response.GroupResponseDto;
 import MathCaptain.weakness.User.dto.response.UserResponseDto;
-import MathCaptain.weakness.Group.enums.GroupRole;
 import MathCaptain.weakness.Group.repository.GroupRepository;
 import MathCaptain.weakness.Group.repository.RelationRepository;
 import MathCaptain.weakness.User.domain.Users;
@@ -117,7 +114,9 @@ public class GroupService {
         Group group = groupRepository.findById(groupId)
                 .orElseThrow(() -> new ResourceNotFoundException("해당 그룹이 없습니다."));
 
-        return buildGroupDetailResponseDto(group);
+        Long memberCount = relationRepository.countByJoinGroup_Id(groupId);
+
+        return buildGroupDetailResponseDto(group, memberCount);
     }
 
     public List<GroupResponseDto> getUsersGroups(String accessToken) {
@@ -235,7 +234,7 @@ public class GroupService {
                 .build();
     }
 
-    private GroupDetailResponseDto buildGroupDetailResponseDto(Group group) {
+    private GroupDetailResponseDto buildGroupDetailResponseDto(Group group, Long memberCount) {
         return GroupDetailResponseDto.builder()
                 .groupId(group.getId())
                 .groupName(group.getName())
@@ -246,7 +245,8 @@ public class GroupService {
                 .groupPoint(group.getGroup_point())
                 .hashtags(group.getHashtags())
                 .group_image_url(group.getGroup_image_url())
-                .weeklyGoalAcheive(group.getWeeklyGoalAchieve())
+                .weeklyGoalAchieve(group.getWeeklyGoalAchieve())
+                .memberCount(memberCount)
                 .build();
     }
 

@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.validator.constraints.Range;
 
 import java.time.DayOfWeek;
 import java.time.Duration;
@@ -35,7 +36,8 @@ public class ActivityRecord {
 
     private LocalDateTime endTime; // 인증 종료 시간
 
-    private long durationInMinutes; // 활동 시간 (분)
+    @Range(min = 0)
+    private Long durationInMinutes; // 활동 시간 (분)
 
     private boolean dailyGoalAchieved; // 일간 목표 달성 여부
 
@@ -44,15 +46,19 @@ public class ActivityRecord {
     private DayOfWeek dayOfWeek; // 요일
 
     @PrePersist
-    public void calculateDuration() {
-        if (startTime != null && endTime != null) {
-            this.durationInMinutes = Duration.between(startTime, endTime).toMinutes();
+    public void prePersist() {
+        this.dailyGoalAchieved = false;
+        this.weeklyGoalAchieved = false;
+
+        if (this.startTime == null) {
+            this.startTime = LocalDateTime.now();
         }
+
+        this.durationInMinutes = 0L;
     }
 
     public void updateEndTime(LocalDateTime endTime) {
         this.endTime = endTime;
-        calculateDuration();
     }
 
     public void updateDailyGoalAchieved(boolean dailyGoalAchieved) {
@@ -67,7 +73,7 @@ public class ActivityRecord {
         this.dayOfWeek = dayOfWeek;
     }
 
-    public void updateDurationInMinutes(long durationInMinutes) {
+    public void updateDurationInMinutes(Long durationInMinutes) {
         this.durationInMinutes = durationInMinutes;
     }
 }

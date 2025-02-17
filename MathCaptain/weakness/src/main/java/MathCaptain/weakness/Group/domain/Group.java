@@ -132,4 +132,12 @@ public class Group {
             weeklyGoalAchieve.put(dayOfWeek, 0);
         }
     }
+
+    public void addPoint(Long point) {
+        this.group_point += point;
+    }
+
+    public void subtractPoint(Long point) {
+        this.group_point = Math.max(0, this.group_point - point);
+    }
 }

@@ -16,7 +16,7 @@ public class recordSummaryResponseDto {
     private String groupName;
 
     // 수행 시간
-    private long durationInMinutes;
+    private Long durationInMinutes;
 
     // 일간 목표 달성 여부
     private boolean dailyGoalAchieved;
@@ -25,7 +25,7 @@ public class recordSummaryResponseDto {
     private boolean weeklyGoalAchieved;
 
     // 일간 목표 달성까지 남은 시간 (분) (달성시 0)
-    private long remainingDailyGoalMinutes;
+    private Long remainingDailyGoalMinutes;
 
     // 주간 목표 달성까지 남은 일 수 (일) (달성시 0)
     private int remainingWeeklyGoalDays;

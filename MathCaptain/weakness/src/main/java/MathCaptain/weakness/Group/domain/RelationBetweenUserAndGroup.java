@@ -50,9 +50,11 @@ public class RelationBetweenUserAndGroup {
     @Range(min = 0)
     private int personalWeeklyGoal;
 
+    // 일간 인증 수행 시간
     @Range(min = 0, max = 1440)
     private Long personalDailyGoalAchieve;
 
+    // 주간 인증 수행 시간
     @Range(min = 0, max = 7)
     private int personalWeeklyGoalAchieve;
 
@@ -60,9 +62,14 @@ public class RelationBetweenUserAndGroup {
 
     private Boolean isDailyGoalAchieved;
 
+    // 주간 목표 달성 연속 횟수
+    @Range(min = 0)
+    private int weeklyGoalAchieveStreak;
+
     // 기본값 설정
     @PrePersist
     protected void onPrePersist() {
+
         if (this.groupRole == null) {
             this.groupRole = GroupRole.MEMBER; // 기본값 설정
         }
@@ -77,6 +84,10 @@ public class RelationBetweenUserAndGroup {
         if (this.isDailyGoalAchieved == null) {
             this.isDailyGoalAchieved = false;
         }
+        this.personalWeeklyGoalAchieve = 0;
+        this.weeklyGoalAchieveStreak = 0;
+        this.personalDailyGoalAchieve = 0L;
+
     }
 
     // 일간 목표 업데이트
@@ -89,6 +100,11 @@ public class RelationBetweenUserAndGroup {
         this.personalWeeklyGoalAchieve = personalWeeklyGoalAchieve;
     }
 
+    // 주간 목표 달성 연속 횟수 업데이트
+    public void updateWeeklyGoalAchieveStreak(int weeklyGoalAchieveStreak) {
+        this.weeklyGoalAchieveStreak = weeklyGoalAchieveStreak;
+    }
+
     // 일간 목표 초기화
     public void resetPersonalDailyGoalAchieve() {
         this.personalDailyGoalAchieve = (Long) 0L;
@@ -97,5 +113,28 @@ public class RelationBetweenUserAndGroup {
     // 주간 목표 초기화
     public void resetPersonalWeeklyGoalAchieve() {
         this.personalWeeklyGoalAchieve = 0;
+    }
+
+    // 주간 목표 달성 여부 초기화
+    public void resetIsWeeklyGoalAchieved() {
+        this.isWeeklyGoalAchieved = false;
+    }
+
+    // 일간 목표 달성 여부 초기화
+    public void resetIsDailyGoalAchieved() {
+        this.isDailyGoalAchieved = false;
+    }
+
+    // 주간 목표 달성 연속 횟수 초기화
+    public void resetWeeklyGoalAchieveStreak() {
+        this.weeklyGoalAchieveStreak = 0;
+    }
+
+    public boolean isWeeklyGoalAchieved() {
+        return this.isWeeklyGoalAchieved;
+    }
+
+    public boolean isDailyGoalAchieved() {
+        return this.isDailyGoalAchieved;
     }
 }
