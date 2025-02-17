@@ -1,6 +1,7 @@
 package MathCaptain.weakness.User.dto.response;
 
 import MathCaptain.weakness.Group.dto.response.GroupResponseDto;
+import MathCaptain.weakness.User.enums.Tiers;
 import lombok.Builder;
 import lombok.Data;
 
@@ -17,6 +18,8 @@ public class UserResponseDto {
     private String name;
 
     private String nickname;
+
+    private Tiers tier;
 
     private String phoneNumber;
 

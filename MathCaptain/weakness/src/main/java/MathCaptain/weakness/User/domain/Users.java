@@ -4,6 +4,8 @@ import MathCaptain.weakness.Group.domain.Group;
 import MathCaptain.weakness.Group.domain.RelationBetweenUserAndGroup;
 import MathCaptain.weakness.Recruitment.domain.Comment;
 import MathCaptain.weakness.Recruitment.domain.Recruitment;
+import MathCaptain.weakness.User.enums.TierThresholds;
+import MathCaptain.weakness.User.enums.Tiers;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.validator.constraints.Range;
@@ -50,6 +52,8 @@ public class Users {
     @OneToMany(mappedBy = "author")
     private List<Recruitment> recruitment;
 
+    private Tiers tier;
+
     //== jwt 토큰 추가 ==//
     @Column(length = 1000)
     private String refreshToken;
@@ -74,6 +78,7 @@ public class Users {
     @PrePersist
     protected void onCreate() {
         this.userPoint = 0L;
+        this.tier = Tiers.BRONZE;
     }
 
     //== 수정 로직 ==//
@@ -92,6 +97,39 @@ public class Users {
 
     public void updatePassword(String password, PasswordEncoder passwordEncoder) {
         this.password = passwordEncoder.encode(password);
+    }
+
+    public void updatePoint(Long point) {
+        this.userPoint = point;
+        evaluateTier();
+    }
+
+    public void addPoint(Long point) {
+        this.userPoint += point;
+        evaluateTier();
+    }
+
+    // 10% 감소
+    public void subtractPoint(Long point) {
+        this.userPoint = Math.max(0, this.userPoint - point);
+        evaluateTier();
+    }
+
+    //== 티어 평가 로직 ==//
+    private void evaluateTier() {
+        if (this.userPoint >= TierThresholds.MASTER) {
+            this.tier = Tiers.MASTER;
+        } else if (this.userPoint >= TierThresholds.DIAMOND) {
+            this.tier = Tiers.DIAMOND;
+        } else if (this.userPoint >= TierThresholds.PLATINUM) {
+            this.tier = Tiers.PLATINUM;
+        } else if (this.userPoint >= TierThresholds.GOLD) {
+            this.tier = Tiers.GOLD;
+        } else if (this.userPoint >= TierThresholds.SILVER) {
+            this.tier = Tiers.SILVER;
+        } else {
+            this.tier = Tiers.BRONZE;
+        }
     }
 
 }

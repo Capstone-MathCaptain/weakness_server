@@ -53,6 +53,7 @@ public class UserService {
         return ApiResponse.ok(buildUserResponseDto(users));
     }
 
+    // 회원탈퇴
     public ApiResponse<?> deleteUser(Long userId, UserDeleteRequestDto userDeleteRequestDto) {
         Users user = userRepository.findByUserId(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("해당 유저가 존재하지 않습니다."));
@@ -66,6 +67,7 @@ public class UserService {
         return ApiResponse.ok("회원 탈퇴가 완료되었습니다.");
     }
 
+    // 회원정보 수정
     public ApiResponse<UserResponseDto> updateUser(Long userId ,UpdateUserRequestDto updateUser) {
         Users user = userRepository.findByEmail(updateUser.getEmail())
                 .orElseThrow(() -> new ResourceNotFoundException("해당 유저가 없습니다."));
@@ -92,6 +94,7 @@ public class UserService {
         return ApiResponse.ok(buildUserResponseDto(user, groupResponseDtoList));
     }
 
+    // 회원정보 조회
     public ApiResponse<UserResponseDto> getUserInfo(Long userId) {
         Users member = userRepository.findByUserId(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("해당 유저가 없습니다."));
@@ -102,6 +105,7 @@ public class UserService {
         return ApiResponse.ok(buildUserResponseDto(member, groupResponseDtoList));
     }
 
+    // 이메일 찾기
     public ApiResponse<FindEmailResponseDto> findEmail(FindEmailRequestDto findEmailRequestDto) {
 
         Users user = userRepository.findByNameAndPhoneNumber(findEmailRequestDto.getUserName(), findEmailRequestDto.getPhoneNumber())
@@ -112,6 +116,7 @@ public class UserService {
                 .build());
     }
 
+    // 비밀번호 찾기 요청
     public void findPwdRequest(FindPwdRequestDto findPwdRequestDto) {
         String email = findPwdRequestDto.getEmail();
         String name = findPwdRequestDto.getName();
@@ -126,6 +131,7 @@ public class UserService {
         mailService.sendChangePwdMail(email, UUID);
     }
 
+    // 비밀번호 변경
     public void changePwd(ChangePwdDto changePwdDto) {
         String userEmail = emailMap.get(changePwdDto.getUuid());
 
@@ -139,6 +145,8 @@ public class UserService {
         user.updatePassword(changePwdDto.getNewPassword() ,passwordEncoder);
     }
 
+
+    /// 로직
 
     //==검증 로직==//
     private void validateDuplicateUser(Users user) {
@@ -158,7 +166,7 @@ public class UserService {
         return userRepository.existsByEmailAndName(email, username);
     }
 
-    //==빌더 생성==//
+    /// 빌더
 
     private UserResponseDto buildUserResponseDto(Users user) {
         return UserResponseDto.builder()
@@ -167,6 +175,7 @@ public class UserService {
                 .name(user.getName())
                 .nickname(user.getNickname())
                 .phoneNumber(user.getPhoneNumber())
+                .tier(user.getTier())
                 .build();
     }
 
@@ -178,6 +187,7 @@ public class UserService {
                 .nickname(user.getNickname())
                 .phoneNumber(user.getPhoneNumber())
                 .joinedGroups(joinedGroups)
+                .tier(user.getTier())
                 .build();
     }
 }
