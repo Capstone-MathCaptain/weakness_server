@@ -11,4 +11,6 @@ public class recordStartResponseDto {
 
     private Long userDailyGoal;
 
+    private Long remainingDailyGoal;
+
 }

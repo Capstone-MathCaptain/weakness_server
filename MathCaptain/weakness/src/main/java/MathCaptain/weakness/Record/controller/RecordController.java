@@ -1,5 +1,6 @@
 package MathCaptain.weakness.Record.controller;
 
+import MathCaptain.weakness.Record.dto.request.recordEndRequestDto;
 import MathCaptain.weakness.Record.dto.request.recordStartRequestDto;
 import MathCaptain.weakness.Record.dto.response.recordStartResponseDto;
 import MathCaptain.weakness.Record.dto.response.recordSummaryResponseDto;
@@ -23,8 +24,7 @@ public class RecordController {
     }
 
     @PostMapping("/end/{recordId}")
-    public ApiResponse<recordSummaryResponseDto> endActivity(@PathVariable Long recordId) {
-        recordSummaryResponseDto summary = recordService.endActivity(recordId);
-        return ApiResponse.ok(summary);
+    public ApiResponse<recordSummaryResponseDto> endActivity(@PathVariable Long recordId, @RequestBody recordEndRequestDto requestDto) {
+        return ApiResponse.ok(recordService.endActivity(recordId, requestDto));
     }
 }
