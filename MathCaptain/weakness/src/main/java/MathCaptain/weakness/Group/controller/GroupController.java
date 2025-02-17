@@ -13,7 +13,6 @@ import MathCaptain.weakness.Group.service.GroupService;
 import MathCaptain.weakness.Group.dto.request.GroupCreateRequestDto;
 import MathCaptain.weakness.Group.service.RelationService;
 import MathCaptain.weakness.global.Api.ApiResponse;
-import MathCaptain.weakness.global.Security.jwt.JwtService;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;

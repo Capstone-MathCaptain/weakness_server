@@ -29,5 +29,7 @@ public class GroupDetailResponseDto {
 
     private String group_image_url;
 
-    private Map<DayOfWeek, Integer> weeklyGoalAcheive;
+    private Map<DayOfWeek, Integer> weeklyGoalAchieve;
+
+    private Long memberCount;
 }
