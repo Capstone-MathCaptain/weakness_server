@@ -1,0 +1,147 @@
+package MathCaptain.weakness.Record.service;
+
+import MathCaptain.weakness.Group.domain.RelationBetweenUserAndGroup;
+import MathCaptain.weakness.Group.repository.RelationRepository;
+import MathCaptain.weakness.Record.domain.ActivityRecord;
+import MathCaptain.weakness.Record.dto.response.recordStartResponseDto;
+import MathCaptain.weakness.Record.dto.response.recordSummaryResponseDto;
+import MathCaptain.weakness.Record.repository.RecordRepository;
+import MathCaptain.weakness.User.domain.Users;
+import MathCaptain.weakness.User.repository.UserRepository;
+import MathCaptain.weakness.global.Security.jwt.JwtService;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.util.Optional;
+
+@Slf4j
+@Service
+@Transactional
+@RequiredArgsConstructor
+public class RecordService {
+
+    private final RecordRepository recordRepository;
+    private final RelationRepository relationRepository;
+    private final UserRepository userRepository;
+    private final JwtService jwtService;
+
+    // 기록 시작
+    public recordStartResponseDto startRecord(String accessToken, Long groupId) {
+        // 사용자 식별
+        String userEmail = jwtService.extractEmail(accessToken)
+                .orElseThrow(() -> new IllegalArgumentException("토큰이 유효하지 않습니다."));
+
+        RelationBetweenUserAndGroup relation = relationRepository.findByMember_EmailAndJoinGroup_Id(userEmail, groupId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 관계가 존재하지 않습니다."));
+
+        // 기존 미완료된 활동이 있는지 확인
+        Optional<ActivityRecord> existingActivity = recordRepository.findByUserAndGroupAndEndTimeIsNull(
+                relation.getMember(), relation.getJoinGroup());
+
+        if (existingActivity.isPresent()) {
+            recordRepository.delete(existingActivity.get());
+            log.info("기존 미완료된 활동 삭제");
+        }
+
+        ActivityRecord record = ActivityRecord.builder()
+                .user(relation.getMember())
+                .group(relation.getJoinGroup())
+                .startTime(LocalDateTime.now())
+                .build();
+
+        Long recordId = recordRepository.save(record).getId();
+
+        return recordStartResponseDto.builder()
+                .recordId(recordId)
+                .userDailyGoal(relation.getPersonalDailyGoal() * 60L)
+                .build();
+    }
+
+    // 기록 종료
+    public recordSummaryResponseDto endActivity(Long recordId) {
+        // 진행 중인 활동 찾기 (존재하지 않으면 예외 발생)
+        ActivityRecord record = recordRepository.findById(recordId)
+                .orElseThrow(() -> new IllegalArgumentException("현재 진행중인 인증이 존재하지 않습니다."));
+
+        // 종료 시간 업데이트
+        record.updateEndTime(LocalDateTime.now());
+        record.calculateDuration(); // 활동 시간 계산 (분 단위)
+
+        RelationBetweenUserAndGroup relation = relationRepository.findByMemberIdAndJoinGroupId(
+                record.getUser().getUserId(),
+                record.getGroup().getId()
+        ).orElseThrow(() -> new IllegalArgumentException("해당 그룹에 속하지 않은 사용자입니다."));
+
+        Long remainingDailyGoalMinutes = checkDailyGoalAchieved(record, relation);
+        int remainingWeeklyGoal = checkWeeklyGoalAchieved(record, relation);
+
+        recordRepository.save(record);
+
+        return buildRecordSummaryResponseDto(record, remainingDailyGoalMinutes, remainingWeeklyGoal);
+    }
+
+    //==비지니스 로직==//
+
+    // 일간 목표 달성 여부 확인 및 업데이트
+    private Long checkDailyGoalAchieved(ActivityRecord activityRecord, RelationBetweenUserAndGroup relation) {
+
+        long remainingDailyGoalMinutes = 0L;
+
+        // 일간 달성 시간 업데이트 (분)
+        if (relation.getPersonalDailyGoalAchieve() == null) {
+            relation.updatePersonalDailyGoalAchieved(activityRecord.getDurationInMinutes());
+        } else {
+            relation.updatePersonalDailyGoalAchieved(activityRecord.getDurationInMinutes() + relation.getPersonalDailyGoalAchieve());
+        }
+
+        // 일간 목표 시간 달성시
+        if (relation.getPersonalDailyGoalAchieve() >= relation.getPersonalDailyGoal()) {
+            activityRecord.updateDailyGoalAchieved(true);
+
+            // 주간 목표 + 1 (일간 목표 충족시 업데이트)
+            int weeklyAchieved = relation.getPersonalWeeklyGoalAchieve() + 1;
+            relation.updatePersonalWeeklyGoalAchieved(weeklyAchieved);
+
+        // 일간 목표 시간 미달성시 남은 시간을 반환
+        } else {
+            remainingDailyGoalMinutes = (relation.getPersonalDailyGoal() * 60L) - activityRecord.getDurationInMinutes();
+            activityRecord.updateDailyGoalAchieved(false);
+        }
+
+        return remainingDailyGoalMinutes;
+    }
+
+    private int checkWeeklyGoalAchieved(ActivityRecord activityRecord, RelationBetweenUserAndGroup relation) {
+
+        int remainingWeeklyGoal = 0;
+
+        // 주간 목표 달성 여부 확인 & 업데이트
+        // 주간 목표 충족시
+        if (activityRecord.getDurationInMinutes() >= relation.getPersonalWeeklyGoal()) {
+            activityRecord.updateWeeklyGoalAchieved(true);
+        }
+        // 주간 목표 미달성시 남은 일 수를 알려줌
+        else {
+
+            remainingWeeklyGoal = relation.getPersonalWeeklyGoal() - relation.getPersonalWeeklyGoalAchieve();
+            activityRecord.updateWeeklyGoalAchieved(false);
+        }
+
+        return remainingWeeklyGoal;
+    }
+
+    private recordSummaryResponseDto buildRecordSummaryResponseDto(ActivityRecord activityRecord, Long remainingDailyGoalMinutes, int remainingWeeklyGoal) {
+        return recordSummaryResponseDto.builder()
+                .userName(activityRecord.getUser().getName())
+                .groupName(activityRecord.getGroup().getName())
+                .durationInMinutes(activityRecord.getDurationInMinutes())
+                .dailyGoalAchieved(activityRecord.isDailyGoalAchieved())
+                .weeklyGoalAchieved(activityRecord.isWeeklyGoalAchieved())
+                .remainingDailyGoalMinutes(remainingDailyGoalMinutes)
+                .remainingWeeklyGoalDays(remainingWeeklyGoal)
+                .build();
+    }
+}
