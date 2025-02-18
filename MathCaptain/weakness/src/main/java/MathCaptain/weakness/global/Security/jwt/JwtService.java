@@ -3,6 +3,7 @@ package MathCaptain.weakness.global.Security.jwt;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
@@ -18,7 +19,7 @@ public interface JwtService {
 
     void sendAccessAndRefreshToken(HttpServletResponse response, String accessToken, String refreshToken);
 
-    void sendAccessToken(HttpServletResponse response, String accessToken);
+    void sendAccessToken(HttpServletResponse response, String accessToken) throws IOException;
 
     Optional<String> extractAccessToken(HttpServletRequest request);
 

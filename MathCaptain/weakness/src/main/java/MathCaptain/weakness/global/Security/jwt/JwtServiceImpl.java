@@ -16,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.util.*;
 
 @Slf4j
@@ -124,13 +125,17 @@ public class JwtServiceImpl implements JwtService{
 
     // AccessToken을 클라리언트에게 전달
     @Override
-    public void sendAccessToken(HttpServletResponse response, String accessToken) {
+    public void sendAccessToken(HttpServletResponse response, String accessToken) throws IOException {
         response.setStatus(HttpServletResponse.SC_OK);
 
         setAccessTokenHeader(response, accessToken);
 
+        response.getWriter().write("새로운 accessToken이 발급되었습니다.");
+
         Map<String, String> tokenMap = new HashMap<>();
         tokenMap.put(ACCESS_TOKEN_SUBJECT, accessToken);
+
+        log.info("AccessToken 재발급 완료");
     }
 
     // 클라이언트에게서 전달받은 AccessToken을 HTTP 헤더에서 추출
@@ -182,6 +187,8 @@ public class JwtServiceImpl implements JwtService{
 
     @Override
     public void setAccessTokenHeader(HttpServletResponse response, String accessToken) {
+        response.setCharacterEncoding("UTF-8");
+        response.setContentType("text/plain; charset=UTF-8");
         response.setHeader(accessHeader, accessToken);
     }
 
