@@ -17,6 +17,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
+import org.springframework.web.servlet.view.RedirectView;
 
 import java.io.IOException;
 import java.util.List;
@@ -47,27 +48,17 @@ public class LoginSuccessJWTProvideHandler extends SimpleUrlAuthenticationSucces
         // TODO
         // 사용자의 그룹 정보 조회를 리다이렉트를 이용하여 옮기는 것이 좋아보임
 
-        List<Long> groupsId = relationRepository.findGroupsIdByEmail(email);
-
-        List<GroupResponseDto> groupResponseDtoList = groupService.getUsersGroups(groupsId);
-
-        // groupResponseDtoList를 JSON 형태로 변환
-        ApiResponse<List<GroupResponseDto>> apiResponse = ApiResponse.ok(groupResponseDtoList);
-
-        // ApiResponse를 JSON 형식으로 변환
-        String jsonResponse = objectMapper.writeValueAsString(apiResponse);
-
         // JSON 응답 설정 및 전송
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
-        // JSON 형태로 변환된 데이터를 응답
-        response.getWriter().write(jsonResponse);
+
+        // 리다이렉트
+//        response.setHeader("Authorization", "Bearer " + accessToken);
+//        response.sendRedirect("/group");
 
         log.info( "로그인에 성공합니다. email: {}" , email);
         log.info( "AccessToken 을 발급합니다. AccessToken: {}" ,accessToken);
         log.info( "RefreshToken 을 발급합니다. RefreshToken: {}" ,refreshToken);
-        log.info( "사용자의 그룹 정보를 조회합니다. 사용자가 속한 그룹들의 ID: {}" ,groupsId);
-
     }
 
     private String extractEmail(Authentication authentication) {
