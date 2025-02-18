@@ -41,9 +41,10 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
+        // 로그인 요청은 필터를 통과시키지 않음
         if (request.getRequestURI().equals(NO_CHECK_URL)) {
             filterChain.doFilter(request, response);
-            return; //안해주면 아래로 내려가서 계속 필터를 진행하게됨
+            return;
         }
 
         // refreshToken이 존재하고 유효하다면 필터 통과
@@ -52,7 +53,9 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
                 .filter(jwtService::isTokenValid)
                 .orElse(null); // RefreshToken이 없거나 유효하지 않으면 null을 반환
 
+        log.info("refreshToken: {}", refreshToken != null);
         if (refreshToken != null){
+            log.info("AccessToken 재발급 요청");
             checkRefreshTokenAndReIssueAccessToken(response, refreshToken); // refreshToken으로 유저 정보를 찾아오고, 존재하면 AccessToken을 재발급
             return; // 인증을 처리하지 않게 하기 위해 return
         }
@@ -84,7 +87,13 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
     private void checkRefreshTokenAndReIssueAccessToken(HttpServletResponse response, String refreshToken) {
         // 해당하는 refreshToken이 DB에 존재하면, user에게 AccessToken 발급
         userRepository.findByRefreshToken(refreshToken).ifPresent(
-                users -> jwtService.sendAccessToken(response, jwtService.createAccessToken(users.getEmail()))
+                users -> {
+                    try {
+                        jwtService.sendAccessToken(response, jwtService.createAccessToken(users.getEmail()));
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
         );
 
     }
