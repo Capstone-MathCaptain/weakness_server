@@ -30,6 +30,14 @@ public class GroupController {
     private final GroupJoinService groupJoinService;
 
     /// 그룹 CRUD
+
+    // 유저가 속한 그룹을 모두 보여줌
+    @GetMapping("/group")
+    public ApiResponse<List<GroupResponseDto>> getUsersGroups(@RequestHeader("Authorization") String authorizationHeader) {
+        String accessToken = authorizationHeader.replace("Bearer ", "");
+        return ApiResponse.ok(groupService.getUsersGroups(accessToken));
+    }
+
     // 그룹 조회
     @GetMapping("/group/{groupId}")
     public ApiResponse<GroupResponseDto> groupInfo(@PathVariable Long groupId) {
@@ -111,12 +119,6 @@ public class GroupController {
         return relationService.getRelationInfo(relationId);
     }
 
-    // 유저가 속한 그룹을 모두 보여줌
-    @GetMapping("/group")
-    public ApiResponse<List<GroupResponseDto>> getUsersGroups(@RequestHeader("Authorization") String authorizationHeader) {
-        String accessToken = authorizationHeader.replace("Bearer ", "");
-        return ApiResponse.ok(groupService.getUsersGroups(accessToken));
-    }
 
     // 그룹 상세 정보
     @GetMapping("/group/detail/{groupId}")

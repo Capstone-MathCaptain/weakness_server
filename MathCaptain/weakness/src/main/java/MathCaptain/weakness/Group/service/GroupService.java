@@ -154,15 +154,6 @@ public class GroupService {
     }
 
     /// 비지니스 로직
-    public boolean isGroupMember(Long groupId, Long userId) {
-        Group group = groupRepository.findById(groupId)
-                .orElseThrow(() -> new ResourceNotFoundException("해당 그룹이 존재하지 않습니다."));
-
-        Users member = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("해당 유저가 존재하지 않습니다."));
-
-        return relationRepository.findByMemberAndJoinGroup(member, group).isPresent();
-    }
 
     /// 검증 로직
     private void updateGroupInfo(Group group, GroupUpdateRequestDto groupUpdateRequestDto) {
