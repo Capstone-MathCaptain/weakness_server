@@ -51,10 +51,7 @@ public class LoginSuccessJWTProvideHandler extends SimpleUrlAuthenticationSucces
         // JSON 응답 설정 및 전송
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
-
-        // 리다이렉트
-//        response.setHeader("Authorization", "Bearer " + accessToken);
-//        response.sendRedirect("/group");
+        response.setStatus(HttpServletResponse.SC_OK);
 
         log.info( "로그인에 성공합니다. email: {}" , email);
         log.info( "AccessToken 을 발급합니다. AccessToken: {}" ,accessToken);
