@@ -27,7 +27,7 @@ public class GroupDetailResponseDto {
 
     private List<String> hashtags;
 
-    private String group_image_url;
+    private String groupImageUrl;
 
     private Map<DayOfWeek, Integer> weeklyGoalAchieve;
 
