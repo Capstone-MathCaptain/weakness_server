@@ -78,7 +78,7 @@ public class SecurityConfig {
                 .addFilterAfter(jsonUsernamePasswordLoginFilter(), LogoutFilter.class) // 추가 : 커스터마이징 된 필터를 SpringSecurityFilterChain에 등록
                 .authorizeHttpRequests((authorize) -> authorize
                         .requestMatchers("/static/**", "/templates/**").permitAll() // 정적 리소스 접근 허용
-                        .requestMatchers("/user/signup", "/login", "/user/reset/password", "/user/find/password").permitAll() // 접근 허용된 URL
+                        .requestMatchers("/user/signup", "/login", "/user/find/email","/user/reset/password", "/user/find/password").permitAll() // 접근 허용된 URL
                         .anyRequest().authenticated()) // 나머지 URL은 인증된 사용자만 접근 가능
                 .logout((logout) -> logout
                         .logoutSuccessUrl("/login")

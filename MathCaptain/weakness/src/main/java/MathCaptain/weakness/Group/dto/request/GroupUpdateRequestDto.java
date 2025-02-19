@@ -21,12 +21,12 @@ public class GroupUpdateRequestDto {
     private String groupName;
 
     @Range(min = 1, max = 24, message = "최소 일일 시간 설정 오류!")
-    private int min_daily_hours;
+    private int minDailyHours;
 
     @Range(min = 1, max = 7, message = "최소 주간 일수 설정 오류!")
-    private int min_weekly_days;
+    private int minWeeklyDays;
 
     private List<String> hashtags;
 
-    private String group_image_url;
+    private String groupImageUrl;
 }

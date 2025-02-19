@@ -35,10 +35,7 @@ public class RelationService {
     private final RelationRepository relationRepository;
     private final GroupRepository groupRepository;
     private final UserRepository userRepository;
-    private final GroupJoinRepository groupJoinRepository;
     private final JwtService jwtService;
-
-
 
     // 그룹 탈퇴
     public ApiResponse<?> leaveGroup(String accessToken, Long groupId) {
@@ -122,12 +119,12 @@ public class RelationService {
                 .groupId(relation.getJoinGroup().getId())
                 .groupName(relation.getJoinGroup().getName())
                 .category(relation.getJoinGroup().getCategory())
-                .min_daily_hours(relation.getJoinGroup().getMin_daily_hours())
-                .min_weekly_days(relation.getJoinGroup().getMin_weekly_days())
+                .minDailyHours(relation.getJoinGroup().getMin_daily_hours())
+                .minWeeklyDays(relation.getJoinGroup().getMin_weekly_days())
                 .group_point(relation.getJoinGroup().getGroup_point())
                 .hashtags(relation.getJoinGroup().getHashtags())
                 .disturb_mode(relation.getJoinGroup().getDisturb_mode())
-                .group_image_url(relation.getJoinGroup().getGroup_image_url())
+                .groupImageUrl(relation.getJoinGroup().getGroup_image_url())
                 .build();
 
         UserResponseDto member = UserResponseDto.builder()

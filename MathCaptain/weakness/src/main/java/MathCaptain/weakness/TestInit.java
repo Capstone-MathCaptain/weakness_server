@@ -39,13 +39,10 @@ public class TestInit {
     public void init() {
 
         String email1 = "dlwpdyd201@naver.com";
-//        String refreshToken1 = JwtTestUtil.createTestJwt(email1);
 
         String email2 = "test2@example.com";
-//        String refreshToken2 = JwtTestUtil.createTestJwt(email2);
 
-        String email3 = "test";
-//        String refreshToken3 = JwtTestUtil.createTestJwt(email3);
+        String email3 = "test@test.com";
 
         /// 테스트 유저 생성
         Users users1 = Users.builder()

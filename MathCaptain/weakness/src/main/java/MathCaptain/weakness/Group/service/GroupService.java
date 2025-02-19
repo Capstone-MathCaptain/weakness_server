@@ -39,7 +39,7 @@ public class GroupService {
     // 그룹 생성 (CREATE)
     public ApiResponse<GroupResponseDto> createGroup(GroupCreateRequestDto groupCreateRequestDto, String accessToken, HttpServletResponse response) {
 
-        if (groupRepository.existsByName(groupCreateRequestDto.getGroup_name())) {
+        if (groupRepository.existsByName(groupCreateRequestDto.getGroupName())) {
             throw new DuplicatedException("이미 존재하는 그룹 이름입니다.");
         }
 
@@ -154,15 +154,6 @@ public class GroupService {
     }
 
     /// 비지니스 로직
-    public boolean isGroupMember(Long groupId, Long userId) {
-        Group group = groupRepository.findById(groupId)
-                .orElseThrow(() -> new ResourceNotFoundException("해당 그룹이 존재하지 않습니다."));
-
-        Users member = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("해당 유저가 존재하지 않습니다."));
-
-        return relationRepository.findByMemberAndJoinGroup(member, group).isPresent();
-    }
 
     /// 검증 로직
     private void updateGroupInfo(Group group, GroupUpdateRequestDto groupUpdateRequestDto) {
@@ -175,20 +166,20 @@ public class GroupService {
             group.updateName(groupUpdateRequestDto.getGroupName());
         }
 
-        if (group.getMin_daily_hours() != groupUpdateRequestDto.getMin_daily_hours()) {
-            group.updateMinDailyHours(groupUpdateRequestDto.getMin_daily_hours());
+        if (group.getMin_daily_hours() != groupUpdateRequestDto.getMinDailyHours()) {
+            group.updateMinDailyHours(groupUpdateRequestDto.getMinDailyHours());
         }
 
-        if (group.getMin_weekly_days() != groupUpdateRequestDto.getMin_weekly_days()) {
-            group.updateMinWeeklyDays(groupUpdateRequestDto.getMin_weekly_days());
+        if (group.getMin_weekly_days() != groupUpdateRequestDto.getMinWeeklyDays()) {
+            group.updateMinWeeklyDays(groupUpdateRequestDto.getMinWeeklyDays());
         }
 
         if (!group.getHashtags().equals(groupUpdateRequestDto.getHashtags())) {
             group.updateHashtags(groupUpdateRequestDto.getHashtags());
         }
 
-        if (!group.getGroup_image_url().equals(groupUpdateRequestDto.getGroup_image_url())) {
-            group.updateGroupImageUrl(groupUpdateRequestDto.getGroup_image_url());
+        if (!group.getGroup_image_url().equals(groupUpdateRequestDto.getGroupImageUrl())) {
+            group.updateGroupImageUrl(groupUpdateRequestDto.getGroupImageUrl());
         }
     }
 
@@ -209,13 +200,13 @@ public class GroupService {
                 .leaderName(group.getLeader().getName())
                 .groupName(group.getName())
                 .category(group.getCategory())
-                .min_daily_hours(group.getMin_daily_hours())
-                .min_weekly_days(group.getMin_weekly_days())
+                .minDailyHours(group.getMin_daily_hours())
+                .minWeeklyDays(group.getMin_weekly_days())
                 .group_point(group.getGroup_point())
                 .hashtags(group.getHashtags())
                 .disturb_mode(group.getDisturb_mode())
                 .created_date(group.getCreate_date())
-                .group_image_url(group.getGroup_image_url())
+                .groupImageUrl(group.getGroup_image_url())
                 .build();
     }
 
@@ -223,14 +214,14 @@ public class GroupService {
 
         return Group.builder()
                 .leader(leader)
-                .name(groupCreateRequestDto.getGroup_name())
+                .name(groupCreateRequestDto.getGroupName())
                 .category(groupCreateRequestDto.getCategory())
-                .min_daily_hours(groupCreateRequestDto.getMin_daily_hours())
-                .min_weekly_days(groupCreateRequestDto.getMin_weekly_days())
-                .group_point(groupCreateRequestDto.getGroup_point())
+                .min_daily_hours(groupCreateRequestDto.getMinDailyHours())
+                .min_weekly_days(groupCreateRequestDto.getMinWeeklyDays())
+                .group_point(groupCreateRequestDto.getGroupPoint())
                 .hashtags(groupCreateRequestDto.getHashtags())
                 .disturb_mode(groupCreateRequestDto.getDisturb_mode())
-                .group_image_url(groupCreateRequestDto.getGroup_image_url())
+                .group_image_url(groupCreateRequestDto.getGroupImageUrl())
                 .build();
     }
 
@@ -244,7 +235,7 @@ public class GroupService {
                 .minWeeklyDays(group.getMin_weekly_days())
                 .groupPoint(group.getGroup_point())
                 .hashtags(group.getHashtags())
-                .group_image_url(group.getGroup_image_url())
+                .groupImageUrl(group.getGroup_image_url())
                 .weeklyGoalAchieve(group.getWeeklyGoalAchieve())
                 .memberCount(memberCount)
                 .build();

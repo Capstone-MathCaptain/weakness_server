@@ -21,9 +21,9 @@ public class GroupResponseDto {
 
     private CategoryStatus category;
 
-    private int min_daily_hours;
+    private int minDailyHours;
 
-    private int min_weekly_days;
+    private int minWeeklyDays;
 
     private Long group_point;
 
@@ -33,5 +33,5 @@ public class GroupResponseDto {
 
     private LocalDate created_date;
 
-    private String group_image_url;
+    private String groupImageUrl;
 }
