@@ -1,9 +1,9 @@
 package MathCaptain.weakness.Ranking.domain;
 
+import MathCaptain.weakness.User.domain.Users;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import MathCaptain.weakness.User; // 올바른 User 엔티티를 import
 
 @Getter
 @NoArgsConstructor
@@ -16,11 +16,11 @@ public class PersonalRanking {
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    private Users user;
 
     private Long personalPoint;
 
-    public PersonalRanking(User user, Long personalPoint) {
+    public PersonalRanking(Users user, Long personalPoint) {
         this.user = user;
         this.personalPoint = personalPoint;
     }

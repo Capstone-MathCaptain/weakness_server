@@ -1,5 +1,6 @@
 package MathCaptain.weakness.Ranking.domain;
 
+import MathCaptain.weakness.Group.domain.Group;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
