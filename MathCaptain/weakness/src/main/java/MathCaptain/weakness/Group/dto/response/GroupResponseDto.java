@@ -25,7 +25,7 @@ public class GroupResponseDto {
 
     private int minWeeklyDays;
 
-    private Long group_point;
+    private Long groupPoint;
 
     private List<String> hashtags;
 

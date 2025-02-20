@@ -121,7 +121,7 @@ public class RelationService {
                 .category(relation.getJoinGroup().getCategory())
                 .minDailyHours(relation.getJoinGroup().getMin_daily_hours())
                 .minWeeklyDays(relation.getJoinGroup().getMin_weekly_days())
-                .group_point(relation.getJoinGroup().getGroup_point())
+                .groupPoint(relation.getJoinGroup().getGroup_point())
                 .hashtags(relation.getJoinGroup().getHashtags())
                 .disturb_mode(relation.getJoinGroup().getDisturb_mode())
                 .groupImageUrl(relation.getJoinGroup().getGroup_image_url())
