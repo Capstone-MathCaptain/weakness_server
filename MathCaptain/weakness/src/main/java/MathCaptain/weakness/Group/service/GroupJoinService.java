@@ -140,12 +140,12 @@ public class GroupJoinService {
             throw new IllegalArgumentException("해당 멤버가 이미 가입되어 있습니다.");
         }
 
-        if (personalDailyGoal < joinGroup.getMin_daily_hours()) {
-            throw new IllegalArgumentException("하루 목표 시간은 " + joinGroup.getMin_daily_hours() + "시간 이상이어야 합니다.");
+        if (personalDailyGoal < joinGroup.getMinDailyHours()) {
+            throw new IllegalArgumentException("하루 목표 시간은 " + joinGroup.getMinDailyHours() + "시간 이상이어야 합니다.");
         }
 
-        if (personalWeeklyGoal < joinGroup.getMin_weekly_days()) {
-            throw new IllegalArgumentException("주간 목표 일수는 " + joinGroup.getMin_weekly_days() + "일 이상이어야 합니다.");
+        if (personalWeeklyGoal < joinGroup.getMinWeeklyDays()) {
+            throw new IllegalArgumentException("주간 목표 일수는 " + joinGroup.getMinWeeklyDays() + "일 이상이어야 합니다.");
         }
     }
 
@@ -165,7 +165,7 @@ public class GroupJoinService {
                 .groupJoinId(groupJoin.getGroupJoinId())
                 .userId(groupJoin.getUser().getUserId())
                 .userNickname(groupJoin.getUser().getNickname())
-//                .userPoint(groupJoin.getUser().get())
+                .userPoint(groupJoin.getUser().getUserPoint())
                 .personalDailyGoal(groupJoin.getPersonalDailyGoal())
                 .personalWeeklyGoal(groupJoin.getPersonalWeeklyGoal())
                 .build();

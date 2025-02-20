@@ -5,10 +5,12 @@ import MathCaptain.weakness.Recruitment.domain.Recruitment;
 import MathCaptain.weakness.Recruitment.dto.request.CreateCommentRequestDto;
 import MathCaptain.weakness.Recruitment.dto.request.UpdateCommentRequestDto;
 import MathCaptain.weakness.Recruitment.dto.response.CommentResponseDto;
+import MathCaptain.weakness.Recruitment.dto.response.CommentSuccessDto;
 import MathCaptain.weakness.Recruitment.repository.CommentRepository;
 import MathCaptain.weakness.Recruitment.repository.RecruitmentRepository;
 import MathCaptain.weakness.User.domain.Users;
 import MathCaptain.weakness.User.repository.UserRepository;
+import MathCaptain.weakness.global.Api.ApiResponse;
 import MathCaptain.weakness.global.Security.jwt.JwtService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,7 +34,7 @@ public class CommentService {
     /// 댓글 CRUD
 
     // 댓글 생성
-    public Long createComment(String accessToken, Long recruitmentId, CreateCommentRequestDto createCommentRequestDto) {
+    public ApiResponse<CommentSuccessDto> createComment(String accessToken, Long recruitmentId, CreateCommentRequestDto createCommentRequestDto) {
 
         String email = jwtService.extractEmail(accessToken)
                 .orElseThrow(() -> new IllegalArgumentException("토큰이 유효하지 않습니다."));
@@ -53,11 +55,14 @@ public class CommentService {
 
         commentRepository.save(comment);
 
-        return comment.getCommentId();
+        return ApiResponse.ok(CommentSuccessDto.builder()
+                .commentId(comment.getCommentId())
+                .recruitmentId(recruitmentId)
+                .build());
     }
 
     // 댓글 수정
-    public void updateComment(Long recruitmentId, Long commentId, UpdateCommentRequestDto updateCommentRequestDto) {
+    public ApiResponse<CommentSuccessDto> updateComment(Long recruitmentId, Long commentId, UpdateCommentRequestDto updateCommentRequestDto) {
 
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 댓글이 없습니다."));
@@ -70,12 +75,16 @@ public class CommentService {
             comment.updateContent(updateCommentRequestDto.getContent());
         }
 
-        // 알림 기능 추가
-        log.info("updateComment");
+        // TODO 알림 기능 추가
+
+        return ApiResponse.ok(CommentSuccessDto.builder()
+                .commentId(commentId)
+                .recruitmentId(recruitmentId)
+                .build());
     }
 
     // 댓글 삭제
-    public void deleteComment(Long recruitmentId, Long commentId) {
+    public ApiResponse<CommentSuccessDto> deleteComment(Long recruitmentId, Long commentId) {
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 댓글이 없습니다."));
 
@@ -84,6 +93,11 @@ public class CommentService {
         }
 
         commentRepository.delete(comment);
+
+        return ApiResponse.ok(CommentSuccessDto.builder()
+                .commentId(commentId)
+                .recruitmentId(recruitmentId)
+                .build());
     }
 
     // 댓글 조회

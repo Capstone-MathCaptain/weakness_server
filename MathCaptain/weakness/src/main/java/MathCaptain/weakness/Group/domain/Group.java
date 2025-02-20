@@ -4,15 +4,12 @@ import MathCaptain.weakness.Group.enums.CategoryStatus;
 import MathCaptain.weakness.Recruitment.domain.Recruitment;
 import MathCaptain.weakness.User.domain.Users;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.validator.constraints.Range;
 
 import java.time.DayOfWeek;
-import java.time.Duration;
 import java.time.LocalDate;
 import java.util.EnumMap;
 import java.util.List;
@@ -46,22 +43,20 @@ public class Group {
     private CategoryStatus category;
 
     // 하루 최소 수행 시간
-    private int min_daily_hours;
+    private int minDailyHours;
 
-    private int min_weekly_days;
+    private int minWeeklyDays;
 
-    private Long group_point;
+    private Long groupPoint;
 
     @ElementCollection
     @CollectionTable(name = "group_hashtags", joinColumns = @JoinColumn(name = "group_id"))
     @Column(name = "hashtag")
     private List<String> hashtags;
 
-    private Boolean disturb_mode;
+    private LocalDate createDate;
 
-    private LocalDate create_date;
-
-    private String group_image_url;
+    private String groupImageUrl;
 
     // 요일별 목표 인증을 완료한 멤버들의 수를 저장하는 Map
     @ElementCollection
@@ -75,7 +70,7 @@ public class Group {
 
     @PrePersist
     protected void onCreate() {
-        this.create_date = LocalDate.now();
+        this.createDate = LocalDate.now();
 
         if (this.weeklyGoalAchieve == null) {
             this.weeklyGoalAchieve = new EnumMap<>(DayOfWeek.class);
@@ -96,27 +91,23 @@ public class Group {
     }
 
     public void updateMinDailyHours(int min_daily_hours) {
-        this.min_daily_hours = min_daily_hours;
+        this.minDailyHours = min_daily_hours;
     }
 
     public void updateMinWeeklyDays(int min_weekly_days) {
-        this.min_weekly_days = min_weekly_days;
+        this.minWeeklyDays = min_weekly_days;
     }
 
     public void updateGroupPoint(Long group_point) {
-        this.group_point = group_point;
+        this.groupPoint = group_point;
     }
 
     public void updateHashtags(List<String> hashtags) {
         this.hashtags = hashtags;
     }
 
-    public void updateDisturbMode(Boolean disturb_mode) {
-        this.disturb_mode = disturb_mode;
-    }
-
     public void updateGroupImageUrl(String group_image_url) {
-        this.group_image_url = group_image_url;
+        this.groupImageUrl = group_image_url;
     }
 
     public void updateWeeklyGoalAchieve(DayOfWeek dayOfWeek, int goalCount) {
@@ -134,10 +125,10 @@ public class Group {
     }
 
     public void addPoint(Long point) {
-        this.group_point += point;
+        this.groupPoint += point;
     }
 
     public void subtractPoint(Long point) {
-        this.group_point = Math.max(0, this.group_point - point);
+        this.groupPoint = Math.max(0, this.groupPoint - point);
     }
 }

@@ -11,7 +11,6 @@ import MathCaptain.weakness.Recruitment.domain.Recruitment;
 import MathCaptain.weakness.Recruitment.enums.RecruitmentStatus;
 import MathCaptain.weakness.Recruitment.repository.CommentRepository;
 import MathCaptain.weakness.Recruitment.repository.RecruitmentRepository;
-import MathCaptain.weakness.global.Security.jwt.JwtTestUtil;
 import MathCaptain.weakness.User.domain.Users;
 import MathCaptain.weakness.User.repository.UserRepository;
 import jakarta.annotation.PostConstruct;
@@ -52,7 +51,6 @@ public class TestInit {
                 .name("tester01")
                 .nickname("tester01")
                 .phoneNumber("01012345678")
-//                .refreshToken(refreshToken1)
                 .build();
 
         Users users2 = Users.builder()
@@ -62,7 +60,6 @@ public class TestInit {
                 .name("tester02")
                 .nickname("tester02")
                 .phoneNumber("01056781234")
-//                .refreshToken(refreshToken2)
                 .build();
 
         Users users3 = Users.builder()
@@ -72,7 +69,6 @@ public class TestInit {
                 .name("tester")
                 .nickname("tester")
                 .phoneNumber("01011111111")
-//                .refreshToken(refreshToken3)
                 .build();
 
 
@@ -89,12 +85,11 @@ public class TestInit {
                 .leader(leader)
                 .name("testGroup")
                 .category(CategoryStatus.STUDY)
-                .min_daily_hours(2)
-                .min_weekly_days(3)
-                .group_point(0L)
+                .minDailyHours(2)
+                .minWeeklyDays(3)
+                .groupPoint(0L)
                 .hashtags(null)
-                .disturb_mode(false)
-                .group_image_url("test")
+                .groupImageUrl("test")
                 .build();
 
         groupRepository.save(group);

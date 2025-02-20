@@ -1,25 +1,20 @@
 package MathCaptain.weakness.Group.service;
 
 import MathCaptain.weakness.Group.domain.Group;
-import MathCaptain.weakness.Group.domain.GroupJoin;
 import MathCaptain.weakness.Group.domain.RelationBetweenUserAndGroup;
 import MathCaptain.weakness.Group.dto.request.GroupJoinRequestDto;
 import MathCaptain.weakness.Group.dto.response.GroupMemberListResponseDto;
 import MathCaptain.weakness.Group.dto.response.GroupResponseDto;
 import MathCaptain.weakness.Group.dto.response.RelationResponseDto;
-import MathCaptain.weakness.Group.enums.RequestStatus;
-import MathCaptain.weakness.Group.repository.GroupJoinRepository;
 import MathCaptain.weakness.Group.repository.GroupRepository;
 import MathCaptain.weakness.User.dto.response.UserResponseDto;
 import MathCaptain.weakness.Group.enums.GroupRole;
 import MathCaptain.weakness.Group.repository.RelationRepository;
 import MathCaptain.weakness.User.domain.Users;
 import MathCaptain.weakness.User.repository.UserRepository;
-import MathCaptain.weakness.User.service.UserService;
 import MathCaptain.weakness.global.Api.ApiResponse;
 import MathCaptain.weakness.global.Security.jwt.JwtService;
 import MathCaptain.weakness.global.exception.ResourceNotFoundException;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -119,12 +114,11 @@ public class RelationService {
                 .groupId(relation.getJoinGroup().getId())
                 .groupName(relation.getJoinGroup().getName())
                 .category(relation.getJoinGroup().getCategory())
-                .minDailyHours(relation.getJoinGroup().getMin_daily_hours())
-                .minWeeklyDays(relation.getJoinGroup().getMin_weekly_days())
-                .groupPoint(relation.getJoinGroup().getGroup_point())
+                .minDailyHours(relation.getJoinGroup().getMinDailyHours())
+                .minWeeklyDays(relation.getJoinGroup().getMinWeeklyDays())
+                .groupPoint(relation.getJoinGroup().getGroupPoint())
                 .hashtags(relation.getJoinGroup().getHashtags())
-                .disturb_mode(relation.getJoinGroup().getDisturb_mode())
-                .groupImageUrl(relation.getJoinGroup().getGroup_image_url())
+                .groupImageUrl(relation.getJoinGroup().getGroupImageUrl())
                 .build();
 
         UserResponseDto member = UserResponseDto.builder()
