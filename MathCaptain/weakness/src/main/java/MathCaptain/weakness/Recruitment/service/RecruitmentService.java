@@ -9,10 +9,7 @@ import MathCaptain.weakness.Recruitment.domain.Comment;
 import MathCaptain.weakness.Recruitment.domain.Recruitment;
 import MathCaptain.weakness.Recruitment.dto.request.CreateRecruitmentRequestDto;
 import MathCaptain.weakness.Recruitment.dto.request.UpdateRecruitmentRequestDto;
-import MathCaptain.weakness.Recruitment.dto.response.CommentResponseDto;
-import MathCaptain.weakness.Recruitment.dto.response.RecruitmentCreateResponseDto;
-import MathCaptain.weakness.Recruitment.dto.response.RecruitmentDetailResponseDto;
-import MathCaptain.weakness.Recruitment.dto.response.RecruitmentResponseDto;
+import MathCaptain.weakness.Recruitment.dto.response.*;
 import MathCaptain.weakness.Recruitment.enums.RecruitmentStatus;
 import MathCaptain.weakness.Recruitment.repository.RecruitmentRepository;
 import MathCaptain.weakness.User.domain.Users;
@@ -60,7 +57,7 @@ public class RecruitmentService {
     }
 
     // 모집글 생성
-    public Long createRecruitment(String accessToken, CreateRecruitmentRequestDto createRecruitmentRequestDto) {
+    public ApiResponse<RecruitmentSuccessDto>createRecruitment(String accessToken, CreateRecruitmentRequestDto createRecruitmentRequestDto) {
 
         String email = jwtService.extractEmail(accessToken)
                 .orElseThrow(() -> new IllegalArgumentException("토큰이 유효하지 않습니다."));
@@ -70,7 +67,9 @@ public class RecruitmentService {
 
         Recruitment recruitment = buildRecruitment(author, createRecruitmentRequestDto);
 
-        return recruitmentRepository.save(recruitment).getPostId();
+        return ApiResponse.ok(RecruitmentSuccessDto.builder()
+                .recruitmentId(recruitmentRepository.save(recruitment).getPostId())
+                .build());
     }
 
     // 모집글 조회
@@ -84,7 +83,7 @@ public class RecruitmentService {
     }
 
     // 모집글 수정
-    public void updateRecruitment(Long recruitmentId, UpdateRecruitmentRequestDto updateRecruitmentRequestDto) {
+    public ApiResponse<RecruitmentSuccessDto> updateRecruitment(Long recruitmentId, UpdateRecruitmentRequestDto updateRecruitmentRequestDto) {
 
         Recruitment recruitment = recruitmentRepository.findById(recruitmentId).
                 orElseThrow(() -> new ResourceNotFoundException("해당 모집글이 없습니다."));
@@ -92,13 +91,21 @@ public class RecruitmentService {
         updateRecruitment(recruitment, updateRecruitmentRequestDto);
 
         log.info("모집글 수정 완료, 모집글 ID : {}", recruitmentId);
+
+        return ApiResponse.ok(RecruitmentSuccessDto.builder()
+                .recruitmentId(recruitmentId)
+                .build());
     }
 
-    public void deleteRecruitment(Long recruitmentId) {
+    public ApiResponse<RecruitmentSuccessDto> deleteRecruitment(Long recruitmentId) {
         Recruitment recruitment = recruitmentRepository.findById(recruitmentId)
                 .orElseThrow(() -> new ResourceNotFoundException("해당 모집글이 없습니다."));
 
         recruitmentRepository.delete(recruitment);
+
+        return ApiResponse.ok(RecruitmentSuccessDto.builder()
+                .recruitmentId(recruitmentId)
+                .build());
     }
 
     // 모집글 전체 조회

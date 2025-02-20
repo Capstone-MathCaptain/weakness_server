@@ -4,9 +4,7 @@ import MathCaptain.weakness.Recruitment.dto.request.CreateCommentRequestDto;
 import MathCaptain.weakness.Recruitment.dto.request.CreateRecruitmentRequestDto;
 import MathCaptain.weakness.Recruitment.dto.request.UpdateCommentRequestDto;
 import MathCaptain.weakness.Recruitment.dto.request.UpdateRecruitmentRequestDto;
-import MathCaptain.weakness.Recruitment.dto.response.RecruitmentCreateResponseDto;
-import MathCaptain.weakness.Recruitment.dto.response.RecruitmentDetailResponseDto;
-import MathCaptain.weakness.Recruitment.dto.response.RecruitmentResponseDto;
+import MathCaptain.weakness.Recruitment.dto.response.*;
 import MathCaptain.weakness.Recruitment.service.CommentService;
 import MathCaptain.weakness.Recruitment.service.RecruitmentService;
 import MathCaptain.weakness.global.Api.ApiResponse;
@@ -46,13 +44,10 @@ public class RecruitmentController {
 
     // 모집글 생성
     @PostMapping("/create")
-    public RedirectView createRecruitment(@Valid @RequestHeader("Authorization") String authorizationHeader,
-                                                    @RequestBody CreateRecruitmentRequestDto createRecruitmentRequestDto, HttpServletResponse httpServletResponse) {
+    public ApiResponse<RecruitmentSuccessDto> createRecruitment(@Valid @RequestHeader("Authorization") String authorizationHeader,
+                                                                @RequestBody CreateRecruitmentRequestDto createRecruitmentRequestDto) {
         String accessToken = authorizationHeader.replace("Bearer ", "");
-        Long postId = recruitmentService.createRecruitment(accessToken, createRecruitmentRequestDto);
-
-        // 모집글 상세조회로 리다이렉트
-        return new RedirectView("/recruitment/" + postId);
+        return recruitmentService.createRecruitment(accessToken, createRecruitmentRequestDto);
     }
 
     // 모집글 상세 조회
@@ -63,44 +58,35 @@ public class RecruitmentController {
 
     // 모집글 수정
     @PutMapping("/{recruitmentId}")
-    public RedirectView updateRecruitment(@Valid @PathVariable Long recruitmentId, @RequestBody UpdateRecruitmentRequestDto updateRecruitmentRequestDto) {
-
-        recruitmentService.updateRecruitment(recruitmentId, updateRecruitmentRequestDto);
-
-        return new RedirectView("/recruitment/" + recruitmentId);
+    public ApiResponse<RecruitmentSuccessDto> updateRecruitment(@Valid @PathVariable Long recruitmentId, @RequestBody UpdateRecruitmentRequestDto updateRecruitmentRequestDto) {
+        return recruitmentService.updateRecruitment(recruitmentId, updateRecruitmentRequestDto);
     }
 
     // 모집글 삭제
     @DeleteMapping("/{recruitmentId}")
-    public RedirectView deleteRecruitment(@PathVariable Long recruitmentId) {
-        recruitmentService.deleteRecruitment(recruitmentId);
-        return new RedirectView("/recruitment");
+    public ApiResponse<RecruitmentSuccessDto> deleteRecruitment(@PathVariable Long recruitmentId) {
+        return recruitmentService.deleteRecruitment(recruitmentId);
     }
 
     @PostMapping("/comment/{recruitmentId}")
-    public RedirectView createComment(@Valid @PathVariable Long recruitmentId,
-                                      @RequestHeader("Authorization") String authorizationHeader,
-                                      @RequestBody CreateCommentRequestDto createCommentRequestDto) {
+    public ApiResponse<CommentSuccessDto> createComment(@Valid @PathVariable Long recruitmentId,
+                                                        @RequestHeader("Authorization") String authorizationHeader,
+                                                        @RequestBody CreateCommentRequestDto createCommentRequestDto) {
         String accessToken = authorizationHeader.replace("Bearer ", "");
-        Long commentId = commentService.createComment(accessToken, recruitmentId, createCommentRequestDto);
-        return new RedirectView("/recruitment/" + recruitmentId + "?commentId=" + commentId);
+        return commentService.createComment(accessToken, recruitmentId, createCommentRequestDto);
     }
 
     // 댓글 수정
     @PutMapping("/comment/{recruitmentId}/{commentId}")
-    public RedirectView updateComment(@Valid @PathVariable Long recruitmentId, @PathVariable Long commentId,
-                                      @RequestHeader("Authorization") String authorizationHeader,
+    public ApiResponse<CommentSuccessDto> updateComment(@Valid @PathVariable Long recruitmentId, @PathVariable Long commentId,
                                       @RequestBody UpdateCommentRequestDto updateCommentRequestDto) {
-        String accessToken = authorizationHeader.replace("Bearer ", "");
-        commentService.updateComment(recruitmentId, commentId, updateCommentRequestDto);
-        return new RedirectView("/recruitment/" + recruitmentId + "?commentId=" + commentId);
+        return commentService.updateComment(recruitmentId, commentId, updateCommentRequestDto);
     }
 
     // 댓글 삭제
     @DeleteMapping("/comment/{recruitmentId}/{commentId}")
-    public RedirectView deleteComment(@PathVariable Long recruitmentId, @PathVariable Long commentId) {
-        commentService.deleteComment(recruitmentId, commentId);
-        return new RedirectView("/recruitment/" + recruitmentId);
+    public ApiResponse<CommentSuccessDto> deleteComment(@PathVariable Long recruitmentId, @PathVariable Long commentId) {
+        return commentService.deleteComment(recruitmentId, commentId);
     }
 
 }
