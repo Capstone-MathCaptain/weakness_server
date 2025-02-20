@@ -15,7 +15,7 @@ public class GroupJoinResponseDto {
 
     private String userNickname;
 
-//    private int userPoint;
+    private Long userPoint;
 
     private int personalDailyGoal;
 

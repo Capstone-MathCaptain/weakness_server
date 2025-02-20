@@ -32,9 +32,6 @@ public class GroupCreateRequestDto {
 
     private List<String> hashtags;
 
-    @NotNull(message = "방해 금지 모드 설정 누락!")
-    private Boolean disturb_mode;
-
     private String groupImageUrl;
 
     // leader 개인 목표
