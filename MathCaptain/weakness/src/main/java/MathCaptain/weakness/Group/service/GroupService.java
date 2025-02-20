@@ -202,7 +202,7 @@ public class GroupService {
                 .category(group.getCategory())
                 .minDailyHours(group.getMin_daily_hours())
                 .minWeeklyDays(group.getMin_weekly_days())
-                .group_point(group.getGroup_point())
+                .groupPoint(group.getGroup_point())
                 .hashtags(group.getHashtags())
                 .disturb_mode(group.getDisturb_mode())
                 .created_date(group.getCreate_date())
