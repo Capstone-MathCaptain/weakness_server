@@ -41,6 +41,7 @@ out/
 
 ### DATABASE ###
 *.mv.db
+*.trace.db
 
 ### Secret key ###
 src/main/resources/secret.properties
