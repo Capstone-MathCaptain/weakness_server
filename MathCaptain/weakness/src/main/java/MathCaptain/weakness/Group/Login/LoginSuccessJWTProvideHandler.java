@@ -1,4 +1,4 @@
-package MathCaptain.weakness.Login;
+package MathCaptain.weakness.Group.Login;
 
 import MathCaptain.weakness.Group.dto.response.GroupResponseDto;
 import MathCaptain.weakness.Group.repository.RelationRepository;

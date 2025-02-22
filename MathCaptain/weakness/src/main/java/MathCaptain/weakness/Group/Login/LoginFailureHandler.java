@@ -1,4 +1,4 @@
-package MathCaptain.weakness.Login;
+package MathCaptain.weakness.Group.Login;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
