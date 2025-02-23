@@ -8,11 +8,14 @@ import MathCaptain.weakness.Group.dto.response.GroupMemberListResponseDto;
 import MathCaptain.weakness.Group.dto.response.GroupResponseDto;
 import MathCaptain.weakness.Group.dto.response.RelationResponseDto;
 import MathCaptain.weakness.Group.service.GroupJoinService;
+import MathCaptain.weakness.User.domain.UserDetailsImpl;
+import MathCaptain.weakness.User.domain.Users;
 import MathCaptain.weakness.User.dto.response.UserResponseDto;
 import MathCaptain.weakness.Group.service.GroupService;
 import MathCaptain.weakness.Group.dto.request.GroupCreateRequestDto;
 import MathCaptain.weakness.Group.service.RelationService;
 import MathCaptain.weakness.global.Api.ApiResponse;
+import MathCaptain.weakness.global.annotation.LoginUser;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
@@ -33,9 +36,8 @@ public class GroupController {
 
     // 유저가 속한 그룹을 모두 보여줌
     @GetMapping("/group")
-    public ApiResponse<List<GroupResponseDto>> getUsersGroups(@RequestHeader("Authorization") String authorizationHeader) {
-        String accessToken = authorizationHeader.replace("Bearer ", "");
-        return ApiResponse.ok(groupService.getUsersGroups(accessToken));
+    public ApiResponse<List<GroupResponseDto>> getUsersGroups(@LoginUser Users loginUser) {
+        return ApiResponse.ok(groupService.getUsersGroups(loginUser));
     }
 
     // 그룹 조회
@@ -47,9 +49,9 @@ public class GroupController {
 
     // 그룹 생성
     @PostMapping("/group")
-    public ApiResponse<GroupResponseDto> createGroup(@Valid @RequestHeader("Authorization") String authorizationHeader, @RequestBody GroupCreateRequestDto groupCreateRequestDto, HttpServletResponse response) {
-        String accessToken = authorizationHeader.replace("Bearer ", "");
-        return groupService.createGroup(groupCreateRequestDto, accessToken, response);
+    public ApiResponse<GroupResponseDto> createGroup(@Valid @LoginUser Users loginUser,
+                                                     @RequestBody GroupCreateRequestDto groupCreateRequestDto, HttpServletResponse response) {
+        return groupService.createGroup(loginUser ,groupCreateRequestDto, response);
     }
 
     // 그룹 정보 수정
@@ -61,10 +63,9 @@ public class GroupController {
     // 그룹 가입 요청 보내기
     @PostMapping("/group/join/{groupId}")
     public ApiResponse<?> joinGroup(@Valid @PathVariable Long groupId,
-                                    @RequestHeader("Authorization") String authorizationHeader,
+                                    @LoginUser Users loginUser,
                                     @RequestBody GroupJoinRequestDto groupJoinRequestDto) {
-        String accessToken = authorizationHeader.replace("Bearer ", "");
-        return groupJoinService.joinGroupRequest(groupId, accessToken, groupJoinRequestDto);
+        return groupJoinService.joinGroupRequest(groupId, loginUser, groupJoinRequestDto);
     }
 
     // 그룹 삭제
@@ -100,9 +101,8 @@ public class GroupController {
 
     // 그룹 떠나기 (탈퇴)
     @DeleteMapping("/group/leave/{groupId}")
-    public ApiResponse<?> leaveGroup(@RequestHeader("Authorization") String authorizationHeader, @PathVariable Long groupId) {
-        String accessToken = authorizationHeader.replace("Bearer ", "");
-        return relationService.leaveGroup(accessToken, groupId);
+    public ApiResponse<?> leaveGroup(@LoginUser Users loginUser, @PathVariable Long groupId) {
+        return relationService.leaveGroup(loginUser, groupId);
     }
 
     /// 조회

@@ -41,12 +41,9 @@ public class RecruitmentService {
 
     /// 모집 CRUD
     // 모집글 작성 요청 (그룹 정보 반환)
-    public ApiResponse<RecruitmentCreateResponseDto> createRequest(String accessToken) {
+    public ApiResponse<RecruitmentCreateResponseDto> createRequest(Users user) {
 
-        String email = jwtService.extractEmail(accessToken)
-                .orElseThrow(() -> new IllegalArgumentException("토큰이 유효하지 않습니다."));
-
-        RelationBetweenUserAndGroup relation = relationRepository.findByMember_EmailAndGroupRole(email, GroupRole.LEADER)
+        RelationBetweenUserAndGroup relation = relationRepository.findByMemberAndGroupRole(user, GroupRole.LEADER)
                 .orElseThrow(() -> new IllegalArgumentException("그룹장만 모집글을 작성할 수 있습니다."));
 
         return ApiResponse.ok(RecruitmentCreateResponseDto.builder()
@@ -57,13 +54,7 @@ public class RecruitmentService {
     }
 
     // 모집글 생성
-    public ApiResponse<RecruitmentSuccessDto>createRecruitment(String accessToken, CreateRecruitmentRequestDto createRecruitmentRequestDto) {
-
-        String email = jwtService.extractEmail(accessToken)
-                .orElseThrow(() -> new IllegalArgumentException("토큰이 유효하지 않습니다."));
-
-        Users author = userRepository.findByEmail(email)
-                .orElseThrow(() -> new ResourceNotFoundException("해당 유저가 없습니다."));
+    public ApiResponse<RecruitmentSuccessDto>createRecruitment(Users author, CreateRecruitmentRequestDto createRecruitmentRequestDto) {
 
         Recruitment recruitment = buildRecruitment(author, createRecruitmentRequestDto);
 
