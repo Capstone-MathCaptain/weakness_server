@@ -25,29 +25,22 @@ import java.util.List;
 @RequiredArgsConstructor
 public class GroupJoinService {
 
-    private final UserRepository userRepository;
     private final GroupRepository groupRepository;
     private final GroupJoinRepository groupJoinRepository;
     private final RelationRepository relationRepository;
     private final RelationService relationService;
-    private final JwtService jwtService;
 
     // 그룹 참여
-    public ApiResponse<?> joinGroupRequest(Long groupId, String accessToken, GroupJoinRequestDto groupJoinRequestDto) {
-
-        Users joinUser = jwtService.extractEmail(accessToken)
-                .map(userRepository::findByEmail)
-                .map(user -> user.orElseThrow(() -> new IllegalArgumentException("해당 유저가 존재하지 않습니다.")))
-                .orElseThrow(() -> new IllegalArgumentException("토큰이 유효하지 않습니다."));
+    public ApiResponse<?> joinGroupRequest(Long groupId, Users user, GroupJoinRequestDto groupJoinRequestDto) {
 
         Group group = groupRepository.findById(groupId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 그룹이 존재하지 않습니다."));
 
         // 이미 가입한 경우 & 목표 조건 달성 여부
-        checkJoin(joinUser, group, groupJoinRequestDto.getPersonalDailyGoal(), groupJoinRequestDto.getPersonalWeeklyGoal());
+        checkJoin(user, group, groupJoinRequestDto.getPersonalDailyGoal(), groupJoinRequestDto.getPersonalWeeklyGoal());
 
         // 그룹 가입 요청 저장
-        saveJoinRequest(joinUser, group, groupJoinRequestDto);
+        saveJoinRequest(user, group, groupJoinRequestDto);
 
         // TODO
         // 해당 그룹장에게 알림 보내기

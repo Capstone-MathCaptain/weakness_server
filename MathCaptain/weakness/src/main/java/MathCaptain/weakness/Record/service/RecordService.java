@@ -36,19 +36,17 @@ public class RecordService {
     /// 기록
 
     // 기록 시작
-    public recordStartResponseDto startRecord(String accessToken, Long groupId) {
-        // 사용자 식별
-        String userEmail = jwtService.extractEmail(accessToken)
-                .orElseThrow(() -> new IllegalArgumentException("토큰이 유효하지 않습니다."));
+    public recordStartResponseDto startRecord(Users user, Long groupId) {
 
-        RelationBetweenUserAndGroup relation = relationRepository.findByMember_EmailAndJoinGroup_Id(userEmail, groupId)
+        // 사용자 식별
+        RelationBetweenUserAndGroup relation = relationRepository.findByMemberAndJoinGroup_Id(user, groupId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 관계가 존재하지 않습니다."));
 
         // 기존 미완료된 기록이 있는지 확인
-        checkRemainRecord(relation.getMember(), relation.getJoinGroup());
+        checkRemainRecord(user, relation.getJoinGroup());
 
         ActivityRecord record = ActivityRecord.builder()
-                .user(relation.getMember())
+                .user(user)
                 .group(relation.getJoinGroup())
                 .startTime(LocalDateTime.now())
                 .build();

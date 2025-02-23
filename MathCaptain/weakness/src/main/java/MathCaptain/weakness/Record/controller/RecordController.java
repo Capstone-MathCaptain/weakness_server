@@ -5,7 +5,9 @@ import MathCaptain.weakness.Record.dto.request.recordStartRequestDto;
 import MathCaptain.weakness.Record.dto.response.recordStartResponseDto;
 import MathCaptain.weakness.Record.dto.response.recordSummaryResponseDto;
 import MathCaptain.weakness.Record.service.RecordService;
+import MathCaptain.weakness.User.domain.Users;
 import MathCaptain.weakness.global.Api.ApiResponse;
+import MathCaptain.weakness.global.annotation.LoginUser;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,9 +19,8 @@ public class RecordController {
     private final RecordService recordService;
 
     @PostMapping("/start/{groupId}")
-    public ApiResponse<recordStartResponseDto> startRecord(@RequestHeader("Authorization") String authorizationHeader, @PathVariable Long groupId) {
-        String accessToken = authorizationHeader.replace("Bearer ", "");
-        recordStartResponseDto startResponse = recordService.startRecord(accessToken, groupId);
+    public ApiResponse<recordStartResponseDto> startRecord(@LoginUser Users loginUser, @PathVariable Long groupId) {
+        recordStartResponseDto startResponse = recordService.startRecord(loginUser, groupId);
         return ApiResponse.ok(startResponse);
     }
 

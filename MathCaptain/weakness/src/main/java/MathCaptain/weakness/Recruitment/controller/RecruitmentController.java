@@ -7,14 +7,13 @@ import MathCaptain.weakness.Recruitment.dto.request.UpdateRecruitmentRequestDto;
 import MathCaptain.weakness.Recruitment.dto.response.*;
 import MathCaptain.weakness.Recruitment.service.CommentService;
 import MathCaptain.weakness.Recruitment.service.RecruitmentService;
+import MathCaptain.weakness.User.domain.Users;
 import MathCaptain.weakness.global.Api.ApiResponse;
-import jakarta.servlet.http.HttpServletResponse;
+import MathCaptain.weakness.global.annotation.LoginUser;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.view.RedirectView;
 
 import java.util.List;
 
@@ -37,17 +36,15 @@ public class RecruitmentController {
 
     // 모집글 작성 요청
     @GetMapping("/create")
-    public ApiResponse<RecruitmentCreateResponseDto> createRecruitmentPage(@RequestHeader("Authorization") String authorizationHeader) {
-        String accessToken = authorizationHeader.replace("Bearer ", "");
-        return recruitmentService.createRequest(accessToken);
+    public ApiResponse<RecruitmentCreateResponseDto> createRecruitmentPage(@LoginUser Users loginUser) {
+         return recruitmentService.createRequest(loginUser);
     }
 
     // 모집글 생성
     @PostMapping("/create")
-    public ApiResponse<RecruitmentSuccessDto> createRecruitment(@Valid @RequestHeader("Authorization") String authorizationHeader,
+    public ApiResponse<RecruitmentSuccessDto> createRecruitment(@Valid @LoginUser Users loginUser,
                                                                 @RequestBody CreateRecruitmentRequestDto createRecruitmentRequestDto) {
-        String accessToken = authorizationHeader.replace("Bearer ", "");
-        return recruitmentService.createRecruitment(accessToken, createRecruitmentRequestDto);
+        return recruitmentService.createRecruitment(loginUser, createRecruitmentRequestDto);
     }
 
     // 모집글 상세 조회
@@ -70,10 +67,9 @@ public class RecruitmentController {
 
     @PostMapping("/comment/{recruitmentId}")
     public ApiResponse<CommentSuccessDto> createComment(@Valid @PathVariable Long recruitmentId,
-                                                        @RequestHeader("Authorization") String authorizationHeader,
+                                                        @LoginUser Users loginUser,
                                                         @RequestBody CreateCommentRequestDto createCommentRequestDto) {
-        String accessToken = authorizationHeader.replace("Bearer ", "");
-        return commentService.createComment(accessToken, recruitmentId, createCommentRequestDto);
+        return commentService.createComment(loginUser, recruitmentId, createCommentRequestDto);
     }
 
     // 댓글 수정

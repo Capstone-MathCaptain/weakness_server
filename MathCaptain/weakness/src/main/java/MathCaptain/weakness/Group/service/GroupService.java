@@ -6,6 +6,7 @@ import MathCaptain.weakness.Group.dto.request.GroupJoinRequestDto;
 import MathCaptain.weakness.Group.dto.request.GroupUpdateRequestDto;
 import MathCaptain.weakness.Group.dto.response.GroupDetailResponseDto;
 import MathCaptain.weakness.Group.dto.response.GroupResponseDto;
+import MathCaptain.weakness.User.domain.UserDetailsImpl;
 import MathCaptain.weakness.User.dto.response.UserResponseDto;
 import MathCaptain.weakness.Group.repository.GroupRepository;
 import MathCaptain.weakness.Group.repository.RelationRepository;
@@ -32,22 +33,15 @@ public class GroupService {
 
     private final GroupRepository groupRepository;
     private final RelationRepository relationRepository;
-    private final UserRepository userRepository;
     private final RelationService relationService;
-    private final JwtService jwtService;
 
     // 그룹 생성 (CREATE)
-    public ApiResponse<GroupResponseDto> createGroup(GroupCreateRequestDto groupCreateRequestDto, String accessToken, HttpServletResponse response) {
+    public ApiResponse<GroupResponseDto> createGroup(Users leader, GroupCreateRequestDto groupCreateRequestDto, HttpServletResponse response) {
 
         if (groupRepository.existsByName(groupCreateRequestDto.getGroupName())) {
             throw new DuplicatedException("이미 존재하는 그룹 이름입니다.");
         }
 
-        String leaderEmail = jwtService.extractEmail(accessToken)
-                .orElseThrow(() -> new IllegalArgumentException("토큰이 유효하지 않습니다."));
-
-        Users leader = userRepository.findByEmail(leaderEmail)
-                .orElseThrow(() -> new ResourceNotFoundException("해당 이메일을 가진 사용자가 없습니다."));
         // 그룹 생성
         Group group = buildGroup(leader, groupCreateRequestDto);
 
@@ -61,7 +55,7 @@ public class GroupService {
                 .personalWeeklyGoal(leaderWeeklyGoal)
                 .build();
 
-        relationService.leaderJoin(groupId, leaderEmail, joinLeader);
+        relationService.leaderJoin(groupId, leader, joinLeader);
 
         return ApiResponse.ok(buildGroupResponseDto(group));
     }
@@ -119,17 +113,10 @@ public class GroupService {
         return buildGroupDetailResponseDto(group, memberCount);
     }
 
-    public List<GroupResponseDto> getUsersGroups(String accessToken) {
-
-        if (!jwtService.isTokenValid(accessToken)) {
-            throw new IllegalArgumentException("유효하지 않은 토큰입니다.");
-        }
-
-        String userEmail = jwtService.extractEmail(accessToken)
-                .orElseThrow(() -> new ResourceNotFoundException("JWT에 이메일 정보가 없습니다."));
+    public List<GroupResponseDto> getUsersGroups(Users user) {
 
         // 유저가 속한 그룹을 모두 보여줌
-        List<Long> groupsIdByEmail = relationRepository.findGroupsIdByEmail(userEmail);
+        List<Long> groupsIdByEmail = relationRepository.findGroupsIdByMember(user);
 
         return groupsIdByEmail.stream()
                 .map(this::convertToGroupResponseDto) // 각 그룹 ID를 GroupResponseDto로 변환

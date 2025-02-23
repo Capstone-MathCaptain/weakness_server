@@ -29,22 +29,14 @@ public class RelationService {
 
     private final RelationRepository relationRepository;
     private final GroupRepository groupRepository;
-    private final UserRepository userRepository;
-    private final JwtService jwtService;
 
     // 그룹 탈퇴
-    public ApiResponse<?> leaveGroup(String accessToken, Long groupId) {
-
-        String userEmail = jwtService.extractEmail(accessToken)
-                .orElseThrow(() -> new IllegalArgumentException("토큰이 유효하지 않습니다."));
-
-        Users member = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new IllegalArgumentException("해당 유저가 존재하지 않습니다."));
+    public ApiResponse<?> leaveGroup(Users user, Long groupId) {
 
         Group group = groupRepository.findById(groupId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 그룹이 존재하지 않습니다."));
 
-        RelationBetweenUserAndGroup relation = getRelation(member, group);
+        RelationBetweenUserAndGroup relation = getRelation(user, group);
 
         if (relation.getGroupRole().equals(GroupRole.LEADER)) {
             throw new IllegalArgumentException("리더는 그룹을 탈퇴할 수 없습니다.");
@@ -58,10 +50,7 @@ public class RelationService {
     // TODO
     // 그룹장 넘겨주기 기능 ?
 
-    public void leaderJoin(Long groupId, String leaderEmail, GroupJoinRequestDto groupJoinRequestDto) {
-
-        Users leader = userRepository.findByEmail(leaderEmail)
-                .orElseThrow(() -> new IllegalArgumentException("해당 유저가 존재하지 않습니다."));
+    public void leaderJoin(Long groupId, Users leader, GroupJoinRequestDto groupJoinRequestDto) {
 
         Group group = groupRepository.findById(groupId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 그룹이 존재하지 않습니다."));

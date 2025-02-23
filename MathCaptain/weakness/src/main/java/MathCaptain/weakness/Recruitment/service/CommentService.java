@@ -34,13 +34,7 @@ public class CommentService {
     /// 댓글 CRUD
 
     // 댓글 생성
-    public ApiResponse<CommentSuccessDto> createComment(String accessToken, Long recruitmentId, CreateCommentRequestDto createCommentRequestDto) {
-
-        String email = jwtService.extractEmail(accessToken)
-                .orElseThrow(() -> new IllegalArgumentException("토큰이 유효하지 않습니다."));
-
-        Users author = userRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalArgumentException("해당 이메일을 가진 사용자가 없습니다."));
+    public ApiResponse<CommentSuccessDto> createComment(Users user, Long recruitmentId, CreateCommentRequestDto createCommentRequestDto) {
 
         Recruitment recruitment = recruitmentRepository.findById(recruitmentId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 모집글이 없습니다."));
@@ -49,7 +43,7 @@ public class CommentService {
 
         Comment comment = Comment.builder()
                 .post(recruitment)
-                .author(author)
+                .author(user)
                 .content(content)
                 .build();
 

@@ -30,11 +30,15 @@ public interface RelationRepository extends JpaRepository<RelationBetweenUserAnd
     @Query("SELECT r.joinGroup.id FROM RelationBetweenUserAndGroup r WHERE r.member.email = :email")
     List<Long> findGroupsIdByEmail(@Param("email") String email);
 
+    List<Long> findGroupsIdByMember(Users member);
+
     Optional<List<RelationBetweenUserAndGroup>> findAllByMember_Email(String email);
 
     Optional<RelationBetweenUserAndGroup> findByMember_EmailAndJoinGroup_Id(String memberEmail, Long joinGroupId);
 
-    Optional<RelationBetweenUserAndGroup> findByMember_EmailAndGroupRole(String memberEmail, GroupRole groupRole);
+    Optional<RelationBetweenUserAndGroup> findByMemberAndJoinGroup_Id(Users member, Long joinGroupId);
+
+    Optional<RelationBetweenUserAndGroup> findByMemberAndGroupRole(Users member, GroupRole groupRole);
 
     Optional<List<RelationBetweenUserAndGroup>> findAllByJoinGroup_id(Long joinGroupId);
 
