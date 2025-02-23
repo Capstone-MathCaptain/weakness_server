@@ -1,8 +1,8 @@
 package MathCaptain.weakness.global.Security;
 
 import MathCaptain.weakness.User.repository.UserRepository;
+import MathCaptain.weakness.global.Api.ApiResponse;
 import MathCaptain.weakness.global.Security.jwt.JwtService;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -15,6 +15,7 @@ public class AuthController {
     private final UserRepository userRepository;
 
     @PostMapping("/refresh-token")
-    public void refreshToken(HttpServletRequest request) {
+    public ApiResponse<?> refreshToken() {
+        return ApiResponse.ok("refresh token");
     }
 }
