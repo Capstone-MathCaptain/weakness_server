@@ -1,11 +1,15 @@
 package MathCaptain.weakness.User.controller;
 
+import MathCaptain.weakness.User.domain.Users;
 import MathCaptain.weakness.User.dto.request.*;
 import MathCaptain.weakness.User.dto.response.ChangePwdDto;
+import MathCaptain.weakness.User.dto.response.UserCardResponseDto;
 import MathCaptain.weakness.User.dto.response.UserResponseDto;
 import MathCaptain.weakness.User.service.UserService;
 import MathCaptain.weakness.global.Api.ApiResponse;
+import MathCaptain.weakness.global.annotation.LoginUser;
 import jakarta.validation.Valid;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.BindingResult;
@@ -31,15 +35,15 @@ public class UserController {
     }
 
     // UPDATE
-    @PutMapping("/user/{userId}")
-    public ApiResponse<UserResponseDto> updateUser(@Valid @PathVariable Long userId, @RequestBody UpdateUserRequestDto updateUser) {
-        return userService.updateUser(userId, updateUser);
+    @PutMapping("/user")
+    public ApiResponse<UserResponseDto> updateUser(@Valid @LoginUser Users loginUser, @RequestBody UpdateUserRequestDto updateUser) {
+        return userService.updateUser(loginUser, updateUser);
     }
 
     // DELETE
-    @DeleteMapping("/user/{userId}")
-    public ApiResponse<?> deleteUser(@PathVariable Long userId, @RequestBody UserDeleteRequestDto userDeleteRequestDto) {
-        return userService.deleteUser(userId, userDeleteRequestDto);
+    @DeleteMapping("/user")
+    public ApiResponse<?> deleteUser(@LoginUser Users loginUser, @RequestBody UserDeleteRequestDto userDeleteRequestDto) {
+        return userService.deleteUser(loginUser, userDeleteRequestDto);
     }
 
     @PostMapping("/user/find/email")
@@ -57,10 +61,11 @@ public class UserController {
     public ApiResponse<?> ChangedPwd(@ModelAttribute ChangePwdDto changePwdDto) {
         userService.changePwd(changePwdDto);
         return ApiResponse.ok("비밀번호가 변경되었습니다.");
-//        로그인 페이지로 이동
-//        return "redirect:/login";
     }
 
-
+    @GetMapping("/user/mypage")
+    public ApiResponse<UserCardResponseDto> getUserCard(@LoginUser Users loginUser) {
+        return userService.getUserCard(loginUser);
+    }
 
 }

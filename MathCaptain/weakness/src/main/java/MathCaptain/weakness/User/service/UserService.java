@@ -1,12 +1,14 @@
 package MathCaptain.weakness.User.service;
 
 import MathCaptain.weakness.Group.dto.response.GroupResponseDto;
+import MathCaptain.weakness.Group.dto.response.UserGroupCardResponseDto;
 import MathCaptain.weakness.Group.repository.RelationRepository;
 import MathCaptain.weakness.Group.service.GroupService;
 import MathCaptain.weakness.Group.service.RelationService;
 import MathCaptain.weakness.User.dto.request.*;
 import MathCaptain.weakness.User.dto.response.ChangePwdDto;
 import MathCaptain.weakness.User.dto.response.FindEmailResponseDto;
+import MathCaptain.weakness.User.dto.response.UserCardResponseDto;
 import MathCaptain.weakness.User.dto.response.UserResponseDto;
 import MathCaptain.weakness.User.repository.UserRepository;
 import MathCaptain.weakness.User.domain.Users;
@@ -54,9 +56,7 @@ public class UserService {
     }
 
     // 회원탈퇴
-    public ApiResponse<?> deleteUser(Long userId, UserDeleteRequestDto userDeleteRequestDto) {
-        Users user = userRepository.findByUserId(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("해당 유저가 존재하지 않습니다."));
+    public ApiResponse<?> deleteUser(Users user, UserDeleteRequestDto userDeleteRequestDto) {
 
         if (!passwordEncoder.matches(userDeleteRequestDto.getPassword(), user.getPassword())) {
             throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
@@ -68,13 +68,7 @@ public class UserService {
     }
 
     // 회원정보 수정
-    public ApiResponse<UserResponseDto> updateUser(Long userId ,UpdateUserRequestDto updateUser) {
-        Users user = userRepository.findByEmail(updateUser.getEmail())
-                .orElseThrow(() -> new ResourceNotFoundException("해당 유저가 없습니다."));
-
-        if (!user.getUserId().equals(userId)) {
-            throw new IllegalArgumentException("유저가 일치하지 않습니다!");
-        }
+    public ApiResponse<UserResponseDto> updateUser(Users user, UpdateUserRequestDto updateUser) {
 
         if (!user.getName().equals(updateUser.getName()) && updateUser.getName() != null) {
             user.updateName(updateUser.getName());
@@ -88,7 +82,7 @@ public class UserService {
             user.updatePhoneNumber(updateUser.getPhoneNumber());
         }
 
-        List<Long> joinedGroupsId = relationRepository.findGroupsIdByUserId(user.getUserId());
+        List<Long> joinedGroupsId = relationRepository.findGroupsIdByMember(user);
         List<GroupResponseDto> groupResponseDtoList = groupService.getUsersGroups(joinedGroupsId);
 
         return ApiResponse.ok(buildUserResponseDto(user, groupResponseDtoList));
@@ -145,6 +139,12 @@ public class UserService {
         user.updatePassword(changePwdDto.getNewPassword() ,passwordEncoder);
     }
 
+    public ApiResponse<UserCardResponseDto> getUserCard(Users user) {
+
+        List<UserGroupCardResponseDto> groupCards = groupService.getUserGroupCard(user);
+
+        return ApiResponse.ok(buildUserCardResponseDto(user, groupCards));
+    }
 
     /// 로직
 
@@ -188,6 +188,16 @@ public class UserService {
                 .phoneNumber(user.getPhoneNumber())
                 .joinedGroups(joinedGroups)
                 .tier(user.getTier())
+                .build();
+    }
+
+    private UserCardResponseDto buildUserCardResponseDto(Users user, List<UserGroupCardResponseDto> groupCards) {
+        return UserCardResponseDto.builder()
+                .userId(user.getUserId())
+                .userName(user.getName())
+                .userTier(user.getTier())
+                .userPoint(user.getUserPoint())
+                .groupCards(groupCards)
                 .build();
     }
 }
