@@ -37,7 +37,7 @@ public class GroupController {
     // 유저가 속한 그룹을 모두 보여줌
     @GetMapping("/group")
     public ApiResponse<List<GroupResponseDto>> getUsersGroups(@LoginUser Users loginUser) {
-        return ApiResponse.ok(groupService.getUsersGroups(loginUser));
+        return groupService.getUsersGroups(loginUser);
     }
 
     // 그룹 조회
