@@ -27,6 +27,8 @@ public class GroupResponseDto {
 
     private Long groupPoint;
 
+    private int groupRanking;
+
     private List<String> hashtags;
 
     private Boolean disturb_mode;

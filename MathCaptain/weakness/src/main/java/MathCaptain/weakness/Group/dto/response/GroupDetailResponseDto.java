@@ -25,6 +25,8 @@ public class GroupDetailResponseDto {
 
     private Long groupPoint;
 
+    private int groupRanking;
+
     private List<String> hashtags;
 
     private String groupImageUrl;

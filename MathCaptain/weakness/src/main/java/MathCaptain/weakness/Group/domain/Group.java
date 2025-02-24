@@ -49,6 +49,8 @@ public class Group {
 
     private Long groupPoint;
 
+    private int groupRanking;
+
     @ElementCollection
     @CollectionTable(name = "group_hashtags", joinColumns = @JoinColumn(name = "group_id"))
     @Column(name = "hashtag")
@@ -108,6 +110,10 @@ public class Group {
 
     public void updateGroupImageUrl(String group_image_url) {
         this.groupImageUrl = group_image_url;
+    }
+
+    public void updateGroupRanking(int groupRanking) {
+        this.groupRanking = groupRanking;
     }
 
     public void updateWeeklyGoalAchieve(DayOfWeek dayOfWeek, int goalCount) {
