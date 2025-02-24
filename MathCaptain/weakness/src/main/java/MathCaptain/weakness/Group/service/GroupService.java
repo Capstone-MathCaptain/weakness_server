@@ -113,14 +113,16 @@ public class GroupService {
         return buildGroupDetailResponseDto(group, memberCount);
     }
 
-    public List<GroupResponseDto> getUsersGroups(Users user) {
+    public ApiResponse<List<GroupResponseDto>> getUsersGroups(Users user) {
 
         // 유저가 속한 그룹을 모두 보여줌
         List<Long> groupsIdByEmail = relationRepository.findGroupsIdByMember(user);
 
-        return groupsIdByEmail.stream()
+        List<GroupResponseDto> groups = groupsIdByEmail.stream()
                 .map(this::convertToGroupResponseDto) // 각 그룹 ID를 GroupResponseDto로 변환
                 .toList(); // 결과를 리스트로 변환
+
+        return ApiResponse.ok(groups);
     }
 
     public List<GroupResponseDto> getUsersGroups(List<Long> groupId) {

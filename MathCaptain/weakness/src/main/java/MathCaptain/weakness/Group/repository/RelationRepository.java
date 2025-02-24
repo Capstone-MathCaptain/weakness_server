@@ -30,7 +30,8 @@ public interface RelationRepository extends JpaRepository<RelationBetweenUserAnd
     @Query("SELECT r.joinGroup.id FROM RelationBetweenUserAndGroup r WHERE r.member.email = :email")
     List<Long> findGroupsIdByEmail(@Param("email") String email);
 
-    List<Long> findGroupsIdByMember(Users member);
+    @Query("SELECT r.joinGroup.id FROM RelationBetweenUserAndGroup r WHERE r.member = :user")
+    List<Long> findGroupsIdByMember(@Param("user") Users user);
 
     Optional<List<RelationBetweenUserAndGroup>> findAllByMember_Email(String email);
 
