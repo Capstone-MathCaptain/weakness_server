@@ -54,6 +54,7 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
                 .orElse(null); // RefreshToken이 없거나 유효하지 않으면 null을 반환
 
         log.info("refreshToken: {}", refreshToken != null);
+
         if (refreshToken != null){
             log.info("AccessToken 재발급 요청");
             checkRefreshTokenAndReIssueAccessToken(response, refreshToken); // refreshToken으로 유저 정보를 찾아오고, 존재하면 AccessToken을 재발급

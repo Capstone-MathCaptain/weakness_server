@@ -130,7 +130,7 @@ public class JwtServiceImpl implements JwtService{
 
         setAccessTokenHeader(response, accessToken);
 
-        response.getWriter().write("새로운 accessToken이 발급되었습니다.");
+        response.getWriter().write(accessToken);
 
         Map<String, String> tokenMap = new HashMap<>();
         tokenMap.put(ACCESS_TOKEN_SUBJECT, accessToken);
