@@ -20,6 +20,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.DayOfWeek;
 import java.time.LocalDateTime;
+import java.time.temporal.TemporalAdjusters;
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Slf4j
@@ -31,7 +35,6 @@ public class RecordService {
     private final RecordRepository recordRepository;
     private final RelationRepository relationRepository;
     private final GroupRepository groupRepository;
-    private final JwtService jwtService;
 
     /// 기록
 
@@ -130,6 +133,29 @@ public class RecordService {
         groupRepository.findById(groupId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 그룹이 존재하지 않습니다."))
                 .increaseWeeklyGoalAchieve(dayOfWeek);
+    }
+
+    //
+    public Map<DayOfWeek, Boolean> getWeeklyGoalStatus(Users user, Group group, LocalDateTime weekStart) {
+        // 주의 시작과 끝 계산 (월요일 ~ 다음 주 월요일)
+        LocalDateTime startOfWeek = weekStart.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+        LocalDateTime endOfWeek = startOfWeek.plusWeeks(1);
+
+        // 활동 기록이 있는 요일 조회
+        List<DayOfWeek> activeDays = recordRepository.findDaysWithActivity(user, group, startOfWeek, endOfWeek);
+
+        // 결과 맵 초기화 (모든 요일 false로 초기화)
+        Map<DayOfWeek, Boolean> weeklyGoalStatus = new EnumMap<>(DayOfWeek.class);
+        for (DayOfWeek day : DayOfWeek.values()) {
+            weeklyGoalStatus.put(day, false);
+        }
+
+        // 활동 기록이 있는 요일을 true로 설정
+        for (DayOfWeek activeDay : activeDays) {
+            weeklyGoalStatus.put(activeDay, true);
+        }
+
+        return weeklyGoalStatus;
     }
 
     private void checkRemainRecord(Users user, Group group) {
