@@ -27,11 +27,18 @@ public class RankingService {
         // 순위 계산 및 DTO 변환
         AtomicInteger rankCounter = new AtomicInteger((int) pageable.getOffset() + 1);
 
+        // 그룹 순위 업데이트 및 DTO 변환
+        groupPage.forEach(group -> {
+            int currentRank = rankCounter.getAndIncrement();
+            group.updateGroupRanking(currentRank); // 그룹 엔티티의 랭킹 필드 업데이트
+        });
+
+        // 변경 사항을 데이터베이스에 반영
         return groupPage.map(group -> GroupRankingResponseDto.builder()
                 .groupId(group.getId())
                 .groupName(group.getName())
                 .groupPoint(group.getGroupPoint())
-                .ranking(rankCounter.getAndIncrement())
+                .ranking(group.getGroupRanking())
                 .build());
     }
 

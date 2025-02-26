@@ -31,7 +31,7 @@ public class GroupJoinService {
     private final RelationService relationService;
 
     // 그룹 참여
-    public ApiResponse<?> joinGroupRequest(Long groupId, Users user, GroupJoinRequestDto groupJoinRequestDto) {
+    public Long joinGroupRequest(Long groupId, Users user, GroupJoinRequestDto groupJoinRequestDto) {
 
         Group group = groupRepository.findById(groupId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 그룹이 존재하지 않습니다."));
@@ -40,16 +40,11 @@ public class GroupJoinService {
         checkJoin(user, group, groupJoinRequestDto.getPersonalDailyGoal(), groupJoinRequestDto.getPersonalWeeklyGoal());
 
         // 그룹 가입 요청 저장
-        saveJoinRequest(user, group, groupJoinRequestDto);
-
-        // TODO
-        // 해당 그룹장에게 알림 보내기
-
-        return ApiResponse.ok("그룹 가입 신청이 완료되었습니다.");
+        return saveJoinRequest(user, group, groupJoinRequestDto);
     }
 
     // 그룹 가입 요청 수락
-    public ApiResponse<?> acceptJoinRequest(Long groupId, Long joinRequestId) {
+    public void acceptJoinRequest(Long groupId, Long joinRequestId) {
 
         GroupJoin joinRequest = groupJoinRepository.findById(joinRequestId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 가입 요청이 존재하지 않습니다."));
@@ -72,15 +67,10 @@ public class GroupJoinService {
                 .build());
 
         joinRequest.updateRequestStatus(RequestStatus.ACCEPTED);
-
-        // TODO
-        // 회원에게 그룹 가입 알림 보내기
-
-        return ApiResponse.ok("가입 요청이 수락되었습니다.");
     }
 
     // 그룹 가입 요청 거절
-    public ApiResponse<?> rejectJoinRequest(Long joinRequestId) {
+    public void rejectJoinRequest(Long joinRequestId) {
 
         GroupJoin joinRequest = groupJoinRepository.findById(joinRequestId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 가입 요청이 존재하지 않습니다."));
@@ -92,11 +82,6 @@ public class GroupJoinService {
         }
 
         joinRequest.updateRequestStatus(RequestStatus.REJECTED);
-
-        // TODO
-        // 회원에게 가입 거절 알림 보내기
-
-        return ApiResponse.ok("가입 요청이 거절되었습니다.");
     }
 
     // 그룹 가입 요청 취소
@@ -143,14 +128,14 @@ public class GroupJoinService {
     }
 
     //==빌드==//
-    public void saveJoinRequest(Users member, Group group, GroupJoinRequestDto groupJoinRequestDto) {
-        groupJoinRepository.save(GroupJoin.builder()
+    public Long saveJoinRequest(Users member, Group group, GroupJoinRequestDto groupJoinRequestDto) {
+        return groupJoinRepository.save(GroupJoin.builder()
                 .user(member)
                 .group(group)
                 .personalDailyGoal(groupJoinRequestDto.getPersonalDailyGoal())
                 .personalWeeklyGoal(groupJoinRequestDto.getPersonalWeeklyGoal())
                 .requestStatus(RequestStatus.WAITING)
-                .build());
+                .build()).getGroupJoinId();
     }
 
     private GroupJoinResponseDto buildGroupJoinResponseDto(GroupJoin groupJoin) {

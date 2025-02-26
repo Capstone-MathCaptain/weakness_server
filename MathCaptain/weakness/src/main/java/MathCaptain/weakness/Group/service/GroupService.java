@@ -1,11 +1,14 @@
 package MathCaptain.weakness.Group.service;
 
 import MathCaptain.weakness.Group.domain.Group;
+import MathCaptain.weakness.Group.domain.RelationBetweenUserAndGroup;
 import MathCaptain.weakness.Group.dto.request.GroupCreateRequestDto;
 import MathCaptain.weakness.Group.dto.request.GroupJoinRequestDto;
 import MathCaptain.weakness.Group.dto.request.GroupUpdateRequestDto;
 import MathCaptain.weakness.Group.dto.response.GroupDetailResponseDto;
 import MathCaptain.weakness.Group.dto.response.GroupResponseDto;
+import MathCaptain.weakness.Group.dto.response.UserGroupCardResponseDto;
+import MathCaptain.weakness.Record.service.RecordService;
 import MathCaptain.weakness.User.domain.UserDetailsImpl;
 import MathCaptain.weakness.User.dto.response.UserResponseDto;
 import MathCaptain.weakness.Group.repository.GroupRepository;
@@ -22,6 +25,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.DayOfWeek;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -34,6 +39,7 @@ public class GroupService {
     private final GroupRepository groupRepository;
     private final RelationRepository relationRepository;
     private final RelationService relationService;
+    private final RecordService recordService;
 
     // 그룹 생성 (CREATE)
     public ApiResponse<GroupResponseDto> createGroup(Users leader, GroupCreateRequestDto groupCreateRequestDto, HttpServletResponse response) {
@@ -116,9 +122,9 @@ public class GroupService {
     public ApiResponse<List<GroupResponseDto>> getUsersGroups(Users user) {
 
         // 유저가 속한 그룹을 모두 보여줌
-        List<Long> groupsIdByEmail = relationRepository.findGroupsIdByMember(user);
+        List<Long> groupsId = relationRepository.findGroupsIdByMember(user);
 
-        List<GroupResponseDto> groups = groupsIdByEmail.stream()
+        List<GroupResponseDto> groups = groupsId.stream()
                 .map(this::convertToGroupResponseDto) // 각 그룹 ID를 GroupResponseDto로 변환
                 .toList(); // 결과를 리스트로 변환
 
@@ -126,7 +132,6 @@ public class GroupService {
     }
 
     public List<GroupResponseDto> getUsersGroups(List<Long> groupId) {
-
         return groupId.stream()
                 .map(this::convertToGroupResponseDto) // 각 그룹 ID를 GroupResponseDto로 변환
                 .toList(); // 결과를 리스트로 변환
@@ -140,6 +145,36 @@ public class GroupService {
         groupRepository.delete(group);
 
         return ApiResponse.ok("그룹이 삭제되었습니다.");
+    }
+
+    // 유저가 속한 그룹의 카드 생성
+    public List<UserGroupCardResponseDto> getUserGroupCard(Users user) {
+        List<Long> groupIds = relationRepository.findGroupsIdByMember(user);
+
+        return groupIds.stream()
+                .map(groupId -> {
+                    Group group = groupRepository.findById(groupId)
+                            .orElseThrow(() -> new ResourceNotFoundException("해당 그룹이 존재하지 않습니다."));
+
+                    RelationBetweenUserAndGroup relation = relationRepository.findByMemberAndJoinGroup_Id(user, groupId)
+                            .orElseThrow(() -> new ResourceNotFoundException("해당 관계가 존재하지 않습니다."));
+
+                    Map<DayOfWeek, Boolean> userAchieveInGroup = recordService.getWeeklyGoalStatus(user, group, LocalDateTime.now());
+
+                    return UserGroupCardResponseDto.builder()
+                            .groupId(group.getId())
+                            .groupName(group.getName())
+                            .groupImageUrl(group.getGroupImageUrl())
+                            .groupRole(relation.getGroupRole())
+                            .groupRanking(group.getGroupRanking())
+                            .groupPoint(group.getGroupPoint())
+                            .userAchieve(userAchieveInGroup)
+                            .userDailyGoal(relation.getPersonalDailyGoal())
+                            .userWeeklyGoal(relation.getPersonalWeeklyGoal())
+                            .build();
+                })
+                .toList();
+
     }
 
     /// 비지니스 로직
@@ -192,6 +227,7 @@ public class GroupService {
                 .minDailyHours(group.getMinDailyHours())
                 .minWeeklyDays(group.getMinWeeklyDays())
                 .groupPoint(group.getGroupPoint())
+                .groupRanking(group.getGroupRanking())
                 .hashtags(group.getHashtags())
                 .created_date(group.getCreateDate())
                 .groupImageUrl(group.getGroupImageUrl())
@@ -221,6 +257,7 @@ public class GroupService {
                 .minDailyHours(group.getMinDailyHours())
                 .minWeeklyDays(group.getMinWeeklyDays())
                 .groupPoint(group.getGroupPoint())
+                .groupRanking(group.getGroupRanking())
                 .hashtags(group.getHashtags())
                 .groupImageUrl(group.getGroupImageUrl())
                 .weeklyGoalAchieve(group.getWeeklyGoalAchieve())

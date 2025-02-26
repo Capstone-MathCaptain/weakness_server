@@ -51,3 +51,7 @@ MathCaptain/weakness.trace.db
 ### Secret key ###
 MathCaptain/weakness/src/main/resources/application.yml
 MathCaptain/weakness/src/main/resources/application-jwt.yml
+
+### Docker ###
+Dockerfile
+docker-compose.yml

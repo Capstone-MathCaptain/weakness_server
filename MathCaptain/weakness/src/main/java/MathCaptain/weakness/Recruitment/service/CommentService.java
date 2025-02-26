@@ -34,7 +34,7 @@ public class CommentService {
     /// 댓글 CRUD
 
     // 댓글 생성
-    public ApiResponse<CommentSuccessDto> createComment(Users user, Long recruitmentId, CreateCommentRequestDto createCommentRequestDto) {
+    public CommentSuccessDto createComment(Users user, Long recruitmentId, CreateCommentRequestDto createCommentRequestDto) {
 
         Recruitment recruitment = recruitmentRepository.findById(recruitmentId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 모집글이 없습니다."));
@@ -49,10 +49,10 @@ public class CommentService {
 
         commentRepository.save(comment);
 
-        return ApiResponse.ok(CommentSuccessDto.builder()
+        return CommentSuccessDto.builder()
                 .commentId(comment.getCommentId())
                 .recruitmentId(recruitmentId)
-                .build());
+                .build();
     }
 
     // 댓글 수정
