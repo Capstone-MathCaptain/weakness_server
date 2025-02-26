@@ -34,7 +34,7 @@ jobs:
 
       # 4. Gradle 빌드 및 JAR 파일 생성
       - name: Build JAR file using Gradle
-        working-directory: MathCaptain/weakness
+        working-directory: MathCaptain/weakness # Gradle Wrapper가 위치한 디렉토리 설정
         run: ./gradlew clean bootJar
 
       # 5. Docker Hub 로그인
@@ -48,11 +48,13 @@ jobs:
       - name: Build and tag Docker image
         run: |
           VERSION=0.${{ github.run_number }}
+          echo "Using VERSION=$VERSION"
           docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/weakness_server:$VERSION .
-          docker tag ${{ secrets.DOCKERHUB_USERNAME }}/weakness_server:$VERSION
+          docker tag ${{ secrets.DOCKERHUB_USERNAME }}/weakness_server:$VERSION ${{ secrets.DOCKERHUB_USERNAME }}/weakness_server:latest
 
       # 7. Docker Hub에 푸시
       - name: Push Docker image to Docker Hub
         run: |
           VERSION=0.${{ github.run_number }}
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/weakness_server:$VERSION
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/weakness_server:latest
