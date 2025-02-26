@@ -65,7 +65,7 @@ public class Group {
     @CollectionTable(name = "group_weekly_goal_achieve", joinColumns = @JoinColumn(name = "group_id"))
     @MapKeyColumn(name = "day_of_week") // 요일을 키로 사용
     @Column(name = "goal_count") // 카운트를 값으로 사용
-    private Map<DayOfWeek, Integer> weeklyGoalAchieve = new EnumMap<>(DayOfWeek.class);
+    private Map<DayOfWeek, Integer> weeklyGoalAchieve;
 
     @OneToMany(mappedBy = "recruitGroup")
     private List<Recruitment> recruitments;
