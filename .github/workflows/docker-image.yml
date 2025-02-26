@@ -34,6 +34,7 @@ jobs:
 
       # 4. Gradle 빌드 및 JAR 파일 생성
       - name: Build JAR file using Gradle
+        working-directory: MathCaptain/weakness
         run: ./gradlew clean bootJar
 
       # 5. Docker Hub 로그인
