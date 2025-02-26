@@ -1,4 +1,8 @@
-FROM amazoncorretto:17
+FROM amazoncorretto:17-alpine
+
+RUN apk update && apk add --no-cache curl
+
+WORKDIR /app
 
 EXPOSE 8080
 
