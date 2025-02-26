@@ -26,5 +26,10 @@ public class GroupMemberListResponseDto {
     @NotNull
     private int userWeeklyGoal;
 
+    @NotNull
+    private int userDailyGoal;
+
+    private int currentProgress;
+
     private Boolean isAchieveWeeklyGoal;
 }

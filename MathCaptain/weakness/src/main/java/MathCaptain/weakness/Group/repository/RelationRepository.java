@@ -30,6 +30,9 @@ public interface RelationRepository extends JpaRepository<RelationBetweenUserAnd
     @Query("SELECT r.joinGroup.id FROM RelationBetweenUserAndGroup r WHERE r.member = :user")
     List<Long> findGroupsIdByMember(@Param("user") Users user);
 
+    @Query("SELECT SUM(r.personalWeeklyGoal) FROM RelationBetweenUserAndGroup r WHERE r.joinGroup.id = :groupId")
+    Integer sumPersonalWeeklyGoalByGroupId(@Param("groupId") Long groupId);
+
     Optional<List<RelationBetweenUserAndGroup>> findAllByMember_Email(String email);
 
     Optional<RelationBetweenUserAndGroup> findByMember_EmailAndJoinGroup_Id(String memberEmail, Long joinGroupId);

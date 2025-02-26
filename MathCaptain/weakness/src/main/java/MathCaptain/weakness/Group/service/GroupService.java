@@ -8,6 +8,7 @@ import MathCaptain.weakness.Group.dto.request.GroupUpdateRequestDto;
 import MathCaptain.weakness.Group.dto.response.GroupDetailResponseDto;
 import MathCaptain.weakness.Group.dto.response.GroupResponseDto;
 import MathCaptain.weakness.Group.dto.response.UserGroupCardResponseDto;
+import MathCaptain.weakness.Record.repository.RecordRepository;
 import MathCaptain.weakness.Record.service.RecordService;
 import MathCaptain.weakness.User.domain.UserDetailsImpl;
 import MathCaptain.weakness.User.dto.response.UserResponseDto;
@@ -27,6 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.DayOfWeek;
 import java.time.LocalDateTime;
+import java.time.temporal.TemporalAdjusters;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -38,6 +40,7 @@ public class GroupService {
 
     private final GroupRepository groupRepository;
     private final RelationRepository relationRepository;
+    private final RecordRepository recordRepository;
     private final RelationService relationService;
     private final RecordService recordService;
 
@@ -114,9 +117,11 @@ public class GroupService {
         Group group = groupRepository.findById(groupId)
                 .orElseThrow(() -> new ResourceNotFoundException("해당 그룹이 없습니다."));
 
+        Integer totalWeeklyGoalCount = relationRepository.sumPersonalWeeklyGoalByGroupId(groupId);
+
         Long memberCount = relationRepository.countByJoinGroup_Id(groupId);
 
-        return buildGroupDetailResponseDto(group, memberCount);
+        return buildGroupDetailResponseDto(group, memberCount, totalWeeklyGoalCount);
     }
 
     public ApiResponse<List<GroupResponseDto>> getUsersGroups(Users user) {
@@ -248,7 +253,7 @@ public class GroupService {
                 .build();
     }
 
-    private GroupDetailResponseDto buildGroupDetailResponseDto(Group group, Long memberCount) {
+    private GroupDetailResponseDto buildGroupDetailResponseDto(Group group, Long memberCount, Integer totalWeeklyGoalCount) {
         return GroupDetailResponseDto.builder()
                 .groupId(group.getId())
                 .groupName(group.getName())
@@ -261,6 +266,7 @@ public class GroupService {
                 .hashtags(group.getHashtags())
                 .groupImageUrl(group.getGroupImageUrl())
                 .weeklyGoalAchieve(group.getWeeklyGoalAchieve())
+                .totalWeeklyGoalCount(totalWeeklyGoalCount)
                 .memberCount(memberCount)
                 .build();
     }

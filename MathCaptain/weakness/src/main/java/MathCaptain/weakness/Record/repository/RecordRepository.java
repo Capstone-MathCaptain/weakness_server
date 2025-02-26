@@ -26,4 +26,15 @@ public interface RecordRepository extends JpaRepository<ActivityRecord, Long> {
             @Param("group") Group group,
             @Param("startOfWeek") LocalDateTime startOfWeek,
             @Param("endOfWeek") LocalDateTime endOfWeek);
+
+    // 이번주에 그룹원이 수행한 인증의 횟수
+    @Query("SELECT SUM (CASE WHEN ar.dailyGoalAchieved = true THEN 1 ELSE 0 END) " +
+            "FROM ActivityRecord ar " +
+            "WHERE ar.group.id = :groupId " +
+            "AND ar.user.userId = :userId " +
+            "AND ar.startTime >= :startOfWeek AND ar.startTime < :endOfWeek")
+    Optional<Integer> countDailyGoalAchieved(@Param("groupId") Long groupId,
+                                   @Param("userId") Long userId,
+                                   @Param("startOfWeek") LocalDateTime startOfWeek,
+                                   @Param("endOfWeek") LocalDateTime endOfWeek);
 }

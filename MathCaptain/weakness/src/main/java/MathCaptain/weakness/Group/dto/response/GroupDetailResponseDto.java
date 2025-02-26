@@ -33,5 +33,7 @@ public class GroupDetailResponseDto {
 
     private Map<DayOfWeek, Integer> weeklyGoalAchieve;
 
+    private Integer totalWeeklyGoalCount;
+
     private Long memberCount;
 }
