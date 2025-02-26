@@ -1,5 +1,6 @@
 package MathCaptain.weakness.Recruitment.controller;
 
+import MathCaptain.weakness.Notification.service.NotificationService;
 import MathCaptain.weakness.Recruitment.dto.request.CreateCommentRequestDto;
 import MathCaptain.weakness.Recruitment.dto.request.CreateRecruitmentRequestDto;
 import MathCaptain.weakness.Recruitment.dto.request.UpdateCommentRequestDto;
@@ -25,6 +26,7 @@ public class RecruitmentController {
 
     private final RecruitmentService recruitmentService;
     private final CommentService commentService;
+    private final NotificationService notificationService;
 
     /// 모집 CRUD
 
@@ -65,11 +67,14 @@ public class RecruitmentController {
         return recruitmentService.deleteRecruitment(recruitmentId);
     }
 
+    // 댓글 작성
     @PostMapping("/comment/{recruitmentId}")
     public ApiResponse<CommentSuccessDto> createComment(@Valid @PathVariable Long recruitmentId,
                                                         @LoginUser Users loginUser,
                                                         @RequestBody CreateCommentRequestDto createCommentRequestDto) {
-        return commentService.createComment(loginUser, recruitmentId, createCommentRequestDto);
+        CommentSuccessDto commentSuccessDto = commentService.createComment(loginUser, recruitmentId, createCommentRequestDto);
+        notificationService.notifyComment(recruitmentId, commentSuccessDto.getCommentId());
+        return ApiResponse.ok(commentSuccessDto);
     }
 
     // 댓글 수정
