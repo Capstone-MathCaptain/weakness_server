@@ -25,14 +25,16 @@ jobs:
       - name: Cache Gradle packages
         uses: actions/cache@v3
         with:
-          path: MathCaptain/weakness/.gradle/caches
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
           restore-keys: |
             ${{ runner.os }}-gradle-
 
       # 4. Gradle 빌드 및 JAR 파일 생성
       - name: Build JAR file using Gradle
-        run: MathCaptain/weakness/gradlew clean bootJar
+        run: ./gradlew clean bootJar
 
       # 5. Docker Hub 로그인
       - name: Log in to Docker Hub
