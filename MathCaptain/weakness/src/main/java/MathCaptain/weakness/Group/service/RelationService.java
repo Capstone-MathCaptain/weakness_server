@@ -7,6 +7,7 @@ import MathCaptain.weakness.Group.dto.response.GroupMemberListResponseDto;
 import MathCaptain.weakness.Group.dto.response.GroupResponseDto;
 import MathCaptain.weakness.Group.dto.response.RelationResponseDto;
 import MathCaptain.weakness.Group.repository.GroupRepository;
+import MathCaptain.weakness.Record.repository.RecordRepository;
 import MathCaptain.weakness.User.dto.response.UserResponseDto;
 import MathCaptain.weakness.Group.enums.GroupRole;
 import MathCaptain.weakness.Group.repository.RelationRepository;
@@ -19,6 +20,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.DayOfWeek;
+import java.time.LocalDateTime;
+import java.time.temporal.TemporalAdjusters;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -29,6 +33,7 @@ public class RelationService {
 
     private final RelationRepository relationRepository;
     private final GroupRepository groupRepository;
+    private final RecordRepository recordRepository;
 
     // 그룹 탈퇴
     public ApiResponse<?> leaveGroup(Users user, Long groupId) {
@@ -70,20 +75,17 @@ public class RelationService {
 
     // 그룹 멤버 리스트 (그룹 상세 페이지)
     public List<GroupMemberListResponseDto> getGroupMemberList(Long groupId) {
-
+        // 그룹 멤버 관계 조회
         List<RelationBetweenUserAndGroup> relations = relationRepository.findAllByJoinGroup_id(groupId)
                 .orElseThrow(() -> new ResourceNotFoundException("해당 그룹에 멤버가 없습니다."));
 
+        // 이번 주의 시작과 끝 시간 계산
+        LocalDateTime startOfWeek = LocalDateTime.now().with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+        LocalDateTime endOfWeek = startOfWeek.plusWeeks(1);
+
+        // 멤버 리스트 생성
         return relations.stream()
-                .map(relation -> GroupMemberListResponseDto.builder()
-                        .userId(relation.getMember().getUserId())
-                        .userName(relation.getMember().getName())
-//                        .userImage(relation.getMember().getImage())
-                        .userRole(relation.getGroupRole())
-                        .userPoint(relation.getMember().getUserPoint())
-                        .userWeeklyGoal(relation.getPersonalWeeklyGoal())
-                        .isAchieveWeeklyGoal(relation.getIsWeeklyGoalAchieved())
-                        .build())
+                .map(relation -> mapToGroupMemberListResponseDto(relation, startOfWeek, endOfWeek))
                 .collect(Collectors.toList());
     }
 
@@ -130,6 +132,30 @@ public class RelationService {
     }
 
     /// 빌드
+
+    private GroupMemberListResponseDto mapToGroupMemberListResponseDto(RelationBetweenUserAndGroup relation, LocalDateTime startOfWeek, LocalDateTime endOfWeek) {
+        // 기록 리포지토리에서 현재 진행 상황 가져오기 (null 방지)
+        Integer currentProgress = recordRepository.countDailyGoalAchieved(
+                relation.getJoinGroup().getId(),
+                relation.getMember().getUserId(),
+                startOfWeek,
+                endOfWeek
+        ).orElse(0);
+
+        // DTO 빌드 및 반환
+        return GroupMemberListResponseDto.builder()
+                .userId(relation.getMember().getUserId())
+                .userName(relation.getMember().getName())
+                //.userImage(relation.getMember().getImage()) // 주석 유지 또는 복원 필요 시 활성화
+                .userRole(relation.getGroupRole())
+                .userPoint(relation.getMember().getUserPoint())
+                .userWeeklyGoal(relation.getPersonalWeeklyGoal())
+                .userDailyGoal(relation.getPersonalDailyGoal())
+                .isAchieveWeeklyGoal(relation.getIsWeeklyGoalAchieved())
+                .currentProgress(currentProgress)
+                .build();
+    }
+
 
     private RelationBetweenUserAndGroup buildLeaderRelation(Users leader, Group group, int dailyGoal, int weeklyGoal) {
         return RelationBetweenUserAndGroup.builder()
