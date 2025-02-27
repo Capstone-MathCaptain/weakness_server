@@ -81,9 +81,9 @@ public class TestInit {
                 .orElseThrow(() -> new IllegalArgumentException("해당 유저가 없습니다."));
 
         /// 테스트 그룹 생성
-        Group group = Group.builder()
+        Group group1 = Group.builder()
                 .leader(leader)
-                .name("testGroup")
+                .name("testGroup1")
                 .category(CategoryStatus.STUDY)
                 .minDailyHours(2)
                 .minWeeklyDays(3)
@@ -92,24 +92,66 @@ public class TestInit {
                 .groupImageUrl("test")
                 .build();
 
-        groupRepository.save(group);
+        Group group2 = Group.builder()
+                .leader(leader)
+                .name("testGroup2")
+                .category(CategoryStatus.FITNESS)
+                .minDailyHours(2)
+                .minWeeklyDays(3)
+                .groupPoint(0L)
+                .hashtags(null)
+                .groupImageUrl("test1")
+                .build();
+
+        Group group3 = Group.builder()
+                .leader(leader)
+                .name("testGroup3")
+                .category(CategoryStatus.READING)
+                .minDailyHours(2)
+                .minWeeklyDays(3)
+                .groupPoint(0L)
+                .hashtags(null)
+                .groupImageUrl("test3")
+                .build();
+
+        groupRepository.save(group1);
+        groupRepository.save(group2);
+        groupRepository.save(group3);
         log.info("테스트 그룹 생성 완료");
 
-        RelationBetweenUserAndGroup join = RelationBetweenUserAndGroup.builder()
+        RelationBetweenUserAndGroup join1 = RelationBetweenUserAndGroup.builder()
                 .member(users1)
                 .groupRole(GroupRole.LEADER)
-                .joinGroup(group)
+                .joinGroup(group1)
                 .personalDailyGoal(2)
                 .personalWeeklyGoal(3)
                 .build();
 
-        relationRepository.save(join);
+        RelationBetweenUserAndGroup join2 = RelationBetweenUserAndGroup.builder()
+                .member(users2)
+                .groupRole(GroupRole.LEADER)
+                .joinGroup(group2)
+                .personalDailyGoal(2)
+                .personalWeeklyGoal(3)
+                .build();
+
+        RelationBetweenUserAndGroup join3 = RelationBetweenUserAndGroup.builder()
+                .member(users3)
+                .groupRole(GroupRole.LEADER)
+                .joinGroup(group3)
+                .personalDailyGoal(2)
+                .personalWeeklyGoal(3)
+                .build();
+
+        relationRepository.save(join1);
+        relationRepository.save(join2);
+        relationRepository.save(join3);
 
         /// 테스트 모집글 생성
         Recruitment recruitment = Recruitment.builder()
                 .postId(1L)
                 .author(users1)
-                .recruitGroup(group)
+                .recruitGroup(group1)
                 .category(CategoryStatus.STUDY)
                 .title("testRecruitment")
                 .content("testContent")
