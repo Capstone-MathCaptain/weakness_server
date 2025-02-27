@@ -1,6 +1,7 @@
 package MathCaptain.weakness.Group.repository;
 
 import MathCaptain.weakness.Group.domain.Group;
+import MathCaptain.weakness.Group.enums.CategoryStatus;
 import jakarta.validation.constraints.NotNull;
 import org.hibernate.validator.constraints.Range;
 import org.springframework.data.domain.Page;
@@ -19,6 +20,8 @@ public interface GroupRepository extends JpaRepository<Group, Long> {
     Optional<Group> findByName(String groupName);
 
     Boolean existsByName(String groupName);
+
+    Optional<Group> findAllByCategory(CategoryStatus category);
 
     @Query("SELECT g FROM Group g ORDER BY g.groupPoint DESC")
     Page<Group> findAllOrderByGroupPoint (Pageable pageable);

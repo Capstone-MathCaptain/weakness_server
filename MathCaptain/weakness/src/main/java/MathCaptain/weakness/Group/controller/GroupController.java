@@ -146,4 +146,9 @@ public class GroupController {
     public ApiResponse<GroupResponseDto> searchGroup(@RequestBody GroupSearchRequestDto groupSearchRequestDto) {
         return ApiResponse.ok(groupService.getGroupInfo(groupSearchRequestDto.getGroupName()));
     }
+
+    @GetMapping("/group/total")
+    public ApiResponse<?> getGroups(@RequestParam(required = false) String category) {
+        return groupService.getGroups(category);
+    }
 }
