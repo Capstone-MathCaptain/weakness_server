@@ -54,4 +54,9 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponse<String>> handleRuntimeException(RuntimeException ex) {
         return ResponseEntity.status(500).body(ApiResponse.fail(ex.getMessage(), null));
     }
+
+    @ExceptionHandler(AuthorizationException.class)
+    public ResponseEntity<ApiResponse<String>> handleAuthorizationException(AuthorizationException ex) {
+        return ResponseEntity.status(403).body(ApiResponse.fail(ex.getMessage(), null));
+    }
 }

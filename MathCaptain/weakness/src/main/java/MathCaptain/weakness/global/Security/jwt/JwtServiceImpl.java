@@ -3,6 +3,7 @@ package MathCaptain.weakness.global.Security.jwt;
 import MathCaptain.weakness.Group.repository.RelationRepository;
 import MathCaptain.weakness.User.domain.Users;
 import MathCaptain.weakness.User.repository.UserRepository;
+import MathCaptain.weakness.global.exception.ResourceNotFoundException;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -49,16 +50,12 @@ public class JwtServiceImpl implements JwtService{
     private static final String BEARER = "Bearer ";
 
     private final UserRepository usersRepository;
-    private final ObjectMapper objectMapper;
-    private final RelationRepository relationRepository;
-
 
     //== 메서드 ==//
 
     // AccessToken 생성 (사용자의 email 기반)
     @Override
     public String createAccessToken(String email) {
-
         return JWT.create()
                 // 빌더를 통해 JWT의 Subject 설정 : AccessToken
                 .withSubject(ACCESS_TOKEN_SUBJECT)
@@ -90,7 +87,7 @@ public class JwtServiceImpl implements JwtService{
                 .ifPresentOrElse(
                         // 존재하면 refreshToken 업데이트
                         users -> users.updateRefreshToken(refreshToken),
-                        () -> new Exception("회원 조회 실패")
+                        () -> new ResourceNotFoundException("회원 조회 실패")
                 );
     }
 
@@ -109,6 +106,10 @@ public class JwtServiceImpl implements JwtService{
     // AccessToken과 RefreshToken을 클라이언트에게 전달
     @Override
     public void sendAccessAndRefreshToken(HttpServletResponse response, String accessToken, String refreshToken) {
+        log.info("============= AccessToken과 RefreshToken 전송 =============");
+        log.info("🔑AccessToken: {}", accessToken);
+        log.info("🗝️RefreshToken: {}", refreshToken);
+
         // 응답 메시지의 상태를 200 OK로 설정
         response.setStatus(HttpServletResponse.SC_OK);
 
@@ -126,6 +127,9 @@ public class JwtServiceImpl implements JwtService{
     // AccessToken을 클라리언트에게 전달
     @Override
     public void sendAccessToken(HttpServletResponse response, String accessToken) throws IOException {
+        log.info("============= AccessToken 전송 =============");
+        log.info("🔑AccessToken: {}", accessToken);
+
         response.setStatus(HttpServletResponse.SC_OK);
 
         setAccessTokenHeader(response, accessToken);
@@ -143,6 +147,8 @@ public class JwtServiceImpl implements JwtService{
     public Optional<String> extractAccessToken(HttpServletRequest request) {
         String headerValue = request.getHeader(accessHeader);
 
+        log.info("============= 🔑AccessToken 추출 =============");
+
         if (headerValue == null || headerValue.isBlank()) {
             log.warn("Authorization 헤더가 비어있거나 존재하지 않습니다.");
             return Optional.empty();
@@ -150,6 +156,7 @@ public class JwtServiceImpl implements JwtService{
 
         // "Bearer " 접두사가 있는 경우 제거
         if (headerValue.startsWith(BEARER)) {
+            log.info("Authorization 헤더에 'Bearer ' 접두사가 존재합니다. 원본 값: {}", headerValue);
             return Optional.of(headerValue.replace(BEARER, "").trim());
         }
 
@@ -161,6 +168,7 @@ public class JwtServiceImpl implements JwtService{
     // 클라이언트에게서 전달받은 RefreshToken을 HTTP 헤더에서 추출
     @Override
     public Optional<String> extractRefreshToken(HttpServletRequest request) {
+        log.info("============= 🗝️RefreshToken 추출 =============");
         return Optional.ofNullable(request.getHeader(refreshHeader)).filter(
                 // BEARER 접두사로 시작하는 RefreshToken을 확인
                 refreshToken -> refreshToken.startsWith(BEARER)
@@ -177,7 +185,7 @@ public class JwtServiceImpl implements JwtService{
                     JWT.require(Algorithm.HMAC512(secret)).build().verify(accessToken).getClaim(USERNAME_CLAIM)
                             .asString());
 
-            log.info("email: {}", email);
+            log.info("✉️ email: {}", email);
             return email;
         } catch (Exception e) {
             log.error(e.getMessage());
@@ -201,11 +209,12 @@ public class JwtServiceImpl implements JwtService{
     @Override
     public boolean isTokenValid(String token) {
         try {
+            log.info("============= 토큰 유효성 검사를 시작합니다. ================");
             log.info("검증 중인 토큰: {}", token);
             JWT.require(Algorithm.HMAC512(secret)).build().verify(token);
             return true;
         } catch (Exception e) {
-            log.error("유효하지 않은 Token입니다", e.getMessage());
+            log.error("🍪유효하지 않은 Token입니다", e.getMessage());
             return false;
         }
     }

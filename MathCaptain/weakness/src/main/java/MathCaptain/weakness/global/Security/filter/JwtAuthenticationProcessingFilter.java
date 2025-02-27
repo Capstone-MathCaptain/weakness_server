@@ -4,6 +4,7 @@ import MathCaptain.weakness.User.domain.UserDetailsImpl;
 import MathCaptain.weakness.User.repository.UserRepository;
 import MathCaptain.weakness.User.domain.Users;
 import MathCaptain.weakness.global.Security.jwt.JwtService;
+import MathCaptain.weakness.global.exception.AuthorizationException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -53,14 +54,15 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
                 .filter(jwtService::isTokenValid)
                 .orElse(null); // RefreshToken이 없거나 유효하지 않으면 null을 반환
 
-        log.info("refreshToken: {}", refreshToken != null);
-
         if (refreshToken != null){
-            log.info("AccessToken 재발급 요청");
+            log.info("RefreshToken 존재");
+            log.info("============= ❗️AccessToken 재발급 요청 =============");
             checkRefreshTokenAndReIssueAccessToken(response, refreshToken); // refreshToken으로 유저 정보를 찾아오고, 존재하면 AccessToken을 재발급
             return; // 인증을 처리하지 않게 하기 위해 return
         }
 
+        log.info("RefreshToken 존재하지 않음 OR 유효하지 않음");
+        log.info("============= AccessToken 유효성 검사 =============");
         checkAccessTokenAndAuthentication(request, response, filterChain); // refreshToken이 없다면 AccessToken을 검사하는 로직 수행
     }
 
@@ -78,21 +80,26 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
     private void saveAuthentication(Users users) {
         UserDetailsImpl userDetails = new UserDetailsImpl(users);
 
+        log.info("============= 인증 처리 절차 시작 =============");
+        log.info("accessToken 유효성 검사 완료");
+
         Authentication authentication = new UsernamePasswordAuthenticationToken(userDetails, null, authoritiesMapper.mapAuthorities(userDetails.getAuthorities()));
         log.info("authentication : {}", authentication);
+        log.info("============= 인증 처리 완료 =============");
         SecurityContext context = SecurityContextHolder.createEmptyContext();
         context.setAuthentication(authentication);
         SecurityContextHolder.setContext(context);
     }
 
     private void checkRefreshTokenAndReIssueAccessToken(HttpServletResponse response, String refreshToken) {
+        log.info("============= RefreshToken 유효성 검사 =============");
         // 해당하는 refreshToken이 DB에 존재하면, user에게 AccessToken 발급
         userRepository.findByRefreshToken(refreshToken).ifPresent(
                 users -> {
                     try {
                         jwtService.sendAccessToken(response, jwtService.createAccessToken(users.getEmail()));
                     } catch (IOException e) {
-                        throw new RuntimeException(e);
+                        throw new AuthorizationException("❌ AccessToken 재발급 실패");
                     }
                 }
         );
