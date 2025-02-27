@@ -143,8 +143,8 @@ public class GroupController {
 
     // 그룹 검색 (그룹명)
     @PostMapping("/group/search")
-    public ApiResponse<GroupResponseDto> searchGroup(@RequestBody GroupSearchRequestDto groupSearchRequestDto) {
-        return ApiResponse.ok(groupService.getGroupInfo(groupSearchRequestDto.getGroupName()));
+    public ApiResponse<List<GroupResponseDto>> searchGroup(@RequestBody GroupSearchRequestDto groupSearchRequestDto) {
+        return groupService.getGroupInfo(groupSearchRequestDto.getGroupName());
     }
 
     @GetMapping("/group/total")

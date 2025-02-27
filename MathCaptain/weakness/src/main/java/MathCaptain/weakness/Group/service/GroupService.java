@@ -78,11 +78,14 @@ public class GroupService {
         return buildGroupResponseDto(group);
     }
 
-    public GroupResponseDto getGroupInfo(String groupName) {
-        Group group = groupRepository.findByName(groupName)
-                .orElseThrow(() -> new ResourceNotFoundException("해당 그룹이 없습니다."));
+    public ApiResponse<List<GroupResponseDto>> getGroupInfo(String groupName) {
+        List<Group> groups = groupRepository.findByNameContaining(groupName)
+                .orElseThrow(() -> new ResourceNotFoundException("검색 결과가 없습니다."));
 
-        return buildGroupResponseDto(group);
+        // 조회된 그룹들을 GroupResponseDto로 변환
+        return ApiResponse.ok(groups.stream()
+                .map(this::buildGroupResponseDto)
+                .collect(Collectors.toList()));
     }
 
     // 그룹 정보 업데이트 (UPDATE)
