@@ -55,12 +55,8 @@ public class SecurityConfig {
                         .toStaticResources()
                         .atCommonLocations())
 				.requestMatchers(toH2Console())
-				.requestMatchers("/h2-console/**")
                 .requestMatchers("/static/**")
                 .requestMatchers("/templates/**")
-//                .requestMatchers("/group/**", "/user/**", "/recruitment/**", "/record/**")
-//                .requestMatchers(HttpMethod.DELETE, "/group/**", "/recruitment/**", "/user/**")// 접근 허용된 URL
-//                .requestMatchers(HttpMethod.PUT, "/group/**", "/recruitment/**", "/user/**")// 접근 허용된 URL
                 .requestMatchers("/error")
 		);
 	}
