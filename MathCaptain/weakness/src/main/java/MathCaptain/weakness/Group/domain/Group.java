@@ -18,7 +18,7 @@ import java.util.Map;
 @Entity
 @Getter
 @Builder
-@Table(name = "GROUPS")
+@Table(name = "`GROUPS`")
 @NoArgsConstructor
 @AllArgsConstructor
 public class Group {
