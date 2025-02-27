@@ -8,6 +8,7 @@ import MathCaptain.weakness.Group.dto.request.GroupUpdateRequestDto;
 import MathCaptain.weakness.Group.dto.response.GroupDetailResponseDto;
 import MathCaptain.weakness.Group.dto.response.GroupResponseDto;
 import MathCaptain.weakness.Group.dto.response.UserGroupCardResponseDto;
+import MathCaptain.weakness.Group.enums.CategoryStatus;
 import MathCaptain.weakness.Record.repository.RecordRepository;
 import MathCaptain.weakness.Record.service.RecordService;
 import MathCaptain.weakness.User.domain.UserDetailsImpl;
@@ -180,6 +181,27 @@ public class GroupService {
                 })
                 .toList();
 
+    }
+
+    public ApiResponse<?> getGroups(String category) {
+
+        if (category == null) {
+            return ApiResponse.ok(groupRepository.findAll().stream()
+                    .map(this::buildGroupResponseDto)
+                    .toList());
+        }
+        try {
+            // category를 CategoryStatus로 변환
+            CategoryStatus categoryStatus = CategoryStatus.valueOf(category.toUpperCase());
+
+            // 특정 카테고리의 그룹 반환
+            return ApiResponse.ok(groupRepository.findAllByCategory(categoryStatus).stream()
+                    .map(this::buildGroupResponseDto)
+                    .toList());
+        } catch (IllegalArgumentException e) {
+            // 잘못된 카테고리 값 처리
+            return ApiResponse.fail("유효하지 않은 카테고리입니다: ", category);
+        }
     }
 
     /// 비지니스 로직
