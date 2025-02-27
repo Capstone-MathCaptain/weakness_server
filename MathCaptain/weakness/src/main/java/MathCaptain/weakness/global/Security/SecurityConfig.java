@@ -30,8 +30,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.logout.LogoutFilter;
 
-import static org.springframework.boot.autoconfigure.security.servlet.PathRequest.toH2Console;
-
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
@@ -47,14 +45,12 @@ public class SecurityConfig {
     private final CommentRepository commentRepository;
 
 
-    // 스프링 시큐리티 기능 비활성화 (H2 DB 접근을 위해)
 	@Bean
 	public WebSecurityCustomizer configure() {
 		return (web -> web.ignoring()
                 .requestMatchers(PathRequest
                         .toStaticResources()
                         .atCommonLocations())
-				.requestMatchers(toH2Console())
                 .requestMatchers("/static/**")
                 .requestMatchers("/templates/**")
                 .requestMatchers("/error")
