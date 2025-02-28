@@ -1,0 +1,77 @@
+name: Build, Push, and Deploy Docker Image
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-push-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. 저장소의 코드를 체크아웃
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # 2. JDK 설치 (Gradle 빌드에 필요)
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin' # OpenJDK 배포판
+          java-version: '17'     # Java 버전 (Spring Boot 3.x의 경우 Java 17 이상 필요)
+
+      # 3. Gradle 캐시 설정 (빌드 속도 향상)
+      - name: Cache Gradle packages
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      # 4. Gradle 빌드 및 JAR 파일 생성
+      - name: Build JAR file using Gradle
+        working-directory: MathCaptain/weakness # Gradle Wrapper가 위치한 디렉토리 설정
+        run: ./gradlew clean bootJar
+
+      # 5. Docker Hub 로그인
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+      # 6. Docker 이미지 빌드 및 태깅
+      - name: Build and tag Docker image
+        run: |
+          VERSION=0.${{ github.run_number }}
+          echo "Using VERSION=$VERSION"
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/weakness_server:$VERSION .
+          docker tag ${{ secrets.DOCKERHUB_USERNAME }}/weakness_server:$VERSION ${{ secrets.DOCKERHUB_USERNAME }}/weakness_server:latest
+
+      # 7. Docker Hub에 푸시
+      - name: Push Docker image to Docker Hub
+        run: |
+          VERSION=0.${{ github.run_number }}
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/weakness_server:$VERSION
+
+      # 8. EC2에 SSH 연결 및 새 이미지 실행
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@v0.1.7
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          port: 22
+          script: |
+            echo "Pulling latest image from Docker Hub..."
+            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/weakness_server:latest
+            
+            echo "Stopping and removing existing container..."
+            docker stop weakness_server || true && docker rm weakness_server || true
+            
+            echo "Running new container..."
+            docker run -d --name weakness_server -p 8080:8080 ${{ secrets.DOCKERHUB_USERNAME }}/weakness_server:latest
