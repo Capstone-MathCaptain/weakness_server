@@ -6,6 +6,8 @@ import MathCaptain.weakness.Group.enums.CategoryStatus;
 import MathCaptain.weakness.Group.enums.GroupRole;
 import MathCaptain.weakness.Group.repository.GroupRepository;
 import MathCaptain.weakness.Group.repository.RelationRepository;
+import MathCaptain.weakness.Record.domain.ActivityRecord;
+import MathCaptain.weakness.Record.repository.RecordRepository;
 import MathCaptain.weakness.Recruitment.domain.Comment;
 import MathCaptain.weakness.Recruitment.domain.Recruitment;
 import MathCaptain.weakness.Recruitment.enums.RecruitmentStatus;
@@ -21,9 +23,13 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.DayOfWeek;
+import java.time.LocalDateTime;
+
 @Slf4j
 @Component
 @RequiredArgsConstructor
+@Transactional
 @DependsOn("entityManagerFactory")
 public class TestInit {
 
@@ -33,6 +39,7 @@ public class TestInit {
     private final RelationRepository relationRepository;
     private final RecruitmentRepository recruitmentRepository;
     private final CommentRepository commentRepository;
+    private final RecordRepository recordRepository;
 
 
     @PostConstruct
@@ -73,11 +80,23 @@ public class TestInit {
                 .phoneNumber("01011111111")
                 .build();
 
-
         userRepository.save(users1);
         userRepository.save(users2);
         userRepository.save(users3);
-        log.info("테스트 유저 생성 완료");
+
+        for (int i = 4; i <= 12; i++) {
+            Users users = Users.builder()
+                    .userId((long) i)
+                    .email("test" + i + "@test.com")
+                    .password(passwordEncoder.encode("test"))
+                    .name("tester" + i)
+                    .nickname("tester" + i)
+                    .phoneNumber("0101111111" + i % 10)
+                    .build();
+            userRepository.save(users);
+        }
+
+        log.info("======== 👤테스트 유저 생성 완료 =========");
 
         Users leader = userRepository.findByUserId(1L)
                 .orElseThrow(() -> new IllegalArgumentException("해당 유저가 없습니다."));
@@ -119,7 +138,18 @@ public class TestInit {
         groupRepository.save(group1);
         groupRepository.save(group2);
         groupRepository.save(group3);
-        log.info("테스트 그룹 생성 완료");
+
+        group3.updateWeeklyGoalAchieve(DayOfWeek.MONDAY, 2);
+        group3.updateWeeklyGoalAchieve(DayOfWeek.TUESDAY, 4);
+        group3.updateWeeklyGoalAchieve(DayOfWeek.WEDNESDAY, 6);
+        group3.updateWeeklyGoalAchieve(DayOfWeek.THURSDAY, 8);
+        group3.updateWeeklyGoalAchieve(DayOfWeek.FRIDAY, 10);
+        group3.updateWeeklyGoalAchieve(DayOfWeek.SATURDAY, 1);
+        group3.updateWeeklyGoalAchieve(DayOfWeek.SUNDAY, 0);
+
+        groupRepository.save(group3);
+
+        log.info("======== 👥 테스트 그룹 생성 완료 =========");
 
         RelationBetweenUserAndGroup join1 = RelationBetweenUserAndGroup.builder()
                 .member(users1)
@@ -149,6 +179,19 @@ public class TestInit {
         relationRepository.save(join2);
         relationRepository.save(join3);
 
+        for (int i = 4; i <= 12; i++) {
+            RelationBetweenUserAndGroup join = RelationBetweenUserAndGroup.builder()
+                    .member(userRepository.findByUserId((long) i)
+                            .orElseThrow(() -> new IllegalArgumentException("해당 유저가 없습니다."))
+                    )
+                    .groupRole(GroupRole.MEMBER)
+                    .joinGroup(group3)
+                    .personalDailyGoal(3)
+                    .personalWeeklyGoal(5)
+                    .build();
+            relationRepository.save(join);
+        }
+
         /// 테스트 모집글 생성
         Recruitment recruitment = Recruitment.builder()
                 .postId(1L)
@@ -161,7 +204,7 @@ public class TestInit {
                 .build();
 
         recruitmentRepository.save(recruitment);
-        log.info("테스트 모집글 생성 완료");
+        log.info("======== 🔖테스트 모집글 생성 완료 =========");
 
         /// 테스트 댓글 생성
         Comment comment = Comment.builder()
@@ -172,6 +215,44 @@ public class TestInit {
                 .build();
 
         commentRepository.save(comment);
-        log.info("테스트 댓글 생성 완료");
+        log.info("======== 💬테스트 댓글 생성 완료 =========");
+
+        // ActivityRecord 생성 (currentProgress 설정: 10 이하로 조정)
+
+        // 이번 주의 시작과 끝 시간 계산
+        LocalDateTime startOfWeek = LocalDateTime.now().with(java.time.temporal.TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+        LocalDateTime endOfWeek = startOfWeek.plusWeeks(1);
+
+        // User ID: 4 -> currentProgress: 5
+        createActivityRecords(userRepository.findByUserId(4L).orElseThrow(() -> new IllegalArgumentException("해당 유저가 없습니다.")), group3, startOfWeek, 5);
+
+        // User ID: 5 -> currentProgress: 8
+        createActivityRecords(userRepository.findByUserId(5L).orElseThrow(() -> new IllegalArgumentException("해당 유저가 없습니다.")), group3, startOfWeek, 8);
+
+        // User ID: 6 -> currentProgress: 10
+        createActivityRecords(userRepository.findByUserId(6L).orElseThrow(() -> new IllegalArgumentException("해당 유저가 없습니다.")), group3, startOfWeek, 10);
+
+        // User ID: 7 -> currentProgress: 7
+        createActivityRecords(userRepository.findByUserId(7L).orElseThrow(() -> new IllegalArgumentException("해당 유저가 없습니다.")), group3, startOfWeek, 7);
+
+        // User ID: 8 -> currentProgress: 6
+        createActivityRecords(userRepository.findByUserId(8L).orElseThrow(() -> new IllegalArgumentException("해당 유저가 없습니다.")), group3, startOfWeek, 6);
+
+        log.info("======== 🏃‍♂️테스트 목표 기록 생성 완료 =========");
+    }
+
+    // Helper 메서드: ActivityRecord 생성 (이번 주 내에서만 생성되도록 수정)
+    private void createActivityRecords(Users user, Group group, LocalDateTime startOfWeek, int recordCount) {
+        for (int i = 0; i < recordCount; i++) {
+            ActivityRecord record = ActivityRecord.builder()
+                    .user(user)
+                    .group(group)
+                    // 이번 주 내에서만 startTime 설정
+                    .startTime(startOfWeek.plusDays(i % 7)) // 월요일부터 시작해서 순차적으로 날짜 설정
+                    .dailyGoalAchieved(true) // 일간 목표 달성 여부 설정
+                    .weeklyGoalAchieved(false) // 주간 목표는 기본값으로 false
+                    .build();
+            recordRepository.save(record);
+        }
     }
 }

@@ -78,8 +78,9 @@ public class GroupController {
         return groupService.deleteGroup(groupId);
     }
 
+
     ///  그룹 가입
-    ///
+
     // 그룹 가입 요청 수락
     @PostMapping("/group/join/accept/{groupId}/{joinRequestId}")
     public ApiResponse<?> acceptJoinRequest(@PathVariable Long groupId, @PathVariable Long joinRequestId) {
@@ -114,7 +115,9 @@ public class GroupController {
         return relationService.leaveGroup(loginUser, groupId);
     }
 
+
     /// 조회
+
     // 그룹 멤버 조회
     @GetMapping("/group/members/{groupId}")
     public ApiResponse<List<UserResponseDto>> groupMembers(@PathVariable Long groupId) {
@@ -128,11 +131,10 @@ public class GroupController {
         return relationService.getRelationInfo(relationId);
     }
 
-
     // 그룹 상세 정보
     @GetMapping("/group/detail/{groupId}")
     public ApiResponse<GroupDetailResponseDto> groupDetail(@PathVariable Long groupId) {
-        return ApiResponse.ok(groupService.getGroupDetail(groupId));
+        return groupService.getGroupDetail(groupId);
     }
 
     // 그룹 멤버 리스트 (그룹 상세 페이지)
@@ -151,4 +153,5 @@ public class GroupController {
     public ApiResponse<?> getGroups(@RequestParam(required = false) String category) {
         return groupService.getGroups(category);
     }
+
 }
