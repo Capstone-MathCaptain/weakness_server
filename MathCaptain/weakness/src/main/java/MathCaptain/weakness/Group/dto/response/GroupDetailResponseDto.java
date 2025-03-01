@@ -1,5 +1,6 @@
 package MathCaptain.weakness.Group.dto.response;
 
+import MathCaptain.weakness.Group.enums.CategoryStatus;
 import lombok.Builder;
 import lombok.Data;
 
@@ -14,6 +15,8 @@ public class GroupDetailResponseDto {
     private Long groupId;
 
     private String groupName;
+
+    private CategoryStatus category;
 
     private Long leaderId;
 

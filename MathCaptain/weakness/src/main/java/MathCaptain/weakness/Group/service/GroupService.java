@@ -117,7 +117,7 @@ public class GroupService {
     }
 
     // 그룹 상세 정보 조회
-    public GroupDetailResponseDto getGroupDetail(Long groupId) {
+    public ApiResponse<GroupDetailResponseDto> getGroupDetail(Long groupId) {
         Group group = groupRepository.findById(groupId)
                 .orElseThrow(() -> new ResourceNotFoundException("해당 그룹이 없습니다."));
 
@@ -125,7 +125,7 @@ public class GroupService {
 
         Long memberCount = relationRepository.countByJoinGroup_Id(groupId);
 
-        return buildGroupDetailResponseDto(group, memberCount, totalWeeklyGoalCount);
+        return ApiResponse.ok(buildGroupDetailResponseDto(group, memberCount, totalWeeklyGoalCount));
     }
 
     public ApiResponse<List<GroupResponseDto>> getUsersGroups(Users user) {
@@ -282,6 +282,7 @@ public class GroupService {
         return GroupDetailResponseDto.builder()
                 .groupId(group.getId())
                 .groupName(group.getName())
+                .category(group.getCategory())
                 .leaderId(group.getLeader().getUserId())
                 .leaderName(group.getLeader().getName())
                 .minDailyHours(group.getMinDailyHours())
