@@ -9,9 +9,7 @@ import MathCaptain.weakness.Group.repository.GroupJoinRepository;
 import MathCaptain.weakness.Group.repository.GroupRepository;
 import MathCaptain.weakness.Group.repository.RelationRepository;
 import MathCaptain.weakness.User.domain.Users;
-import MathCaptain.weakness.User.repository.UserRepository;
 import MathCaptain.weakness.global.Api.ApiResponse;
-import MathCaptain.weakness.global.Security.jwt.JwtService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -49,11 +47,7 @@ public class GroupJoinService {
         GroupJoin joinRequest = groupJoinRepository.findById(joinRequestId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 가입 요청이 존재하지 않습니다."));
 
-        if (joinRequest.getRequestStatus() == RequestStatus.REJECTED) {
-            throw new IllegalArgumentException("이미 거절된 요청입니다.");
-        } else if (joinRequest.getRequestStatus() == RequestStatus.CANCELED) {
-            throw new IllegalArgumentException("이미 취소된 요청입니다.");
-        }
+        checkStatusIsWaiting(joinRequest);
 
         Group group = groupRepository.findById(groupId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 그룹이 존재하지 않습니다."));
@@ -75,11 +69,7 @@ public class GroupJoinService {
         GroupJoin joinRequest = groupJoinRepository.findById(joinRequestId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 가입 요청이 존재하지 않습니다."));
 
-        if (joinRequest.getRequestStatus() == RequestStatus.ACCEPTED) {
-            throw new IllegalArgumentException("이미 가입된 요청입니다.");
-        } else if (joinRequest.getRequestStatus() == RequestStatus.CANCELED) {
-            throw new IllegalArgumentException("이미 취소된 요청입니다.");
-        }
+        checkStatusIsWaiting(joinRequest);
 
         joinRequest.updateRequestStatus(RequestStatus.REJECTED);
     }
@@ -89,11 +79,7 @@ public class GroupJoinService {
         GroupJoin joinRequest = groupJoinRepository.findById(joinRequestId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 가입 요청이 존재하지 않습니다."));
 
-        if (joinRequest.getRequestStatus() == RequestStatus.ACCEPTED) {
-            throw new IllegalArgumentException("이미 그룹에 가입되어 취소할 수 없습니다.");
-        } else if (joinRequest.getRequestStatus() == RequestStatus.REJECTED) {
-            throw new IllegalArgumentException("이미 거절된 요청입니다.");
-        }
+        checkStatusIsWaiting(joinRequest);
 
         joinRequest.updateRequestStatus(RequestStatus.CANCELED);
 
@@ -111,19 +97,20 @@ public class GroupJoinService {
     }
 
     //==검증 로직==//
-
     private void checkJoin(Users member, Group joinGroup, int personalDailyGoal, int personalWeeklyGoal) {
 
         if (relationRepository.findByMemberAndJoinGroup(member, joinGroup).isPresent()) {
             throw new IllegalArgumentException("해당 멤버가 이미 가입되어 있습니다.");
         }
 
-        if (personalDailyGoal < joinGroup.getMinDailyHours()) {
-            throw new IllegalArgumentException("하루 목표 시간은 " + joinGroup.getMinDailyHours() + "시간 이상이어야 합니다.");
+        if (joinGroup.checkJoin(personalDailyGoal, personalWeeklyGoal)) {
+            throw new IllegalArgumentException("목표 조건을 달성하지 못했습니다.");
         }
+    }
 
-        if (personalWeeklyGoal < joinGroup.getMinWeeklyDays()) {
-            throw new IllegalArgumentException("주간 목표 일수는 " + joinGroup.getMinWeeklyDays() + "일 이상이어야 합니다.");
+    private void checkStatusIsWaiting(GroupJoin joinRequest) {
+        if (joinRequest.getRequestStatus() != RequestStatus.WAITING) {
+            throw new IllegalArgumentException("이미 처리된 요청입니다.");
         }
     }
 

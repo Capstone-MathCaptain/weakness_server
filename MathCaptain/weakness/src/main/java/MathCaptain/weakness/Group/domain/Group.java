@@ -1,5 +1,6 @@
 package MathCaptain.weakness.Group.domain;
 
+import MathCaptain.weakness.Group.dto.request.GroupUpdateRequestDto;
 import MathCaptain.weakness.Group.enums.CategoryStatus;
 import MathCaptain.weakness.Recruitment.domain.Recruitment;
 import MathCaptain.weakness.User.domain.Users;
@@ -18,7 +19,7 @@ import java.util.Map;
 @Entity
 @Getter
 @Builder
-@Table(name = "`GROUPS`")
+@Table(name = "UserGroup")
 @NoArgsConstructor
 @AllArgsConstructor
 public class Group {
@@ -85,19 +86,27 @@ public class Group {
     //==수정 로직==//
 
     public void updateName(String name) {
-        this.name = name;
+        if (name != null && !name.equals(this.name)) {
+            this.name = name;
+        }
     }
 
     public void updateCategory(CategoryStatus category) {
-        this.category = category;
+        if (category != null && !category.equals(this.category)) {
+            this.category = category;
+        }
     }
 
     public void updateMinDailyHours(int min_daily_hours) {
-        this.minDailyHours = min_daily_hours;
+        if (min_daily_hours > 0 &&  min_daily_hours != this.minDailyHours) {
+            this.minDailyHours = min_daily_hours;
+        }
     }
 
     public void updateMinWeeklyDays(int min_weekly_days) {
-        this.minWeeklyDays = min_weekly_days;
+        if (min_weekly_days > 0 && min_weekly_days != this.minWeeklyDays) {
+            this.minWeeklyDays = min_weekly_days;
+        }
     }
 
     public void updateGroupPoint(Long group_point) {
@@ -109,7 +118,9 @@ public class Group {
     }
 
     public void updateGroupImageUrl(String group_image_url) {
-        this.groupImageUrl = group_image_url;
+        if (group_image_url != null && !group_image_url.equals(this.groupImageUrl)) {
+            this.groupImageUrl = group_image_url;
+        }
     }
 
     public void updateGroupRanking(int groupRanking) {
@@ -118,6 +129,18 @@ public class Group {
 
     public void updateWeeklyGoalAchieve(DayOfWeek dayOfWeek, int goalCount) {
         weeklyGoalAchieve.put(dayOfWeek, goalCount);
+    }
+
+    public void updateGroup(GroupUpdateRequestDto requestDto) {
+        updateName(requestDto.getGroupName());
+        updateMinDailyHours(requestDto.getMinDailyHours());
+        updateMinWeeklyDays(requestDto.getMinWeeklyDays());
+        updateHashtags(requestDto.getHashtags());
+        updateGroupImageUrl(requestDto.getGroupImageUrl());
+    }
+
+    public boolean checkJoin(int dailyGoal, int weeklyGoal) {
+        return dailyGoal >= minDailyHours && weeklyGoal >= minWeeklyDays;
     }
 
     public void increaseWeeklyGoalAchieve(DayOfWeek day) {

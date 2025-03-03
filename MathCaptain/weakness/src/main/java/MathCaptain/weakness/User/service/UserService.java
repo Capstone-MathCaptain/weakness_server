@@ -14,6 +14,7 @@ import MathCaptain.weakness.User.repository.UserRepository;
 import MathCaptain.weakness.User.domain.Users;
 import MathCaptain.weakness.global.Api.ApiResponse;
 import MathCaptain.weakness.global.Mail.MailService;
+import MathCaptain.weakness.global.exception.AuthorizationException;
 import MathCaptain.weakness.global.exception.DuplicatedException;
 import MathCaptain.weakness.global.exception.ResourceNotFoundException;
 import jakarta.transaction.Transactional;
@@ -41,14 +42,8 @@ public class UserService {
 
     // 회원가입
     public ApiResponse<UserResponseDto> saveUser(SaveUserRequestDto user) {
-        Users users = Users.builder()
-                .email(user.getEmail())
-                .password(passwordEncoder.encode(user.getPassword()))
-                .name(user.getName())
-                .nickname(user.getNickname())
-                .phoneNumber(user.getPhoneNumber())
-                .build();
 
+        Users users = buidUser(user);
         validateDuplicateUser(users);
         userRepository.save(users);
 
@@ -58,8 +53,8 @@ public class UserService {
     // 회원탈퇴
     public ApiResponse<?> deleteUser(Users user, UserDeleteRequestDto userDeleteRequestDto) {
 
-        if (!passwordEncoder.matches(userDeleteRequestDto.getPassword(), user.getPassword())) {
-            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
+        if (checkPassword(user, userDeleteRequestDto)) {
+            throw new AuthorizationException("비밀번호가 일치하지 않습니다.");
         }
 
         userRepository.delete(user);
@@ -68,27 +63,17 @@ public class UserService {
     }
 
     // 회원정보 수정
+
     public ApiResponse<UserResponseDto> updateUser(Users user, UpdateUserRequestDto updateUser) {
 
-        if (!user.getName().equals(updateUser.getName()) && updateUser.getName() != null) {
-            user.updateName(updateUser.getName());
-        }
-
-        if (!user.getNickname().equals(updateUser.getNickname()) && updateUser.getNickname() != null) {
-            user.updateNickname(updateUser.getNickname());
-        }
-
-        if (!user.getPhoneNumber().equals(updateUser.getPhoneNumber()) && updateUser.getPhoneNumber() != null) {
-            user.updatePhoneNumber(updateUser.getPhoneNumber());
-        }
-
+        user.updateUser(updateUser);
         List<Long> joinedGroupsId = relationRepository.findGroupsIdByMember(user);
         List<GroupResponseDto> groupResponseDtoList = groupService.getUsersGroups(joinedGroupsId);
 
         return ApiResponse.ok(buildUserResponseDto(user, groupResponseDtoList));
     }
-
     // 회원정보 조회
+
     public ApiResponse<UserResponseDto> getUserInfo(Long userId) {
         Users member = userRepository.findByUserId(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("해당 유저가 없습니다."));
@@ -162,11 +147,25 @@ public class UserService {
         }
     }
 
+    private boolean checkPassword(Users user, UserDeleteRequestDto userDeleteRequestDto) {
+        return !passwordEncoder.matches(userDeleteRequestDto.getPassword(), user.getPassword());
+    }
+
     public boolean checkUserByEmailAndName(String email, String username) {
         return userRepository.existsByEmailAndName(email, username);
     }
 
     /// 빌더
+
+    private Users buidUser(SaveUserRequestDto user) {
+        return Users.builder()
+                .email(user.getEmail())
+                .password(passwordEncoder.encode(user.getPassword()))
+                .name(user.getName())
+                .nickname(user.getNickname())
+                .phoneNumber(user.getPhoneNumber())
+                .build();
+    }
 
     private UserResponseDto buildUserResponseDto(Users user) {
         return UserResponseDto.builder()
