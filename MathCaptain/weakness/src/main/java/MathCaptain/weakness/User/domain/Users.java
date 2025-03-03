@@ -4,6 +4,7 @@ import MathCaptain.weakness.Group.domain.Group;
 import MathCaptain.weakness.Group.domain.RelationBetweenUserAndGroup;
 import MathCaptain.weakness.Recruitment.domain.Comment;
 import MathCaptain.weakness.Recruitment.domain.Recruitment;
+import MathCaptain.weakness.User.dto.request.UpdateUserRequestDto;
 import MathCaptain.weakness.User.enums.TierThresholds;
 import MathCaptain.weakness.User.enums.Tiers;
 import jakarta.persistence.*;
@@ -84,19 +85,31 @@ public class Users {
     //== 수정 로직 ==//
 
     public void updateName(String name) {
-        this.name = name;
+        if (name != null && !name.equals(this.name)) {
+            this.name = name;
+        }
     }
 
     public void updateNickname(String nickname) {
-        this.nickname = nickname;
+        if (nickname != null && !nickname.equals(this.nickname)) {
+            this.nickname = nickname;
+        }
     }
 
     public void updatePhoneNumber(String phoneNumber) {
-        this.phoneNumber = phoneNumber;
+        if (phoneNumber != null && !phoneNumber.equals(this.phoneNumber)) {
+            this.phoneNumber = phoneNumber;
+        }
     }
 
     public void updatePassword(String password, PasswordEncoder passwordEncoder) {
         this.password = passwordEncoder.encode(password);
+    }
+
+    public void updateUser(UpdateUserRequestDto requestDto) {
+        updateName(requestDto.getName());
+        updateNickname(requestDto.getNickname());
+        updatePhoneNumber(requestDto.getPhoneNumber());
     }
 
     public void updatePoint(Long point) {

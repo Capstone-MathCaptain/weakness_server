@@ -48,7 +48,7 @@ public class GroupService {
     // 그룹 생성 (CREATE)
     public ApiResponse<GroupResponseDto> createGroup(Users leader, GroupCreateRequestDto groupCreateRequestDto, HttpServletResponse response) {
 
-        if (groupRepository.existsByName(groupCreateRequestDto.getGroupName())) {
+        if (checkDuplicationGroupName(groupCreateRequestDto)) {
             throw new DuplicatedException("이미 존재하는 그룹 이름입니다.");
         }
 
@@ -60,10 +60,7 @@ public class GroupService {
         int leaderDailyGoal = groupCreateRequestDto.getPersonalDailyGoal();
         int leaderWeeklyGoal = groupCreateRequestDto.getPersonalWeeklyGoal();
 
-        GroupJoinRequestDto joinLeader = GroupJoinRequestDto.builder()
-                .personalDailyGoal(leaderDailyGoal)
-                .personalWeeklyGoal(leaderWeeklyGoal)
-                .build();
+        GroupJoinRequestDto joinLeader = buildGroupJoinRequest(leaderDailyGoal, leaderWeeklyGoal);
 
         relationService.leaderJoin(groupId, leader, joinLeader);
 
@@ -93,7 +90,11 @@ public class GroupService {
         Group group = groupRepository.findById(groupId)
                 .orElseThrow(() -> new ResourceNotFoundException("해당 그룹이 없습니다."));
 
-        updateGroupInfo(group, groupUpdateRequestDto);
+        if (checkDuplicationGroupName(groupUpdateRequestDto)) {
+            throw new DuplicatedException("이미 존재하는 그룹 이름입니다.");
+        }
+
+        group.updateGroup(groupUpdateRequestDto);
 
         return ApiResponse.ok(buildGroupResponseDto(group));
     }
@@ -106,13 +107,7 @@ public class GroupService {
         List<Users> members = relationRepository.findMembersByGroup(group);
 
         return members.stream()
-                .map(user -> UserResponseDto.builder()
-                        .userId(user.getUserId())
-                        .name(user.getName())
-                        .nickname(user.getNickname())
-                        .email(user.getEmail())
-                        .phoneNumber(user.getPhoneNumber())
-                        .build())
+                .map(GroupService::buildUserResponse)
                 .collect(Collectors.toList());
     }
 
@@ -170,20 +165,9 @@ public class GroupService {
 
                     Map<DayOfWeek, Boolean> userAchieveInGroup = recordService.getWeeklyGoalStatus(user, group, LocalDateTime.now());
 
-                    return UserGroupCardResponseDto.builder()
-                            .groupId(group.getId())
-                            .groupName(group.getName())
-                            .groupImageUrl(group.getGroupImageUrl())
-                            .groupRole(relation.getGroupRole())
-                            .groupRanking(group.getGroupRanking())
-                            .groupPoint(group.getGroupPoint())
-                            .userAchieve(userAchieveInGroup)
-                            .userDailyGoal(relation.getPersonalDailyGoal())
-                            .userWeeklyGoal(relation.getPersonalWeeklyGoal())
-                            .build();
+                    return buildUserGroupCard(group, relation, userAchieveInGroup);
                 })
                 .toList();
-
     }
 
     public ApiResponse<?> getGroups(String category) {
@@ -201,41 +185,23 @@ public class GroupService {
             return ApiResponse.ok(groupRepository.findAllByCategory(categoryStatus).stream()
                     .map(this::buildGroupResponseDto)
                     .toList());
+
         } catch (IllegalArgumentException e) {
             // 잘못된 카테고리 값 처리
             return ApiResponse.fail("유효하지 않은 카테고리입니다: ", category);
         }
     }
 
-    /// 비지니스 로직
-
     /// 검증 로직
-    private void updateGroupInfo(Group group, GroupUpdateRequestDto groupUpdateRequestDto) {
-
-        if (groupRepository.findByName(groupUpdateRequestDto.getGroupName()).isPresent()) {
-            throw new DuplicatedException("이미 존재하는 그룹 이름입니다.");
-        }
-
-        if (!group.getName().equals(groupUpdateRequestDto.getGroupName())) {
-            group.updateName(groupUpdateRequestDto.getGroupName());
-        }
-
-        if (group.getMinDailyHours() != groupUpdateRequestDto.getMinDailyHours()) {
-            group.updateMinDailyHours(groupUpdateRequestDto.getMinDailyHours());
-        }
-
-        if (group.getMinWeeklyDays() != groupUpdateRequestDto.getMinWeeklyDays()) {
-            group.updateMinWeeklyDays(groupUpdateRequestDto.getMinWeeklyDays());
-        }
-
-        if (!group.getHashtags().equals(groupUpdateRequestDto.getHashtags())) {
-            group.updateHashtags(groupUpdateRequestDto.getHashtags());
-        }
-
-        if (!group.getGroupImageUrl().equals(groupUpdateRequestDto.getGroupImageUrl())) {
-            group.updateGroupImageUrl(groupUpdateRequestDto.getGroupImageUrl());
-        }
+    private Boolean checkDuplicationGroupName(GroupCreateRequestDto groupCreateRequestDto) {
+        return groupRepository.existsByName(groupCreateRequestDto.getGroupName());
     }
+
+    private Boolean checkDuplicationGroupName(GroupUpdateRequestDto groupUpdateRequestDto) {
+        return groupRepository.existsByName(groupUpdateRequestDto.getGroupName());
+    }
+
+    /// 비지니스 로직
 
     private GroupResponseDto convertToGroupResponseDto(Long groupId) {
         try {
@@ -247,6 +213,13 @@ public class GroupService {
     }
 
     /// 빌드
+    private static GroupJoinRequestDto buildGroupJoinRequest(int leaderDailyGoal, int leaderWeeklyGoal) {
+        return GroupJoinRequestDto.builder()
+                .personalDailyGoal(leaderDailyGoal)
+                .personalWeeklyGoal(leaderWeeklyGoal)
+                .build();
+    }
+
     private GroupResponseDto buildGroupResponseDto(Group group) {
         return GroupResponseDto.builder()
                 .groupId(group.getId())
@@ -297,4 +270,27 @@ public class GroupService {
                 .build();
     }
 
+    private static UserResponseDto buildUserResponse(Users user) {
+        return UserResponseDto.builder()
+                .userId(user.getUserId())
+                .name(user.getName())
+                .nickname(user.getNickname())
+                .email(user.getEmail())
+                .phoneNumber(user.getPhoneNumber())
+                .build();
+    }
+
+    private static UserGroupCardResponseDto buildUserGroupCard(Group group, RelationBetweenUserAndGroup relation, Map<DayOfWeek, Boolean> userAchieveInGroup) {
+        return UserGroupCardResponseDto.builder()
+                .groupId(group.getId())
+                .groupName(group.getName())
+                .groupImageUrl(group.getGroupImageUrl())
+                .groupRole(relation.getGroupRole())
+                .groupRanking(group.getGroupRanking())
+                .groupPoint(group.getGroupPoint())
+                .userAchieve(userAchieveInGroup)
+                .userDailyGoal(relation.getPersonalDailyGoal())
+                .userWeeklyGoal(relation.getPersonalWeeklyGoal())
+                .build();
+    }
 }

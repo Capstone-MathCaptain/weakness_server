@@ -1,5 +1,6 @@
 package MathCaptain.weakness.Recruitment.domain;
 
+import MathCaptain.weakness.Recruitment.dto.request.UpdateCommentRequestDto;
 import MathCaptain.weakness.User.domain.Users;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -46,7 +47,17 @@ public class Comment {
 
     //==수정==//
     public void updateContent(String content) {
-        this.content = content;
-        this.lastModifiedTime = LocalDateTime.now();
+        if (content != null && !content.equals(this.content)) {
+            this.content = content;
+            this.lastModifiedTime = LocalDateTime.now();
+        }
+    }
+
+    public void updateComment(UpdateCommentRequestDto requestDto) {
+        updateContent(requestDto.getContent());
+    }
+
+    public Boolean isBelongToPost(Long recruitmentId) {
+        return this.post.getPostId().equals(recruitmentId);
     }
 }

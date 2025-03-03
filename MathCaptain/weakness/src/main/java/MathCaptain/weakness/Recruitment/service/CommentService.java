@@ -27,9 +27,7 @@ import java.util.List;
 public class CommentService {
 
     private final CommentRepository commentRepository;
-    private final UserRepository userRepository;
     private final RecruitmentRepository recruitmentRepository;
-    private final JwtService jwtService;
 
     /// 댓글 CRUD
 
@@ -61,15 +59,11 @@ public class CommentService {
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 댓글이 없습니다."));
 
-        if (!recruitmentId.equals(comment.getPost().getPostId())) {
+        if (comment.isBelongToPost(recruitmentId)) {
             throw new IllegalArgumentException("해당 댓글이 해당 모집글에 속해있지 않습니다.");
         }
 
-        if (!comment.getContent().equals(updateCommentRequestDto.getContent())) {
-            comment.updateContent(updateCommentRequestDto.getContent());
-        }
-
-        // TODO 알림 기능 추가
+        comment.updateComment(updateCommentRequestDto);
 
         return ApiResponse.ok(CommentSuccessDto.builder()
                 .commentId(commentId)
@@ -78,11 +72,12 @@ public class CommentService {
     }
 
     // 댓글 삭제
+
     public ApiResponse<CommentSuccessDto> deleteComment(Long recruitmentId, Long commentId) {
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 댓글이 없습니다."));
 
-        if (!recruitmentId.equals(comment.getPost().getPostId())) {
+        if (comment.isBelongToPost(recruitmentId)) {
             throw new IllegalArgumentException("해당 댓글이 해당 모집글에 속해있지 않습니다.");
         }
 
@@ -93,8 +88,8 @@ public class CommentService {
                 .recruitmentId(recruitmentId)
                 .build());
     }
-
     // 댓글 조회
+
     public List<CommentResponseDto> getComments(Long recruitmentId) {
         Recruitment recruitment = recruitmentRepository.findById(recruitmentId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 모집글이 없습니다."));

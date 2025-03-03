@@ -12,9 +12,7 @@ import MathCaptain.weakness.User.dto.response.UserResponseDto;
 import MathCaptain.weakness.Group.enums.GroupRole;
 import MathCaptain.weakness.Group.repository.RelationRepository;
 import MathCaptain.weakness.User.domain.Users;
-import MathCaptain.weakness.User.repository.UserRepository;
 import MathCaptain.weakness.global.Api.ApiResponse;
-import MathCaptain.weakness.global.Security.jwt.JwtService;
 import MathCaptain.weakness.global.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -43,7 +41,7 @@ public class RelationService {
 
         RelationBetweenUserAndGroup relation = getRelation(user, group);
 
-        if (relation.getGroupRole().equals(GroupRole.LEADER)) {
+        if (isLeader(relation)) {
             throw new IllegalArgumentException("리더는 그룹을 탈퇴할 수 없습니다.");
         }
 
@@ -51,9 +49,6 @@ public class RelationService {
 
         return ApiResponse.ok("그룹 탈퇴가 완료되었습니다.");
     }
-
-    // TODO
-    // 그룹장 넘겨주기 기능 ?
 
     public void leaderJoin(Long groupId, Users leader, GroupJoinRequestDto groupJoinRequestDto) {
 
@@ -64,13 +59,7 @@ public class RelationService {
     }
 
     public void saveRelation(Users member, Group group, GroupJoinRequestDto groupJoinRequestDto) {
-        relationRepository.save(RelationBetweenUserAndGroup.builder()
-                .member(member)
-                .groupRole(GroupRole.MEMBER)
-                .joinGroup(group)
-                .personalDailyGoal(groupJoinRequestDto.getPersonalDailyGoal())
-                .personalWeeklyGoal(groupJoinRequestDto.getPersonalWeeklyGoal())
-                .build());
+        relationRepository.save(buildRelation(member, group, groupJoinRequestDto));
     }
 
     // 그룹 멤버 리스트 (그룹 상세 페이지)
@@ -88,7 +77,6 @@ public class RelationService {
                 .map(relation -> mapToGroupMemberListResponseDto(relation, startOfWeek, endOfWeek))
                 .collect(Collectors.toList());
     }
-
     ///  검증 로직
 
     public RelationBetweenUserAndGroup getRelation(Users member, Group group) {
@@ -96,6 +84,9 @@ public class RelationService {
                 .orElseThrow(() -> new IllegalArgumentException("해당 관계가 존재하지 않습니다."));
     }
 
+    private static boolean isLeader(RelationBetweenUserAndGroup relation) {
+        return relation.getGroupRole().equals(GroupRole.LEADER);
+    }
 
     public RelationResponseDto getRelationInfo(Long relationId) {
         RelationBetweenUserAndGroup relation = relationRepository.findById(relationId)
@@ -164,6 +155,16 @@ public class RelationService {
                 .joinGroup(group)
                 .personalDailyGoal(dailyGoal)
                 .personalWeeklyGoal(weeklyGoal)
+                .build();
+    }
+
+    private RelationBetweenUserAndGroup buildRelation(Users member, Group group, GroupJoinRequestDto groupJoinRequestDto) {
+        return RelationBetweenUserAndGroup.builder()
+                .member(member)
+                .groupRole(GroupRole.MEMBER)
+                .joinGroup(group)
+                .personalDailyGoal(groupJoinRequestDto.getPersonalDailyGoal())
+                .personalWeeklyGoal(groupJoinRequestDto.getPersonalWeeklyGoal())
                 .build();
     }
 

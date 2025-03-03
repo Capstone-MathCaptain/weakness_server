@@ -5,19 +5,14 @@ import MathCaptain.weakness.Group.domain.RelationBetweenUserAndGroup;
 import MathCaptain.weakness.Group.enums.GroupRole;
 import MathCaptain.weakness.Group.repository.GroupRepository;
 import MathCaptain.weakness.Group.repository.RelationRepository;
-import MathCaptain.weakness.Recruitment.domain.Comment;
 import MathCaptain.weakness.Recruitment.domain.Recruitment;
 import MathCaptain.weakness.Recruitment.dto.request.CreateRecruitmentRequestDto;
 import MathCaptain.weakness.Recruitment.dto.request.UpdateRecruitmentRequestDto;
 import MathCaptain.weakness.Recruitment.dto.response.*;
-import MathCaptain.weakness.Recruitment.enums.RecruitmentStatus;
 import MathCaptain.weakness.Recruitment.repository.RecruitmentRepository;
 import MathCaptain.weakness.User.domain.Users;
-import MathCaptain.weakness.User.repository.UserRepository;
 import MathCaptain.weakness.global.Api.ApiResponse;
-import MathCaptain.weakness.global.Security.jwt.JwtService;
 import MathCaptain.weakness.global.exception.ResourceNotFoundException;
-import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -33,11 +28,9 @@ import java.util.List;
 public class RecruitmentService {
 
     private final RecruitmentRepository recruitmentRepository;
-    private final UserRepository userRepository;
     private final GroupRepository groupRepository;
     private final RelationRepository relationRepository;
     private final CommentService commentService;
-    private final JwtService jwtService;
 
     /// 모집 CRUD
     // 모집글 작성 요청 (그룹 정보 반환)
@@ -79,7 +72,7 @@ public class RecruitmentService {
         Recruitment recruitment = recruitmentRepository.findById(recruitmentId).
                 orElseThrow(() -> new ResourceNotFoundException("해당 모집글이 없습니다."));
 
-        updateRecruitment(recruitment, updateRecruitmentRequestDto);
+        recruitment.updateRecruitment(updateRecruitmentRequestDto);
 
         log.info("모집글 수정 완료, 모집글 ID : {}", recruitmentId);
 
@@ -106,23 +99,6 @@ public class RecruitmentService {
         return ApiResponse.ok(recruitments.stream()
                 .map(this::buildRecruitmentResponseDto)
                 .toList());
-    }
-
-    /// 비지니스 로직
-
-    // 모집글 수정 로직
-    private void updateRecruitment(Recruitment recruitment, UpdateRecruitmentRequestDto updateRecruitmentRequestDto) {
-        if (!recruitment.getTitle().equals(updateRecruitmentRequestDto.getTitle())) {
-            recruitment.updateTitle(updateRecruitmentRequestDto.getTitle());
-        }
-
-        if (!recruitment.getContent().equals(updateRecruitmentRequestDto.getContent())) {
-            recruitment.updateContent(updateRecruitmentRequestDto.getContent());
-        }
-
-        if (!recruitment.getRecruitmentStatus().equals(updateRecruitmentRequestDto.getRecruitmentStatus())) {
-            recruitment.updateRecruitmentStatus(updateRecruitmentRequestDto.getRecruitmentStatus());
-        }
     }
 
     /// 빌드

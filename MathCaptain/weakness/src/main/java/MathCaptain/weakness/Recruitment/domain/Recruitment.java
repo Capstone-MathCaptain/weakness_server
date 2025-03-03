@@ -2,6 +2,7 @@ package MathCaptain.weakness.Recruitment.domain;
 
 import MathCaptain.weakness.Group.domain.Group;
 import MathCaptain.weakness.Group.enums.CategoryStatus;
+import MathCaptain.weakness.Recruitment.dto.request.UpdateRecruitmentRequestDto;
 import MathCaptain.weakness.Recruitment.enums.RecruitmentStatus;
 import MathCaptain.weakness.User.domain.Users;
 import jakarta.persistence.*;
@@ -74,17 +75,36 @@ public class Recruitment {
     }
 
     public void updateTitle(String title) {
-        this.title = title;
-        this.lastModifiedTime = LocalDateTime.now();
+        if (title != null && !title.equals(this.title))
+        {
+            this.title = title;
+            updateLastModifiedTime();
+        }
     }
 
     public void updateContent(String content) {
-        this.content = content;
-        this.lastModifiedTime = LocalDateTime.now();
+        if (content != null && !content.equals(this.content))
+        {
+            this.content = content;
+            updateLastModifiedTime();
+        }
     }
 
     public void updateRecruitmentStatus(RecruitmentStatus recruitmentStatus) {
-        this.recruitmentStatus = recruitmentStatus;
+        if (recruitmentStatus != null && !recruitmentStatus.equals(this.recruitmentStatus))
+        {
+            this.recruitmentStatus = recruitmentStatus;
+            updateLastModifiedTime();
+        }
+    }
+
+    private void updateLastModifiedTime() {
         this.lastModifiedTime = LocalDateTime.now();
+    }
+
+    public void updateRecruitment(UpdateRecruitmentRequestDto requestDto) {
+        updateTitle(requestDto.getTitle());
+        updateContent(requestDto.getContent());
+        updateRecruitmentStatus(requestDto.getRecruitmentStatus());
     }
 }
