@@ -19,6 +19,8 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class GoalResetScheduler {
 
+    public static final Long ALL_GROUP_MEMBERS_ACHIEVE = PointSet.AllGroupMembersAchieveBase;
+    public static final Long WEEKLY_GOAL_FAIL_PENALTY = PointSet.WeeklyGoalFailPenaltyBase;
     private final RelationRepository relationRepository;
     private final GroupRepository groupRepository;
 
@@ -28,7 +30,7 @@ public class GoalResetScheduler {
     @Scheduled(cron = "0 0 0 * * ?") // 매일 00:00에 실행
     public void resetDailyGoals() {
 
-        log.info("일간 목표 초기화 시작");
+        log.info("====== 🏁일간 목표 초기화 시작 ======");
         int pageNumber = 0; // 페이징 시작 페이지 번호
 
         Page<RelationBetweenUserAndGroup> page;
@@ -46,14 +48,14 @@ public class GoalResetScheduler {
             pageNumber++; // 다음 페이지로 이동
         } while (!page.isLast()); // 마지막 페이지인지 확인
 
-        log.info("일간 목표 초기화 완료");
+        log.info("====== 🏁일간 목표 초기화 완료 ======");
     }
 
     // 매주 월요일 00시 실행 (주간 목표 초기화)
     @Scheduled(cron = "0 0 0 * * MON") // 매주 월요일 00:00에 실행
     public void resetWeeklyGoals() {
 
-        log.info("주간 목표 초기화 시작");
+        log.info("====== 🏁주간 목표 초기화 시작 ======");
         int groupPageNumber = 0; // 페이징 시작 페이지 번호
 
         Page<Group> groupsPage;
@@ -63,8 +65,8 @@ public class GoalResetScheduler {
 
             // 데이터 처리
             for (Group group : groupsPage.getContent()) {
-                if (isAllMembersAchievedWeeklyGoal(group.getId())) {
-                    group.addPoint(PointSet.AllGroupMembersAchieveBase * relationRepository.countByJoinGroup_Id(group.getId()));
+                if (isAllMembersAchievedWeeklyGoal(group)) {
+                    group.addPoint(ALL_GROUP_MEMBERS_ACHIEVE * relationRepository.countByJoinGroup(group));
                 }
             }
             // 변경 사항 저장
@@ -83,12 +85,10 @@ public class GoalResetScheduler {
             for (RelationBetweenUserAndGroup relation : relationPage.getContent()) {
 
                 // 주간 목표 미달성시 연속 달성 횟수 초기화 & 패널티 부여
-                if (!relation.isWeeklyGoalAchieved()) {
+                if (isNotAchieveWeeklyGoal(relation)) {
                     relation.resetWeeklyGoalAchieveStreak();
-                    relation.getMember().subtractPoint(PointSet.WeeklyGoalFailPenaltyBase * calculateFailedDays(relation));
-                    relation.getJoinGroup().subtractPoint(PointSet.WeeklyGoalFailPenaltyBase * calculateFailedDays(relation));
+                    subtractPoint(relation);
                 }
-
                 relation.resetPersonalWeeklyGoalAchieve();
             }
 
@@ -97,14 +97,22 @@ public class GoalResetScheduler {
             relationPageNumber++; // 다음 페이지로 이동
         } while (!relationPage.isLast()); // 마지막 페이지인지 확인
 
-        log.info("주간 목표 초기화 완료");
+        log.info("====== 🏁주간 목표 초기화 완료 ======");
+    }
+
+    private boolean isNotAchieveWeeklyGoal(RelationBetweenUserAndGroup relation) {
+        return !relation.isWeeklyGoalAchieved();
+    }
+
+    private void subtractPoint(RelationBetweenUserAndGroup relation) {
+        relation.subtractPoint(WEEKLY_GOAL_FAIL_PENALTY * calculateFailedDays(relation));
     }
 
     private int calculateFailedDays(RelationBetweenUserAndGroup relation) {
         return Math.max(relation.getPersonalWeeklyGoal() - relation.getPersonalWeeklyGoalAchieve(), 0);
     }
 
-    private boolean isAllMembersAchievedWeeklyGoal(Long groupId) {
-        return relationRepository.allMembersAchievedWeeklyGoal(groupId);
+    private boolean isAllMembersAchievedWeeklyGoal(Group group) {
+        return relationRepository.allMembersAchievedWeeklyGoal(group.getId());
     }
 }

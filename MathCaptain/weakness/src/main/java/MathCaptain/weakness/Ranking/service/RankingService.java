@@ -34,12 +34,16 @@ public class RankingService {
         });
 
         // 변경 사항을 데이터베이스에 반영
-        return groupPage.map(group -> GroupRankingResponseDto.builder()
+        return groupPage.map(RankingService::buildGroupRankingResponse);
+    }
+
+    private static GroupRankingResponseDto buildGroupRankingResponse(Group group) {
+        return GroupRankingResponseDto.builder()
                 .groupId(group.getId())
                 .groupName(group.getName())
                 .groupPoint(group.getGroupPoint())
                 .ranking(group.getGroupRanking())
-                .build());
+                .build();
     }
 
 }

@@ -33,8 +33,6 @@ public interface RelationRepository extends JpaRepository<RelationBetweenUserAnd
     @Query("SELECT SUM(r.personalWeeklyGoal) FROM RelationBetweenUserAndGroup r WHERE r.joinGroup.id = :groupId")
     Integer sumPersonalWeeklyGoalByGroupId(@Param("groupId") Long groupId);
 
-    Optional<List<RelationBetweenUserAndGroup>> findAllByMember_Email(String email);
-
     Optional<RelationBetweenUserAndGroup> findByMember_EmailAndJoinGroup_Id(String memberEmail, Long joinGroupId);
 
     Optional<RelationBetweenUserAndGroup> findByMemberAndJoinGroup_Id(Users member, Long joinGroupId);
@@ -45,12 +43,12 @@ public interface RelationRepository extends JpaRepository<RelationBetweenUserAnd
 
     boolean existsByMember_EmailAndGroupRole(String memberEmail, GroupRole groupRole);
 
-    Long countByJoinGroup_Id(Long joinGroupId);
+    Long countByJoinGroup(Group joinGroup);
 
     // 같은 그룹에 속하는 사람들 모두가 주간 목표 달성을 했는지 여부
     @Query("SELECT CASE WHEN COUNT(r) = 0 THEN true ELSE false END " +
             "FROM RelationBetweenUserAndGroup r " +
-            "WHERE r.joinGroup.id = :groupId AND r.isWeeklyGoalAchieved = false")
+            "WHERE r.joinGroup.id = :groupId AND r.personalDailyGoalAchieve >= r.personalDailyGoal")
     boolean allMembersAchievedWeeklyGoal(@Param("groupId") Long groupId);
 }
 

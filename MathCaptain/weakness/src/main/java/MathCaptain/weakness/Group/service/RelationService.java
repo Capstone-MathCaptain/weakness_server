@@ -142,7 +142,7 @@ public class RelationService {
                 .userPoint(relation.getMember().getUserPoint())
                 .userWeeklyGoal(relation.getPersonalWeeklyGoal())
                 .userDailyGoal(relation.getPersonalDailyGoal())
-                .isAchieveWeeklyGoal(relation.getIsWeeklyGoalAchieved())
+                .isWeeklyGoalAchieved(relation.isWeeklyGoalAchieved())
                 .currentProgress(currentProgress)
                 .build();
     }

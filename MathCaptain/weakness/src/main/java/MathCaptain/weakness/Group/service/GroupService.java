@@ -11,14 +11,11 @@ import MathCaptain.weakness.Group.dto.response.UserGroupCardResponseDto;
 import MathCaptain.weakness.Group.enums.CategoryStatus;
 import MathCaptain.weakness.Record.repository.RecordRepository;
 import MathCaptain.weakness.Record.service.RecordService;
-import MathCaptain.weakness.User.domain.UserDetailsImpl;
 import MathCaptain.weakness.User.dto.response.UserResponseDto;
 import MathCaptain.weakness.Group.repository.GroupRepository;
 import MathCaptain.weakness.Group.repository.RelationRepository;
 import MathCaptain.weakness.User.domain.Users;
-import MathCaptain.weakness.User.repository.UserRepository;
 import MathCaptain.weakness.global.Api.ApiResponse;
-import MathCaptain.weakness.global.Security.jwt.JwtService;
 import MathCaptain.weakness.global.exception.DuplicatedException;
 import MathCaptain.weakness.global.exception.ResourceNotFoundException;
 import jakarta.servlet.http.HttpServletResponse;
@@ -29,7 +26,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.DayOfWeek;
 import java.time.LocalDateTime;
-import java.time.temporal.TemporalAdjusters;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -118,7 +114,7 @@ public class GroupService {
 
         Integer totalWeeklyGoalCount = relationRepository.sumPersonalWeeklyGoalByGroupId(groupId);
 
-        Long memberCount = relationRepository.countByJoinGroup_Id(groupId);
+        Long memberCount = relationRepository.countByJoinGroup(group);
 
         return ApiResponse.ok(buildGroupDetailResponseDto(group, memberCount, totalWeeklyGoalCount));
     }
@@ -264,7 +260,7 @@ public class GroupService {
                 .groupRanking(group.getGroupRanking())
                 .hashtags(group.getHashtags())
                 .groupImageUrl(group.getGroupImageUrl())
-                .weeklyGoalAchieve(group.getWeeklyGoalAchieve())
+                .weeklyGoalAchieve(group.getWeeklyGoalAchieveMap())
                 .totalWeeklyGoalCount(totalWeeklyGoalCount)
                 .memberCount(memberCount)
                 .build();

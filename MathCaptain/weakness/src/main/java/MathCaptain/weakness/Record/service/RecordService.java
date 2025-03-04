@@ -10,9 +10,7 @@ import MathCaptain.weakness.Record.dto.response.recordStartResponseDto;
 import MathCaptain.weakness.Record.dto.response.recordSummaryResponseDto;
 import MathCaptain.weakness.Record.repository.RecordRepository;
 import MathCaptain.weakness.User.domain.Users;
-import MathCaptain.weakness.User.repository.UserRepository;
 import MathCaptain.weakness.global.PointSet;
-import MathCaptain.weakness.global.Security.jwt.JwtService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -21,16 +19,17 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 import java.time.temporal.TemporalAdjusters;
-import java.util.EnumMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
 @Transactional
 @RequiredArgsConstructor
 public class RecordService {
+
+    public static final Long DAILY_GOAL_ACHIEVE = PointSet.DailyGoalAchieve;
+    public static final Long WEEKLY_GOAL_ACHIEVE_BASE = PointSet.WeeklyGoalAchieveBase;
 
     private final RecordRepository recordRepository;
     private final RelationRepository relationRepository;
@@ -48,19 +47,11 @@ public class RecordService {
         // 기존 미완료된 기록이 있는지 확인
         checkRemainRecord(user, relation.getJoinGroup());
 
-        ActivityRecord record = ActivityRecord.builder()
-                .user(user)
-                .group(relation.getJoinGroup())
-                .startTime(LocalDateTime.now())
-                .build();
+        ActivityRecord record = buildRecord(user, relation);
 
         Long recordId = recordRepository.save(record).getId();
 
-        return recordStartResponseDto.builder()
-                .recordId(recordId)
-                .userDailyGoal(relation.getPersonalDailyGoal() * 60L)
-                .remainingDailyGoal(calculateRemainingDailyGoalMinutes(relation))
-                .build();
+        return buildRecordStartResponse(recordId, relation);
     }
 
     // 기록 종료
@@ -70,14 +61,12 @@ public class RecordService {
         ActivityRecord record = recordRepository.findById(recordId)
                 .orElseThrow(() -> new IllegalArgumentException("현재 진행중인 인증이 존재하지 않습니다."));
 
-        RelationBetweenUserAndGroup relation = relationRepository.findByMemberIdAndJoinGroupId(
-                record.getUser().getUserId(),
-                record.getGroup().getId()
-        ).orElseThrow(() -> new IllegalArgumentException("해당 그룹에 속하지 않은 사용자입니다."));
+        // 사용자 식별
+        Users user = record.getUser();
+        Group group = record.getGroup();
 
-        Users user = relation.getMember();
-
-        Group group = relation.getJoinGroup();
+        RelationBetweenUserAndGroup relation = relationRepository.findByMemberAndJoinGroup(user,group)
+                .orElseThrow(() -> new IllegalArgumentException("해당 그룹에 속하지 않은 사용자입니다."));
 
         // 활동 기록 업데이트
         updateRecord(record, relation, endRequest);
@@ -88,33 +77,46 @@ public class RecordService {
             record.updateDailyGoalAchieved(true);
 
             // 그룹의 요일 목표 수행 카운트 증가 (그룹)
-            increaseWeeklyGoalAchieveCount(relation.getJoinGroup().getId(), record.getDayOfWeek());
+            increaseWeeklyGoalAchieveCount(relation, record);
 
-            // 개인 포인트 획득 (일간 목표 달성)
-            user.addPoint(PointSet.DailyGoalAchieve);
-
-            // 그룹 포인트 획득 (일간 목표 달성)
-            group.addPoint(PointSet.DailyGoalAchieve);
+            // 일간 목표 달성 포인트 획득
+            addPoint(user, group, DAILY_GOAL_ACHIEVE);
 
             // 주간 목표 + 1 (일간 목표 충족시 업데이트)
             relation.updatePersonalWeeklyGoalAchieved(relation.getPersonalWeeklyGoalAchieve() + 1);
         }
 
+        // 주간 목표 달성시
         if (isWeeklyGoalAchieved(relation)) {
+            // 주간 목표 달성 성공 업데이트 (기록)
             record.updateWeeklyGoalAchieved(true);
 
+            // 주간 목표 달성 스트릭 업데이트 (관계)
             relation.updateWeeklyGoalAchieveStreak(relation.getWeeklyGoalAchieveStreak() + 1);
 
-            // 개인 포인트 획득 (주간 목표 달성, 주간 목표 달성 보상 포인트 * (연속 달성 주차 수 + 설정한 주간 목표 일))
-            user.addPoint(PointSet.WeeklyGoalAchieveBase * (relation.getWeeklyGoalAchieveStreak() + relation.getPersonalWeeklyGoal()));
+            // 주간 목표 달성 포인트 계산
+            Long weeklyAchievePoint = WEEKLY_GOAL_ACHIEVE_BASE * (relation.getWeeklyGoalAchieveStreak() + relation.getPersonalWeeklyGoal());
 
-            // 그룹 포인트 획득 (주간 목표 달성)
-            group.addPoint(PointSet.WeeklyGoalAchieveBase * (relation.getWeeklyGoalAchieveStreak() + relation.getPersonalWeeklyGoal()));
+            // 주간 목표 달성 포인트 획득
+            addPoint(user, group, weeklyAchievePoint);
         }
 
         recordRepository.save(record);
 
         return buildRecordSummaryResponseDto(record, calculateRemainingDailyGoalMinutes(relation), calculateRemainingWeeklyGoal(relation));
+    }
+
+    // 주간 목표 달성 여부 조회
+    public Map<DayOfWeek, Boolean> getWeeklyGoalStatus(Users user, Group group, LocalDateTime weekStart) {
+        // 주의 시작과 끝 계산 (월요일 ~ 다음 주 월요일)
+        LocalDateTime startOfWeek = calculateStartOfWeek(weekStart);
+        LocalDateTime endOfWeek = startOfWeek.plusWeeks(1);
+
+        // 활동 기록이 있는 요일 조회
+        List<DayOfWeek> activeDays = recordRepository.findDaysWithActivity(user, group, startOfWeek, endOfWeek);
+
+        // 요일별 활동 기록 여부 맵 생성
+        return createWeeklyGoalStatusMap(activeDays);
     }
 
     /// 로직
@@ -129,31 +131,32 @@ public class RecordService {
     }
 
     // 그룹의 요일 목표 수행 카운트 증가
-    public void increaseWeeklyGoalAchieveCount(Long groupId, DayOfWeek dayOfWeek) {
-        groupRepository.findById(groupId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 그룹이 존재하지 않습니다."))
-                .increaseWeeklyGoalAchieve(dayOfWeek);
+    public void increaseWeeklyGoalAchieveCount(RelationBetweenUserAndGroup relation, ActivityRecord record) {
+        // 활동 요일
+        DayOfWeek dayOfWeek = record.getDayOfWeek();
+        Group group = relation.getJoinGroup();
+        group.increaseWeeklyGoalAchieveMap(dayOfWeek);
     }
 
-    //
-    public Map<DayOfWeek, Boolean> getWeeklyGoalStatus(Users user, Group group, LocalDateTime weekStart) {
-        // 주의 시작과 끝 계산 (월요일 ~ 다음 주 월요일)
-        LocalDateTime startOfWeek = weekStart.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
-        LocalDateTime endOfWeek = startOfWeek.plusWeeks(1);
+    private void addPoint(Users user, Group group, Long point) {
+        // 개인 포인트 획득 (일간 목표 달성)
+        user.addPoint(point);
 
-        // 활동 기록이 있는 요일 조회
-        List<DayOfWeek> activeDays = recordRepository.findDaysWithActivity(user, group, startOfWeek, endOfWeek);
+        // 그룹 포인트 획득 (일간 목표 달성)
+        group.addPoint(point);
+    }
 
-        // 결과 맵 초기화 (모든 요일 false로 초기화)
-        Map<DayOfWeek, Boolean> weeklyGoalStatus = new EnumMap<>(DayOfWeek.class);
-        for (DayOfWeek day : DayOfWeek.values()) {
-            weeklyGoalStatus.put(day, false);
-        }
+    private LocalDateTime calculateStartOfWeek(LocalDateTime weekStart) {
+        return weekStart.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+    }
+
+    private Map<DayOfWeek, Boolean> createWeeklyGoalStatusMap(List<DayOfWeek> activeDays) {
+        // 모든 요일을 false로 초기화
+        Map<DayOfWeek, Boolean> weeklyGoalStatus = Arrays.stream(DayOfWeek.values())
+                .collect(Collectors.toMap(day -> day, day -> false, (a, b) -> b, () -> new EnumMap<>(DayOfWeek.class)));
 
         // 활동 기록이 있는 요일을 true로 설정
-        for (DayOfWeek activeDay : activeDays) {
-            weeklyGoalStatus.put(activeDay, true);
-        }
+        activeDays.forEach(day -> weeklyGoalStatus.put(day, true));
 
         return weeklyGoalStatus;
     }
@@ -199,6 +202,22 @@ public class RecordService {
                 .weeklyGoalAchieved(activityRecord.isWeeklyGoalAchieved())
                 .remainingDailyGoalMinutes(remainingDailyGoalMinutes)
                 .remainingWeeklyGoalDays(remainingWeeklyGoal)
+                .build();
+    }
+
+    private recordStartResponseDto buildRecordStartResponse(Long recordId, RelationBetweenUserAndGroup relation) {
+        return recordStartResponseDto.builder()
+                .recordId(recordId)
+                .userDailyGoal(relation.getPersonalDailyGoal() * 60L)
+                .remainingDailyGoal(calculateRemainingDailyGoalMinutes(relation))
+                .build();
+    }
+
+    private static ActivityRecord buildRecord(Users user, RelationBetweenUserAndGroup relation) {
+        return ActivityRecord.builder()
+                .user(user)
+                .group(relation.getJoinGroup())
+                .startTime(LocalDateTime.now())
                 .build();
     }
 }

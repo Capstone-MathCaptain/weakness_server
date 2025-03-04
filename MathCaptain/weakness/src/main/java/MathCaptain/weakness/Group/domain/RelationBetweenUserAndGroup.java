@@ -4,10 +4,7 @@ import MathCaptain.weakness.Group.enums.GroupRole;
 import MathCaptain.weakness.User.domain.Users;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.validator.constraints.Range;
 
 import java.time.DayOfWeek;
@@ -17,7 +14,7 @@ import java.time.LocalDateTime;
 @Entity
 @Getter
 @Builder
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Table(name = "RELATION_BETWEEN_USER_AND_GROUP")
 public class RelationBetweenUserAndGroup {
@@ -54,13 +51,9 @@ public class RelationBetweenUserAndGroup {
     @Range(min = 0, max = 1440)
     private Long personalDailyGoalAchieve;
 
-    // 주간 인증 수행 시간
+    // 주간 인증 수행 일수
     @Range(min = 0, max = 7)
     private int personalWeeklyGoalAchieve;
-
-    private Boolean isWeeklyGoalAchieved;
-
-    private Boolean isDailyGoalAchieved;
 
     // 주간 목표 달성 연속 횟수
     @Range(min = 0)
@@ -77,17 +70,23 @@ public class RelationBetweenUserAndGroup {
             this.joinDate = LocalDate.now(); // joinDate의 기본값 설정 (필요 시)
         }
 
-        if (this.isWeeklyGoalAchieved == null) {
-            this.isWeeklyGoalAchieved = false;
-        }
-
-        if (this.isDailyGoalAchieved == null) {
-            this.isDailyGoalAchieved = false;
-        }
         this.personalWeeklyGoalAchieve = 0;
         this.weeklyGoalAchieveStreak = 0;
         this.personalDailyGoalAchieve = 0L;
 
+    }
+
+    public void subtractPoint(Long point) {
+        this.member.subtractPoint(point);
+        this.joinGroup.subtractPoint(point);
+    }
+
+    public boolean isDailyGoalAchieved() {
+        return this.personalDailyGoalAchieve >= this.personalDailyGoal;
+    }
+
+    public boolean isWeeklyGoalAchieved() {
+        return this.personalWeeklyGoalAchieve >= this.personalWeeklyGoal;
     }
 
     // 일간 목표 업데이트
@@ -115,26 +114,9 @@ public class RelationBetweenUserAndGroup {
         this.personalWeeklyGoalAchieve = 0;
     }
 
-    // 주간 목표 달성 여부 초기화
-    public void resetIsWeeklyGoalAchieved() {
-        this.isWeeklyGoalAchieved = false;
-    }
-
-    // 일간 목표 달성 여부 초기화
-    public void resetIsDailyGoalAchieved() {
-        this.isDailyGoalAchieved = false;
-    }
-
     // 주간 목표 달성 연속 횟수 초기화
     public void resetWeeklyGoalAchieveStreak() {
         this.weeklyGoalAchieveStreak = 0;
     }
 
-    public boolean isWeeklyGoalAchieved() {
-        return this.isWeeklyGoalAchieved;
-    }
-
-    public boolean isDailyGoalAchieved() {
-        return this.isDailyGoalAchieved;
-    }
 }
