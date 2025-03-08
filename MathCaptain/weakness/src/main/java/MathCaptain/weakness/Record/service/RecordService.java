@@ -41,11 +41,11 @@ public class RecordService {
     public recordStartResponseDto startRecord(Users user, Long groupId) {
 
         // 사용자 식별
-        RelationBetweenUserAndGroup relation = relationRepository.findByMemberAndJoinGroup_Id(user, groupId)
+        RelationBetweenUserAndGroup relation = relationRepository.findByMemberAndGroup_Id(user, groupId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 관계가 존재하지 않습니다."));
 
         // 기존 미완료된 기록이 있는지 확인
-        checkRemainRecord(user, relation.getJoinGroup());
+        checkRemainRecord(user, relation.getGroup());
 
         ActivityRecord record = buildRecord(user, relation);
 
@@ -65,7 +65,7 @@ public class RecordService {
         Users user = record.getUser();
         Group group = record.getGroup();
 
-        RelationBetweenUserAndGroup relation = relationRepository.findByMemberAndJoinGroup(user,group)
+        RelationBetweenUserAndGroup relation = relationRepository.findByMemberAndGroup(user,group)
                 .orElseThrow(() -> new IllegalArgumentException("해당 그룹에 속하지 않은 사용자입니다."));
 
         // 활동 기록 업데이트
@@ -134,7 +134,7 @@ public class RecordService {
     public void increaseWeeklyGoalAchieveCount(RelationBetweenUserAndGroup relation, ActivityRecord record) {
         // 활동 요일
         DayOfWeek dayOfWeek = record.getDayOfWeek();
-        Group group = relation.getJoinGroup();
+        Group group = relation.getGroup();
         group.increaseWeeklyGoalAchieveMap(dayOfWeek);
     }
 
@@ -216,7 +216,7 @@ public class RecordService {
     private static ActivityRecord buildRecord(Users user, RelationBetweenUserAndGroup relation) {
         return ActivityRecord.builder()
                 .user(user)
-                .group(relation.getJoinGroup())
+                .group(relation.getGroup())
                 .startTime(LocalDateTime.now())
                 .build();
     }

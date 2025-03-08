@@ -4,7 +4,6 @@ import MathCaptain.weakness.Group.dto.response.GroupResponseDto;
 import MathCaptain.weakness.Group.dto.response.UserGroupCardResponseDto;
 import MathCaptain.weakness.Group.repository.RelationRepository;
 import MathCaptain.weakness.Group.service.GroupService;
-import MathCaptain.weakness.Group.service.RelationService;
 import MathCaptain.weakness.User.dto.request.*;
 import MathCaptain.weakness.User.dto.response.ChangePwdDto;
 import MathCaptain.weakness.User.dto.response.FindEmailResponseDto;
@@ -43,7 +42,7 @@ public class UserService {
     // 회원가입
     public ApiResponse<UserResponseDto> saveUser(SaveUserRequestDto user) {
 
-        Users users = buidUser(user);
+        Users users = buildUser(user);
         validateDuplicateUser(users);
         userRepository.save(users);
 
@@ -157,7 +156,7 @@ public class UserService {
 
     /// 빌더
 
-    private Users buidUser(SaveUserRequestDto user) {
+    private Users buildUser(SaveUserRequestDto user) {
         return Users.builder()
                 .email(user.getEmail())
                 .password(passwordEncoder.encode(user.getPassword()))

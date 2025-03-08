@@ -66,7 +66,7 @@ public class GoalResetScheduler {
             // 데이터 처리
             for (Group group : groupsPage.getContent()) {
                 if (isAllMembersAchievedWeeklyGoal(group)) {
-                    group.addPoint(ALL_GROUP_MEMBERS_ACHIEVE * relationRepository.countByJoinGroup(group));
+                    group.addPoint(ALL_GROUP_MEMBERS_ACHIEVE * relationRepository.countByGroup(group));
                 }
             }
             // 변경 사항 저장

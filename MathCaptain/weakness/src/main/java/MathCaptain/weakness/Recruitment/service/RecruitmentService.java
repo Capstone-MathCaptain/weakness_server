@@ -40,8 +40,8 @@ public class RecruitmentService {
                 .orElseThrow(() -> new IllegalArgumentException("그룹장만 모집글을 작성할 수 있습니다."));
 
         return ApiResponse.ok(RecruitmentCreateResponseDto.builder()
-                    .groupId(relation.getJoinGroup().getId())
-                    .groupName(relation.getJoinGroup().getName())
+                    .groupId(relation.getGroup().getId())
+                    .groupName(relation.getGroup().getName())
                     .leaderName(relation.getMember().getName())
                     .build());
     }

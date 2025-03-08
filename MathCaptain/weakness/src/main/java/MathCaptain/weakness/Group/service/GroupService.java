@@ -114,7 +114,7 @@ public class GroupService {
 
         Integer totalWeeklyGoalCount = relationRepository.sumPersonalWeeklyGoalByGroupId(groupId);
 
-        Long memberCount = relationRepository.countByJoinGroup(group);
+        Long memberCount = relationRepository.countByGroup(group);
 
         return ApiResponse.ok(buildGroupDetailResponseDto(group, memberCount, totalWeeklyGoalCount));
     }
@@ -156,7 +156,7 @@ public class GroupService {
                     Group group = groupRepository.findById(groupId)
                             .orElseThrow(() -> new ResourceNotFoundException("해당 그룹이 존재하지 않습니다."));
 
-                    RelationBetweenUserAndGroup relation = relationRepository.findByMemberAndJoinGroup_Id(user, groupId)
+                    RelationBetweenUserAndGroup relation = relationRepository.findByMemberAndGroup_Id(user, groupId)
                             .orElseThrow(() -> new ResourceNotFoundException("해당 관계가 존재하지 않습니다."));
 
                     Map<DayOfWeek, Boolean> userAchieveInGroup = recordService.getWeeklyGoalStatus(user, group, LocalDateTime.now());
@@ -217,10 +217,14 @@ public class GroupService {
     }
 
     private GroupResponseDto buildGroupResponseDto(Group group) {
+
+        Users leader = relationRepository.findLeaderByGroup(group)
+                .orElseThrow(() -> new ResourceNotFoundException("해당 그룹의 리더가 없습니다."));
+
         return GroupResponseDto.builder()
                 .groupId(group.getId())
-                .leaderId(group.getLeader().getUserId())
-                .leaderName(group.getLeader().getName())
+                .leaderId(leader.getUserId())
+                .leaderName(leader.getName())
                 .groupName(group.getName())
                 .category(group.getCategory())
                 .minDailyHours(group.getMinDailyHours())
@@ -236,7 +240,6 @@ public class GroupService {
     private Group buildGroup(Users leader, GroupCreateRequestDto groupCreateRequestDto) {
 
         return Group.builder()
-                .leader(leader)
                 .name(groupCreateRequestDto.getGroupName())
                 .category(groupCreateRequestDto.getCategory())
                 .minDailyHours(groupCreateRequestDto.getMinDailyHours())
@@ -248,12 +251,16 @@ public class GroupService {
     }
 
     private GroupDetailResponseDto buildGroupDetailResponseDto(Group group, Long memberCount, Integer totalWeeklyGoalCount) {
+
+        Users leader = relationRepository.findLeaderByGroup(group)
+                .orElseThrow(() -> new ResourceNotFoundException("해당 그룹의 리더가 없습니다."));
+
         return GroupDetailResponseDto.builder()
                 .groupId(group.getId())
                 .groupName(group.getName())
                 .category(group.getCategory())
-                .leaderId(group.getLeader().getUserId())
-                .leaderName(group.getLeader().getName())
+                .leaderId(leader.getUserId())
+                .leaderName(leader.getName())
                 .minDailyHours(group.getMinDailyHours())
                 .minWeeklyDays(group.getMinWeeklyDays())
                 .groupPoint(group.getGroupPoint())

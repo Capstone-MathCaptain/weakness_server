@@ -178,7 +178,7 @@ public class GroupRoleFilter extends OncePerRequestFilter {
     }
 
     private boolean isNotGroupLeader(String userEmail, Long groupId) {
-        RelationBetweenUserAndGroup relation = relationRepository.findByMember_EmailAndJoinGroup_Id(userEmail, groupId)
+        RelationBetweenUserAndGroup relation = relationRepository.findByMember_EmailAndGroup_Id(userEmail, groupId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 유저가 해당 그룹에 가입하지 않았습니다."));
 
         log.info("사용자의 그룹 역할: {}", relation.getGroupRole());
