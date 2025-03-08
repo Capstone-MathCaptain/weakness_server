@@ -103,7 +103,6 @@ public class TestInit {
 
         /// 테스트 그룹 생성
         Group group1 = Group.builder()
-                .leader(leader)
                 .name("testGroup1")
                 .category(CategoryStatus.STUDY)
                 .minDailyHours(2)
@@ -114,7 +113,6 @@ public class TestInit {
                 .build();
 
         Group group2 = Group.builder()
-                .leader(leader)
                 .name("testGroup2")
                 .category(CategoryStatus.FITNESS)
                 .minDailyHours(2)
@@ -125,7 +123,6 @@ public class TestInit {
                 .build();
 
         Group group3 = Group.builder()
-                .leader(leader)
                 .name("testGroup3")
                 .category(CategoryStatus.READING)
                 .minDailyHours(2)
@@ -139,13 +136,13 @@ public class TestInit {
         groupRepository.save(group2);
         groupRepository.save(group3);
 
-        group3.updateWeeklyGoalAchieve(DayOfWeek.MONDAY, 2);
-        group3.updateWeeklyGoalAchieve(DayOfWeek.TUESDAY, 4);
-        group3.updateWeeklyGoalAchieve(DayOfWeek.WEDNESDAY, 6);
-        group3.updateWeeklyGoalAchieve(DayOfWeek.THURSDAY, 8);
-        group3.updateWeeklyGoalAchieve(DayOfWeek.FRIDAY, 10);
-        group3.updateWeeklyGoalAchieve(DayOfWeek.SATURDAY, 1);
-        group3.updateWeeklyGoalAchieve(DayOfWeek.SUNDAY, 0);
+        group3.updateWeeklyGoalAchieveMap(DayOfWeek.MONDAY, 2);
+        group3.updateWeeklyGoalAchieveMap(DayOfWeek.TUESDAY, 4);
+        group3.updateWeeklyGoalAchieveMap(DayOfWeek.WEDNESDAY, 6);
+        group3.updateWeeklyGoalAchieveMap(DayOfWeek.THURSDAY, 8);
+        group3.updateWeeklyGoalAchieveMap(DayOfWeek.FRIDAY, 10);
+        group3.updateWeeklyGoalAchieveMap(DayOfWeek.SATURDAY, 1);
+        group3.updateWeeklyGoalAchieveMap(DayOfWeek.SUNDAY, 0);
 
         groupRepository.save(group3);
 
@@ -154,7 +151,7 @@ public class TestInit {
         RelationBetweenUserAndGroup join1 = RelationBetweenUserAndGroup.builder()
                 .member(users1)
                 .groupRole(GroupRole.LEADER)
-                .joinGroup(group1)
+                .group(group1)
                 .personalDailyGoal(2)
                 .personalWeeklyGoal(3)
                 .build();
@@ -162,7 +159,7 @@ public class TestInit {
         RelationBetweenUserAndGroup join2 = RelationBetweenUserAndGroup.builder()
                 .member(users2)
                 .groupRole(GroupRole.LEADER)
-                .joinGroup(group2)
+                .group(group2)
                 .personalDailyGoal(2)
                 .personalWeeklyGoal(3)
                 .build();
@@ -170,7 +167,7 @@ public class TestInit {
         RelationBetweenUserAndGroup join3 = RelationBetweenUserAndGroup.builder()
                 .member(users3)
                 .groupRole(GroupRole.LEADER)
-                .joinGroup(group3)
+                .group(group3)
                 .personalDailyGoal(2)
                 .personalWeeklyGoal(3)
                 .build();
@@ -185,7 +182,7 @@ public class TestInit {
                             .orElseThrow(() -> new IllegalArgumentException("해당 유저가 없습니다."))
                     )
                     .groupRole(GroupRole.MEMBER)
-                    .joinGroup(group3)
+                    .group(group3)
                     .personalDailyGoal(3)
                     .personalWeeklyGoal(5)
                     .build();

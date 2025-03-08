@@ -14,7 +14,7 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 
 @Getter
-@Entity
+@Entity(name = "activity_record")
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder

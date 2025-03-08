@@ -1,9 +1,9 @@
 package MathCaptain.weakness.Notification.service;
 
 import MathCaptain.weakness.Group.domain.Group;
-import MathCaptain.weakness.Group.domain.GroupJoin;
-import MathCaptain.weakness.Group.repository.GroupJoinRepository;
+import MathCaptain.weakness.Group.domain.RelationBetweenUserAndGroup;
 import MathCaptain.weakness.Group.repository.GroupRepository;
+import MathCaptain.weakness.Group.repository.RelationRepository;
 import MathCaptain.weakness.Notification.controller.NotificationController;
 import MathCaptain.weakness.Notification.domain.Notification;
 import MathCaptain.weakness.Notification.repository.NotificationRepository;
@@ -30,7 +30,7 @@ public class NotificationService {
     private final CommentRepository commentRepository;
     private final GroupRepository groupRepository;
     private final NotificationRepository notificationRepository;
-    private final GroupJoinRepository groupJoinRepository;
+    private final RelationRepository relationRepository;
 
     private static Map<Long, Integer> notificationCounts = new HashMap<>();
 
@@ -83,16 +83,20 @@ public class NotificationService {
         }
     }
 
-    public void notifyGroupJoinRequest(Long groupId, Users user, Long joinRequestId) {
+    public void notifyGroupJoinRequest(Long groupId, Users user) {
+
         Group group = groupRepository.findById(groupId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 그룹이 존재하지 않습니다."));
 
-        Long leaderId = group.getLeader().getUserId();
+        Users leader = relationRepository.findLeaderByGroup(group)
+                .orElseThrow(() -> new IllegalArgumentException("해당 그룹의 리더가 존재하지 않습니다."));
+
+        Long leaderId = leader.getUserId();
 
         if (NotificationController.sseEmitters.containsKey(leaderId)) {
             SseEmitter sseEmitter = NotificationController.sseEmitters.get(leaderId);
             try {
-                Map<String,String> eventData = buildNotificationData("그룹 가입 요청이 있습니다.", user.getNickname(), LocalDateTime.now().toString(), joinRequestId.toString());
+                Map<String,String> eventData = buildNotificationData("그룹 가입 요청이 있습니다.", user.getNickname(), LocalDateTime.now().toString(), "가입 요청");
 
                 sseEmitter.send(SseEmitter.event().name("groupJoinRequest").data(eventData));
 
@@ -112,19 +116,19 @@ public class NotificationService {
 
     }
 
-    public void notifyGroupJoinResult(Long groupId, Long joinRequestId) {
+    public void notifyGroupJoinResult(Long groupId, Users user) {
         Group group = groupRepository.findById(groupId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 그룹이 존재하지 않습니다."));
 
-        GroupJoin groupJoin = groupJoinRepository.findById(joinRequestId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 가입 요청이 존재하지 않습니다."));
+        RelationBetweenUserAndGroup relation = relationRepository.findByMemberAndGroup(user, group)
+                .orElseThrow(() -> new IllegalArgumentException("해당 관계가 존재하지 않습니다."));
 
-        Long userId = groupJoin.getUser().getUserId();
+        Long userId = user.getUserId();
 
         if (NotificationController.sseEmitters.containsKey(userId)) {
             SseEmitter sseEmitter = NotificationController.sseEmitters.get(userId);
             try {
-                Map<String,String> eventData = buildNotificationData("그룹 가입 요청 결과가 도착했습니다.", group.getName(), LocalDateTime.now().toString(), groupJoin.getRequestStatus().toString());
+                Map<String,String> eventData = buildNotificationData("그룹 가입 요청 결과가 도착했습니다.", group.getName(), LocalDateTime.now().toString(), relation.getRequestStatus().toString());
 
                 sseEmitter.send(SseEmitter.event().name("groupJoinResult").data(eventData));
 

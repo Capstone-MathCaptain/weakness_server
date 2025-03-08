@@ -11,14 +11,11 @@ import MathCaptain.weakness.Group.dto.response.UserGroupCardResponseDto;
 import MathCaptain.weakness.Group.enums.CategoryStatus;
 import MathCaptain.weakness.Record.repository.RecordRepository;
 import MathCaptain.weakness.Record.service.RecordService;
-import MathCaptain.weakness.User.domain.UserDetailsImpl;
 import MathCaptain.weakness.User.dto.response.UserResponseDto;
 import MathCaptain.weakness.Group.repository.GroupRepository;
 import MathCaptain.weakness.Group.repository.RelationRepository;
 import MathCaptain.weakness.User.domain.Users;
-import MathCaptain.weakness.User.repository.UserRepository;
 import MathCaptain.weakness.global.Api.ApiResponse;
-import MathCaptain.weakness.global.Security.jwt.JwtService;
 import MathCaptain.weakness.global.exception.DuplicatedException;
 import MathCaptain.weakness.global.exception.ResourceNotFoundException;
 import jakarta.servlet.http.HttpServletResponse;
@@ -29,7 +26,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.DayOfWeek;
 import java.time.LocalDateTime;
-import java.time.temporal.TemporalAdjusters;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -118,7 +114,7 @@ public class GroupService {
 
         Integer totalWeeklyGoalCount = relationRepository.sumPersonalWeeklyGoalByGroupId(groupId);
 
-        Long memberCount = relationRepository.countByJoinGroup_Id(groupId);
+        Long memberCount = relationRepository.countByGroup(group);
 
         return ApiResponse.ok(buildGroupDetailResponseDto(group, memberCount, totalWeeklyGoalCount));
     }
@@ -160,7 +156,7 @@ public class GroupService {
                     Group group = groupRepository.findById(groupId)
                             .orElseThrow(() -> new ResourceNotFoundException("해당 그룹이 존재하지 않습니다."));
 
-                    RelationBetweenUserAndGroup relation = relationRepository.findByMemberAndJoinGroup_Id(user, groupId)
+                    RelationBetweenUserAndGroup relation = relationRepository.findByMemberAndGroup_Id(user, groupId)
                             .orElseThrow(() -> new ResourceNotFoundException("해당 관계가 존재하지 않습니다."));
 
                     Map<DayOfWeek, Boolean> userAchieveInGroup = recordService.getWeeklyGoalStatus(user, group, LocalDateTime.now());
@@ -221,10 +217,14 @@ public class GroupService {
     }
 
     private GroupResponseDto buildGroupResponseDto(Group group) {
+
+        Users leader = relationRepository.findLeaderByGroup(group)
+                .orElseThrow(() -> new ResourceNotFoundException("해당 그룹의 리더가 없습니다."));
+
         return GroupResponseDto.builder()
                 .groupId(group.getId())
-                .leaderId(group.getLeader().getUserId())
-                .leaderName(group.getLeader().getName())
+                .leaderId(leader.getUserId())
+                .leaderName(leader.getName())
                 .groupName(group.getName())
                 .category(group.getCategory())
                 .minDailyHours(group.getMinDailyHours())
@@ -240,7 +240,6 @@ public class GroupService {
     private Group buildGroup(Users leader, GroupCreateRequestDto groupCreateRequestDto) {
 
         return Group.builder()
-                .leader(leader)
                 .name(groupCreateRequestDto.getGroupName())
                 .category(groupCreateRequestDto.getCategory())
                 .minDailyHours(groupCreateRequestDto.getMinDailyHours())
@@ -252,19 +251,23 @@ public class GroupService {
     }
 
     private GroupDetailResponseDto buildGroupDetailResponseDto(Group group, Long memberCount, Integer totalWeeklyGoalCount) {
+
+        Users leader = relationRepository.findLeaderByGroup(group)
+                .orElseThrow(() -> new ResourceNotFoundException("해당 그룹의 리더가 없습니다."));
+
         return GroupDetailResponseDto.builder()
                 .groupId(group.getId())
                 .groupName(group.getName())
                 .category(group.getCategory())
-                .leaderId(group.getLeader().getUserId())
-                .leaderName(group.getLeader().getName())
+                .leaderId(leader.getUserId())
+                .leaderName(leader.getName())
                 .minDailyHours(group.getMinDailyHours())
                 .minWeeklyDays(group.getMinWeeklyDays())
                 .groupPoint(group.getGroupPoint())
                 .groupRanking(group.getGroupRanking())
                 .hashtags(group.getHashtags())
                 .groupImageUrl(group.getGroupImageUrl())
-                .weeklyGoalAchieve(group.getWeeklyGoalAchieve())
+                .weeklyGoalAchieve(group.getWeeklyGoalAchieveMap())
                 .totalWeeklyGoalCount(totalWeeklyGoalCount)
                 .memberCount(memberCount)
                 .build();

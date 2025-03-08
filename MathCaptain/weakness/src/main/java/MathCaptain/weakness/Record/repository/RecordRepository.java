@@ -18,7 +18,7 @@ public interface RecordRepository extends JpaRepository<ActivityRecord, Long> {
 
     Optional<ActivityRecord> findByUserAndGroupAndEndTimeIsNull(Users user, Group group);
 
-    @Query("SELECT ar.dayOfWeek FROM ActivityRecord ar " +
+    @Query("SELECT ar.dayOfWeek FROM activity_record ar " +
             "WHERE ar.user = :user AND ar.group = :group " +
             "AND ar.startTime >= :startOfWeek AND ar.startTime < :endOfWeek")
     List<DayOfWeek> findDaysWithActivity(
@@ -29,7 +29,7 @@ public interface RecordRepository extends JpaRepository<ActivityRecord, Long> {
 
     // 이번주에 그룹원이 수행한 인증의 횟수
     @Query("SELECT SUM (CASE WHEN ar.dailyGoalAchieved = true THEN 1 ELSE 0 END) " +
-            "FROM ActivityRecord ar " +
+            "FROM activity_record ar " +
             "WHERE ar.group.id = :groupId " +
             "AND ar.user.userId = :userId " +
             "AND ar.startTime >= :startOfWeek AND ar.startTime < :endOfWeek")

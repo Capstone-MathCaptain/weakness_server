@@ -65,7 +65,7 @@ public class RelationService {
     // 그룹 멤버 리스트 (그룹 상세 페이지)
     public List<GroupMemberListResponseDto> getGroupMemberList(Long groupId) {
         // 그룹 멤버 관계 조회
-        List<RelationBetweenUserAndGroup> relations = relationRepository.findAllByJoinGroup_id(groupId)
+        List<RelationBetweenUserAndGroup> relations = relationRepository.findAllByGroup_id(groupId)
                 .orElseThrow(() -> new ResourceNotFoundException("해당 그룹에 멤버가 없습니다."));
 
         // 이번 주의 시작과 끝 시간 계산
@@ -80,7 +80,7 @@ public class RelationService {
     ///  검증 로직
 
     public RelationBetweenUserAndGroup getRelation(Users member, Group group) {
-        return relationRepository.findByMemberAndJoinGroup(member, group)
+        return relationRepository.findByMemberAndGroup(member, group)
                 .orElseThrow(() -> new IllegalArgumentException("해당 관계가 존재하지 않습니다."));
     }
 
@@ -93,14 +93,14 @@ public class RelationService {
                 .orElseThrow(() -> new IllegalArgumentException("해당 관계가 없습니다."));
 
         GroupResponseDto group = GroupResponseDto.builder()
-                .groupId(relation.getJoinGroup().getId())
-                .groupName(relation.getJoinGroup().getName())
-                .category(relation.getJoinGroup().getCategory())
-                .minDailyHours(relation.getJoinGroup().getMinDailyHours())
-                .minWeeklyDays(relation.getJoinGroup().getMinWeeklyDays())
-                .groupPoint(relation.getJoinGroup().getGroupPoint())
-                .hashtags(relation.getJoinGroup().getHashtags())
-                .groupImageUrl(relation.getJoinGroup().getGroupImageUrl())
+                .groupId(relation.getGroup().getId())
+                .groupName(relation.getGroup().getName())
+                .category(relation.getGroup().getCategory())
+                .minDailyHours(relation.getGroup().getMinDailyHours())
+                .minWeeklyDays(relation.getGroup().getMinWeeklyDays())
+                .groupPoint(relation.getGroup().getGroupPoint())
+                .hashtags(relation.getGroup().getHashtags())
+                .groupImageUrl(relation.getGroup().getGroupImageUrl())
                 .build();
 
         UserResponseDto member = UserResponseDto.builder()
@@ -127,7 +127,7 @@ public class RelationService {
     private GroupMemberListResponseDto mapToGroupMemberListResponseDto(RelationBetweenUserAndGroup relation, LocalDateTime startOfWeek, LocalDateTime endOfWeek) {
         // 기록 리포지토리에서 현재 진행 상황 가져오기 (null 방지)
         Integer currentProgress = recordRepository.countDailyGoalAchieved(
-                relation.getJoinGroup().getId(),
+                relation.getGroup().getId(),
                 relation.getMember().getUserId(),
                 startOfWeek,
                 endOfWeek
@@ -142,7 +142,7 @@ public class RelationService {
                 .userPoint(relation.getMember().getUserPoint())
                 .userWeeklyGoal(relation.getPersonalWeeklyGoal())
                 .userDailyGoal(relation.getPersonalDailyGoal())
-                .isAchieveWeeklyGoal(relation.getIsWeeklyGoalAchieved())
+                .isWeeklyGoalAchieved(relation.isWeeklyGoalAchieved())
                 .currentProgress(currentProgress)
                 .build();
     }
@@ -152,7 +152,7 @@ public class RelationService {
         return RelationBetweenUserAndGroup.builder()
                 .member(leader)
                 .groupRole(GroupRole.LEADER)
-                .joinGroup(group)
+                .group(group)
                 .personalDailyGoal(dailyGoal)
                 .personalWeeklyGoal(weeklyGoal)
                 .build();
@@ -162,7 +162,7 @@ public class RelationService {
         return RelationBetweenUserAndGroup.builder()
                 .member(member)
                 .groupRole(GroupRole.MEMBER)
-                .joinGroup(group)
+                .group(group)
                 .personalDailyGoal(groupJoinRequestDto.getPersonalDailyGoal())
                 .personalWeeklyGoal(groupJoinRequestDto.getPersonalWeeklyGoal())
                 .build();

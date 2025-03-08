@@ -20,7 +20,7 @@ public class WeeklyGoalResetScheduler {
 
     private static final int BATCH_SIZE = 100; // 100개씩 처리
 
-    // 매주 월요일 00시 실행 (주간 목표 초기화)
+    // 매주 월요일 00시 실행 (주간 목표 Map 초기화)
     @Scheduled(cron = "0 0 0 * * MON") // 매주 월요일 00:00에 실행
     public void resetWeeklyGoals() {
 
@@ -34,7 +34,7 @@ public class WeeklyGoalResetScheduler {
 
             // 데이터 처리
             for (Group group : page.getContent()) {
-                group.resetWeeklyGoalAchieve();
+                group.resetWeeklyGoalAchieveMap();
             }
 
             // 변경 사항 저장

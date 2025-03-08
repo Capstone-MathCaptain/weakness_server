@@ -31,5 +31,5 @@ public class GroupMemberListResponseDto {
 
     private int currentProgress;
 
-    private Boolean isAchieveWeeklyGoal;
+    private Boolean isWeeklyGoalAchieved;
 }

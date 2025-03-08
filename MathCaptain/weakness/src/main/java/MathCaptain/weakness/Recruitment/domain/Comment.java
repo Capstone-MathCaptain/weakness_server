@@ -3,17 +3,14 @@ package MathCaptain.weakness.Recruitment.domain;
 import MathCaptain.weakness.Recruitment.dto.request.UpdateCommentRequestDto;
 import MathCaptain.weakness.User.domain.Users;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
 @Entity
 @Getter
 @Builder
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Table(name = "COMMENT")
 public class Comment {

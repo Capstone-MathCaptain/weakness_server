@@ -29,11 +29,7 @@ public class Group {
     @Column(name = "group_id")
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "leader")
-    private Users leader;
-
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "joinGroup", cascade = CascadeType.REMOVE)
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "group", cascade = CascadeType.REMOVE)
     @Column(name = "members")
     private List<RelationBetweenUserAndGroup> relationBetweenUserAndGroup;
 
@@ -66,7 +62,7 @@ public class Group {
     @CollectionTable(name = "group_weekly_goal_achieve", joinColumns = @JoinColumn(name = "group_id"))
     @MapKeyColumn(name = "day_of_week") // 요일을 키로 사용
     @Column(name = "goal_count") // 카운트를 값으로 사용
-    private Map<DayOfWeek, Integer> weeklyGoalAchieve;
+    private Map<DayOfWeek, Integer> weeklyGoalAchieveMap;
 
     @OneToMany(mappedBy = "recruitGroup")
     private List<Recruitment> recruitments;
@@ -75,11 +71,11 @@ public class Group {
     protected void onCreate() {
         this.createDate = LocalDate.now();
 
-        if (this.weeklyGoalAchieve == null) {
-            this.weeklyGoalAchieve = new EnumMap<>(DayOfWeek.class);
+        if (this.weeklyGoalAchieveMap == null) {
+            this.weeklyGoalAchieveMap = new EnumMap<>(DayOfWeek.class);
         }
         for (DayOfWeek dayOfWeek : DayOfWeek.values()) {
-            weeklyGoalAchieve.put(dayOfWeek, 0);
+            weeklyGoalAchieveMap.put(dayOfWeek, 0);
         }
     }
 
@@ -127,8 +123,8 @@ public class Group {
         this.groupRanking = groupRanking;
     }
 
-    public void updateWeeklyGoalAchieve(DayOfWeek dayOfWeek, int goalCount) {
-        weeklyGoalAchieve.put(dayOfWeek, goalCount);
+    public void updateWeeklyGoalAchieveMap(DayOfWeek dayOfWeek, int goalCount) {
+        weeklyGoalAchieveMap.put(dayOfWeek, goalCount);
     }
 
     public void updateGroup(GroupUpdateRequestDto requestDto) {
@@ -143,13 +139,13 @@ public class Group {
         return dailyGoal >= minDailyHours && weeklyGoal >= minWeeklyDays;
     }
 
-    public void increaseWeeklyGoalAchieve(DayOfWeek day) {
-        weeklyGoalAchieve.put(day, weeklyGoalAchieve.get(day) + 1);
+    public void increaseWeeklyGoalAchieveMap(DayOfWeek day) {
+        weeklyGoalAchieveMap.put(day, weeklyGoalAchieveMap.get(day) + 1);
     }
 
-    public void resetWeeklyGoalAchieve() {
+    public void resetWeeklyGoalAchieveMap() {
         for (DayOfWeek dayOfWeek : DayOfWeek.values()) {
-            weeklyGoalAchieve.put(dayOfWeek, 0);
+            weeklyGoalAchieveMap.put(dayOfWeek, 0);
         }
     }
 

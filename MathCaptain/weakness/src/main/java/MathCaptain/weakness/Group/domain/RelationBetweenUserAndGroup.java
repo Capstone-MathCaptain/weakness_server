@@ -1,23 +1,18 @@
 package MathCaptain.weakness.Group.domain;
 
 import MathCaptain.weakness.Group.enums.GroupRole;
+import MathCaptain.weakness.Group.enums.RequestStatus;
 import MathCaptain.weakness.User.domain.Users;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.validator.constraints.Range;
 
-import java.time.DayOfWeek;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 @Entity
 @Getter
 @Builder
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Table(name = "RELATION_BETWEEN_USER_AND_GROUP")
 public class RelationBetweenUserAndGroup {
@@ -28,19 +23,21 @@ public class RelationBetweenUserAndGroup {
     private Long id;
 
     @ManyToOne(cascade = CascadeType.REMOVE)
-    @JoinColumn(name = "member")
+    @JoinColumn(name = "member", referencedColumnName = "user_id")
     private Users member;
+
+    @ManyToOne(cascade = CascadeType.REMOVE)
+    @JoinColumn(name = "members")
+    private Group group;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private GroupRole groupRole;
 
-    @ManyToOne(cascade = CascadeType.REMOVE)
-    @JoinColumn(name = "joinGroup")
-    private Group joinGroup;
-
     @Column(nullable = false)
     private LocalDate joinDate;
+
+    private RequestStatus requestStatus;
 
     @Column(nullable = false)
     @Range(min = 0, max = 24)
@@ -54,13 +51,9 @@ public class RelationBetweenUserAndGroup {
     @Range(min = 0, max = 1440)
     private Long personalDailyGoalAchieve;
 
-    // 주간 인증 수행 시간
+    // 주간 인증 수행 일수
     @Range(min = 0, max = 7)
     private int personalWeeklyGoalAchieve;
-
-    private Boolean isWeeklyGoalAchieved;
-
-    private Boolean isDailyGoalAchieved;
 
     // 주간 목표 달성 연속 횟수
     @Range(min = 0)
@@ -77,17 +70,25 @@ public class RelationBetweenUserAndGroup {
             this.joinDate = LocalDate.now(); // joinDate의 기본값 설정 (필요 시)
         }
 
-        if (this.isWeeklyGoalAchieved == null) {
-            this.isWeeklyGoalAchieved = false;
-        }
+        this.requestStatus = RequestStatus.WAITING;
 
-        if (this.isDailyGoalAchieved == null) {
-            this.isDailyGoalAchieved = false;
-        }
         this.personalWeeklyGoalAchieve = 0;
         this.weeklyGoalAchieveStreak = 0;
         this.personalDailyGoalAchieve = 0L;
 
+    }
+
+    public void subtractPoint(Long point) {
+        this.member.subtractPoint(point);
+        this.group.subtractPoint(point);
+    }
+
+    public boolean isDailyGoalAchieved() {
+        return this.personalDailyGoalAchieve >= this.personalDailyGoal;
+    }
+
+    public boolean isWeeklyGoalAchieved() {
+        return this.personalWeeklyGoalAchieve >= this.personalWeeklyGoal;
     }
 
     // 일간 목표 업데이트
@@ -115,26 +116,13 @@ public class RelationBetweenUserAndGroup {
         this.personalWeeklyGoalAchieve = 0;
     }
 
-    // 주간 목표 달성 여부 초기화
-    public void resetIsWeeklyGoalAchieved() {
-        this.isWeeklyGoalAchieved = false;
-    }
-
-    // 일간 목표 달성 여부 초기화
-    public void resetIsDailyGoalAchieved() {
-        this.isDailyGoalAchieved = false;
-    }
-
     // 주간 목표 달성 연속 횟수 초기화
     public void resetWeeklyGoalAchieveStreak() {
         this.weeklyGoalAchieveStreak = 0;
     }
 
-    public boolean isWeeklyGoalAchieved() {
-        return this.isWeeklyGoalAchieved;
+    public void updateRequestStatus(RequestStatus requestStatus) {
+        this.requestStatus = requestStatus;
     }
 
-    public boolean isDailyGoalAchieved() {
-        return this.isDailyGoalAchieved;
-    }
 }
