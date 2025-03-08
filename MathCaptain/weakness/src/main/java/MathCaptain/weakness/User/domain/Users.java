@@ -44,9 +44,6 @@ public class Users {
     @OneToMany(mappedBy = "member")
     private List<RelationBetweenUserAndGroup> relationBetweenUserAndGroup;
 
-    @OneToMany(mappedBy = "leader")
-    private List<Group> group;
-
     @OneToMany(mappedBy = "author")
     private List<Comment> comment;
 

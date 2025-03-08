@@ -29,11 +29,7 @@ public class Group {
     @Column(name = "group_id")
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "leader")
-    private Users leader;
-
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "joinGroup", cascade = CascadeType.REMOVE)
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "group", cascade = CascadeType.REMOVE)
     @Column(name = "members")
     private List<RelationBetweenUserAndGroup> relationBetweenUserAndGroup;
 

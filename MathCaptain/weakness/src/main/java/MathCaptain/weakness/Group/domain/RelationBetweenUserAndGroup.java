@@ -1,15 +1,13 @@
 package MathCaptain.weakness.Group.domain;
 
 import MathCaptain.weakness.Group.enums.GroupRole;
+import MathCaptain.weakness.Group.enums.RequestStatus;
 import MathCaptain.weakness.User.domain.Users;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import org.hibernate.validator.constraints.Range;
 
-import java.time.DayOfWeek;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -25,19 +23,21 @@ public class RelationBetweenUserAndGroup {
     private Long id;
 
     @ManyToOne(cascade = CascadeType.REMOVE)
-    @JoinColumn(name = "member")
+    @JoinColumn(name = "member", referencedColumnName = "user_id")
     private Users member;
+
+    @ManyToOne(cascade = CascadeType.REMOVE)
+    @JoinColumn(name = "members")
+    private Group group;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private GroupRole groupRole;
 
-    @ManyToOne(cascade = CascadeType.REMOVE)
-    @JoinColumn(name = "joinGroup")
-    private Group joinGroup;
-
     @Column(nullable = false)
     private LocalDate joinDate;
+
+    private RequestStatus requestStatus;
 
     @Column(nullable = false)
     @Range(min = 0, max = 24)
@@ -70,6 +70,8 @@ public class RelationBetweenUserAndGroup {
             this.joinDate = LocalDate.now(); // joinDate의 기본값 설정 (필요 시)
         }
 
+        this.requestStatus = RequestStatus.WAITING;
+
         this.personalWeeklyGoalAchieve = 0;
         this.weeklyGoalAchieveStreak = 0;
         this.personalDailyGoalAchieve = 0L;
@@ -78,7 +80,7 @@ public class RelationBetweenUserAndGroup {
 
     public void subtractPoint(Long point) {
         this.member.subtractPoint(point);
-        this.joinGroup.subtractPoint(point);
+        this.group.subtractPoint(point);
     }
 
     public boolean isDailyGoalAchieved() {
@@ -117,6 +119,10 @@ public class RelationBetweenUserAndGroup {
     // 주간 목표 달성 연속 횟수 초기화
     public void resetWeeklyGoalAchieveStreak() {
         this.weeklyGoalAchieveStreak = 0;
+    }
+
+    public void updateRequestStatus(RequestStatus requestStatus) {
+        this.requestStatus = requestStatus;
     }
 
 }
