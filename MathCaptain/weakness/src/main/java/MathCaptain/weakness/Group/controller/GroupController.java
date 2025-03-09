@@ -30,14 +30,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class GroupController {
 
-    public static final RequestStatus ACCEPTED = RequestStatus.ACCEPTED;
-    public static final RequestStatus REJECTED = RequestStatus.REJECTED;
-    public static final RequestStatus CANCELED = RequestStatus.CANCELED;
-
     private final GroupService groupService;
     private final RelationService relationService;
-    private final GroupJoinService groupJoinService;
-    private final NotificationService notificationService;
 
     /// 그룹 CRUD
 
@@ -50,8 +44,7 @@ public class GroupController {
     // 그룹 조회
     @GetMapping("/group/{groupId}")
     public ApiResponse<GroupResponseDto> groupInfo(@PathVariable Long groupId) {
-        GroupResponseDto groupResponseDto = groupService.getGroupInfo(groupId);
-        return ApiResponse.ok(groupResponseDto);
+        return ApiResponse.ok(groupService.getGroupInfo(groupId));
     }
 
     // 그룹 생성
@@ -67,68 +60,18 @@ public class GroupController {
         return groupService.updateGroupInfo(groupId, groupUpdateRequestDto);
     }
 
-    // 그룹 가입 요청 보내기
-    @PostMapping("/group/join/{groupId}")
-    public ApiResponse<?> joinGroup(@Valid @PathVariable Long groupId,
-                                    @LoginUser Users loginUser,
-                                    @RequestBody GroupJoinRequestDto groupJoinRequestDto) {
-        groupJoinService.joinGroupRequest(groupId, loginUser, groupJoinRequestDto);
-        notificationService.notifyGroupJoinRequest(groupId, loginUser);
-        return ApiResponse.ok("그룹 가입 요청이 완료되었습니다.");
-    }
-
     // 그룹 삭제
     @DeleteMapping("/group/{groupId}")
     public ApiResponse<?> deleteGroup(@PathVariable Long groupId) {
         return groupService.deleteGroup(groupId);
     }
 
-
-    ///  그룹 가입
-
-    // 그룹 가입 요청 수락
-    @PostMapping("/group/join/accept/{groupId}")
-    public ApiResponse<?> acceptJoinRequest(@PathVariable Long groupId, @LoginUser Users loginUser) {
-        groupJoinService.changeStatus(groupId, loginUser, ACCEPTED);
-        notificationService.notifyGroupJoinResult(groupId, loginUser);
-        return ApiResponse.ok("그룹 가입 요청이 수락되었습니다.");
-    }
-
-    // 그룹 가입 요청 거절
-    @PostMapping("/group/join/reject/{groupId}")
-    public ApiResponse<?> rejectJoinRequest(@PathVariable Long groupId, @LoginUser Users loginUser) {
-        groupJoinService.changeStatus(groupId, loginUser, REJECTED);
-        notificationService.notifyGroupJoinResult(groupId, loginUser);
-        return ApiResponse.ok("그룹 가입 요청이 거절되었습니다.");
-    }
-
-    // 그룹 가입 요청 취소
-    @DeleteMapping("/group/join/cancel/{groupId}")
-    public ApiResponse<?> cancelJoinRequest(@PathVariable Long groupId, @LoginUser Users loginUser) {
-        groupJoinService.changeStatus(groupId, loginUser, CANCELED);
-        return ApiResponse.ok("그룹 가입 요청이 취소되었습니다.");
-    }
-
-    // 그룹 가입 요청 조회
-    @GetMapping("/group/join/{groupId}")
-    public ApiResponse<?> getJoinRequest(@PathVariable Long groupId) {
-        return groupJoinService.getJoinRequestList(groupId);
-    }
-
-    // 그룹 떠나기 (탈퇴)
-    @DeleteMapping("/group/leave/{groupId}")
-    public ApiResponse<?> leaveGroup(@LoginUser Users loginUser, @PathVariable Long groupId) {
-        return relationService.leaveGroup(loginUser, groupId);
-    }
-
-
     /// 조회
 
     // 그룹 멤버 조회
     @GetMapping("/group/members/{groupId}")
     public ApiResponse<List<UserResponseDto>> groupMembers(@PathVariable Long groupId) {
-        List<UserResponseDto> members = groupService.getGroupMembers(groupId);
-        return ApiResponse.ok(members);
+        return ApiResponse.ok(groupService.getGroupMembers(groupId));
     }
 
     // 그룹 관계 조회
