@@ -58,21 +58,3 @@ jobs:
           VERSION=0.${{ github.run_number }}
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/weakness_server:$VERSION
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/weakness_server:latest          
-
-      # 8. EC2에 SSH 연결 및 새 이미지 실행
-      - name: Deploy to EC2
-        uses: appleboy/ssh-action@v0.1.7
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ubuntu
-          key: ${{ secrets.EC2_SSH_KEY }}
-          port: 22
-          script: |
-            echo "Pulling latest image from Docker Hub..."
-            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/weakness_server:latest
-            
-            echo "Stopping and removing existing container..."
-            docker stop weakness_server || true && docker rm weakness_server || true
-            
-            echo "Running new container..."
-            docker run -d --name weakness_server -p 8080:8080 ${{ secrets.DOCKERHUB_USERNAME }}/weakness_server:latest
