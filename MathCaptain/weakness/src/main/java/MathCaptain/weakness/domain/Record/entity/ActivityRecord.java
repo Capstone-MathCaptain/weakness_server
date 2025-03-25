@@ -8,6 +8,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.validator.constraints.Range;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.DayOfWeek;
 import java.time.LocalDateTime;
@@ -17,6 +19,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@EntityListeners(AuditingEntityListener.class)
 public class ActivityRecord {
 
     @Id
@@ -31,6 +34,7 @@ public class ActivityRecord {
     @JoinColumn(name = "group_id")
     private Group group;
 
+    @CreatedDate
     private LocalDateTime startTime; // 인증 시작 시간
 
     private LocalDateTime endTime; // 인증 종료 시간
@@ -48,11 +52,6 @@ public class ActivityRecord {
     public void prePersist() {
         this.dailyGoalAchieved = false;
         this.weeklyGoalAchieved = false;
-
-        if (this.startTime == null) {
-            this.startTime = LocalDateTime.now();
-        }
-
         this.durationInMinutes = 0L;
     }
 

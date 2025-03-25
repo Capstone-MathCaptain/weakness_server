@@ -8,6 +8,9 @@ import MathCaptain.weakness.domain.User.entity.Users;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -17,6 +20,7 @@ import java.util.List;
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
+@EntityListeners(AuditingEntityListener.class)
 public class Recruitment {
 
     @Id
@@ -52,8 +56,10 @@ public class Recruitment {
     private List<Comment> comments;
 
     @Column(nullable = false)
+    @CreatedDate
     private LocalDateTime postTime;
 
+    @LastModifiedDate
     private LocalDateTime lastModifiedTime;
 
     // 기본값 설정
