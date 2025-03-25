@@ -32,7 +32,8 @@ jobs:
         shell: bash
 
       - name: build
+        working-directory: MathCaptain/weakness
         run: |
-          chmod +x gradle
-          ./gradle build -x test
+          chmod +x gradlew
+          ./gradlew build -x test
         shell: bash
