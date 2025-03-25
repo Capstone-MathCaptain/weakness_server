@@ -1,6 +1,6 @@
 package MathCaptain.weakness.domain.Notification.repository;
 
-import MathCaptain.weakness.domain.Notification.domain.Notification;
+import MathCaptain.weakness.domain.Notification.entity.Notification;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

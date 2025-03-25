@@ -5,7 +5,7 @@ import MathCaptain.weakness.domain.Group.entity.RelationBetweenUserAndGroup;
 import MathCaptain.weakness.domain.Group.repository.GroupRepository;
 import MathCaptain.weakness.domain.Group.repository.RelationRepository;
 import MathCaptain.weakness.domain.Notification.controller.NotificationController;
-import MathCaptain.weakness.domain.Notification.domain.Notification;
+import MathCaptain.weakness.domain.Notification.entity.Notification;
 import MathCaptain.weakness.domain.Notification.repository.NotificationRepository;
 import MathCaptain.weakness.domain.Recruitment.entity.Comment;
 import MathCaptain.weakness.domain.Recruitment.entity.Recruitment;
