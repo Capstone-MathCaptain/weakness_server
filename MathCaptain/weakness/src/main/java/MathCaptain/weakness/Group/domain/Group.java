@@ -9,6 +9,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -53,6 +54,7 @@ public class Group {
     @Column(name = "hashtag")
     private List<String> hashtags;
 
+    @CreatedDate
     private LocalDate createDate;
 
     private String groupImageUrl;
@@ -69,7 +71,6 @@ public class Group {
 
     @PrePersist
     protected void onCreate() {
-        this.createDate = LocalDate.now();
 
         if (this.weeklyGoalAchieveMap == null) {
             this.weeklyGoalAchieveMap = new EnumMap<>(DayOfWeek.class);

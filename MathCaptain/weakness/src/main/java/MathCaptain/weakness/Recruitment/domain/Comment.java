@@ -4,6 +4,8 @@ import MathCaptain.weakness.Recruitment.dto.request.UpdateCommentRequestDto;
 import MathCaptain.weakness.User.domain.Users;
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
 
 import java.time.LocalDateTime;
 
@@ -29,18 +31,13 @@ public class Comment {
     @Column(nullable = false, length = 1000)
     private String content;
 
+    @CreatedDate
     @Column(nullable = false)
     private LocalDateTime commentTime;
 
     @Column(nullable = false)
+    @LastModifiedDate
     private LocalDateTime lastModifiedTime;
-
-    // 기본값 설정
-    @PrePersist
-    protected void onCreate() {
-        this.commentTime = LocalDateTime.now();
-        this.lastModifiedTime = LocalDateTime.now();
-    }
 
     //==수정==//
     public void updateContent(String content) {

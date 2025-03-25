@@ -64,15 +64,6 @@ public class Users {
         this.refreshToken = null;
     }
 
-    //== 패스워드 암호화 ==//
-    public void encodePassword(PasswordEncoder passwordEncoder){
-        this.password = passwordEncoder.encode(password);
-    }
-
-    public boolean matchPassword(PasswordEncoder passwordEncoder, String checkPassword) {
-        return passwordEncoder.matches(checkPassword, getPassword());
-    }
-
     @PrePersist
     protected void onCreate() {
         this.userPoint = 0L;
