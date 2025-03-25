@@ -18,8 +18,23 @@ jobs:
       - name: Set up JDK
         uses: actions/setup-java@v3
         with:
-          distribution: 'temurin' # OpenJDK 배포판
+          distribution: 'corretto'
           java-version: '17'     # Java 버전 (Spring Boot 3.x의 경우 Java 17 이상 필요)
+
+      - name: Create application.properties
+        run: |
+          # application.properties 파일 생성
+          mkdir -p ./src/main/resources
+          cd ./src/main/resources
+
+          # application.properties 파일 생성
+          touch ./application.properties
+
+          # GitHub-Actions 에서 설정한 값을 application.properties 파일에 쓰기
+          echo "${{ secrets.APPLICATION }}" >> ./application.properties
+          
+          # application.properties 파일 확인
+          cat ./application.properties
 
       # 3. Gradle 캐시 설정 (빌드 속도 향상)
       - name: Cache Gradle packages

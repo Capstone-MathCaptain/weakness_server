@@ -49,5 +49,4 @@ MathCaptain/weakness.trace.db
 *.trace.db
 
 ### Secret key ###
-MathCaptain/weakness/src/main/resources/application.yml
-MathCaptain/weakness/src/main/resources/application-jwt.yml
+MathCaptain/weakness/src/main/resources/application.properties
