@@ -1,7 +1,7 @@
 package MathCaptain.weakness.global.Scheduler;
 
-import MathCaptain.weakness.Group.domain.Group;
-import MathCaptain.weakness.Group.repository.GroupRepository;
+import MathCaptain.weakness.domain.Group.entity.Group;
+import MathCaptain.weakness.domain.Group.repository.GroupRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
