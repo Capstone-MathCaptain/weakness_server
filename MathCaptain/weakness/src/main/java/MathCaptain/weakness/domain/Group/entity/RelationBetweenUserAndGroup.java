@@ -6,6 +6,8 @@ import MathCaptain.weakness.domain.User.entity.Users;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.validator.constraints.Range;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDate;
 
@@ -15,6 +17,7 @@ import java.time.LocalDate;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Table(name = "RELATION_BETWEEN_USER_AND_GROUP")
+@EntityListeners(AuditingEntityListener.class)
 public class RelationBetweenUserAndGroup {
 
     @Id
@@ -35,6 +38,7 @@ public class RelationBetweenUserAndGroup {
     private GroupRole groupRole;
 
     @Column(nullable = false)
+    @CreatedDate
     private LocalDate joinDate;
 
     private RequestStatus requestStatus;
@@ -65,9 +69,6 @@ public class RelationBetweenUserAndGroup {
 
         if (this.groupRole == null) {
             this.groupRole = GroupRole.MEMBER; // 기본값 설정
-        }
-        if (this.joinDate == null) {
-            this.joinDate = LocalDate.now(); // joinDate의 기본값 설정 (필요 시)
         }
 
         this.requestStatus = RequestStatus.WAITING;

@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -13,5 +15,9 @@ public class recordEndRequestDto {
 
     // 수행 시간 (분)
     private Long activityTime;
+
+    private LocalDateTime startTime;
+
+    private LocalDateTime endTime;
 
 }
