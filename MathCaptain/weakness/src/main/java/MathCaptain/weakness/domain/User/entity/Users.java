@@ -48,6 +48,7 @@ public class Users {
     @OneToMany(mappedBy = "author")
     private List<Recruitment> recruitment;
 
+    @Enumerated(value = EnumType.STRING)
     private Tiers tier;
 
     //== jwt 토큰 추가 ==//
