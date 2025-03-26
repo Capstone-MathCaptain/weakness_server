@@ -21,8 +21,7 @@ jobs:
       - name: create application.properties
         run: |
           ## create application.properties
-          mkdir -p ./src/main/resources
-          cd ./src/main/resources
+          cd MathCaptain/weakness/src/main/resources
           
           touch ./application.properties
           
