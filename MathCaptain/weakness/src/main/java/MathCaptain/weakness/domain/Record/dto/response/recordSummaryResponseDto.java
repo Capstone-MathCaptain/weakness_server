@@ -29,4 +29,10 @@ public class recordSummaryResponseDto {
 
     // 주간 목표 달성까지 남은 일 수 (일) (달성시 0)
     private int remainingWeeklyGoalDays;
+
+    // 사용자가 설정한 일간 목표
+    private int personalDailyGoal;
+
+    // 사용자가 설정한 주간 목표
+    private int personalWeeklyGoal;
 }
