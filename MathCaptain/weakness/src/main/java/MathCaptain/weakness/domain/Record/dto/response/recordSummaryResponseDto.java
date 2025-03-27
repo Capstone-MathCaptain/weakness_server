@@ -31,7 +31,7 @@ public class recordSummaryResponseDto {
     private int remainingWeeklyGoalDays;
 
     // 사용자가 설정한 일간 목표
-    private int personalDailyGoal;
+    private Long personalDailyGoal;
 
     // 사용자가 설정한 주간 목표
     private int personalWeeklyGoal;
