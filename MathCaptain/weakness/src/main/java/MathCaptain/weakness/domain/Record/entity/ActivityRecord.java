@@ -48,12 +48,12 @@ public class ActivityRecord {
 
     private DayOfWeek dayOfWeek; // 요일
 
-    @PrePersist
-    public void prePersist() {
-        this.dailyGoalAchieved = false;
-        this.weeklyGoalAchieved = false;
-        this.durationInMinutes = 0L;
-    }
+//    @PrePersist
+//    public void prePersist() {
+//        this.dailyGoalAchieved = false;
+//        this.weeklyGoalAchieved = false;
+//        this.durationInMinutes = 0L;
+//    }
 
     public void updateEndTime(LocalDateTime endTime) {
         this.endTime = endTime;

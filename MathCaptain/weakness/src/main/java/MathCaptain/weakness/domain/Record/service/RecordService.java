@@ -37,7 +37,7 @@ public class RecordService {
     // 기록 저장
     public recordSummaryResponseDto endActivity(Users user, Long groupId, recordEndRequestDto endRequest) {
 
-        // 사용자 식별
+        // 관계 식별
         RelationBetweenUserAndGroup relation = relationRepository.findByMemberAndGroup_Id(user, groupId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 관계가 존재하지 않습니다."));
 
@@ -55,7 +55,6 @@ public class RecordService {
     }
 
     // 주간 목표 달성 여부 조회
-
     public Map<DayOfWeek, Boolean> getWeeklyGoalStatus(Users user, Group group, LocalDateTime weekStart) {
         // 주의 시작과 끝 계산 (월요일 ~ 다음 주 월요일)
         LocalDateTime startOfWeek = calculateStartOfWeek(weekStart);
@@ -177,7 +176,7 @@ public class RecordService {
                 .weeklyGoalAchieved(activityRecord.isWeeklyGoalAchieved())
                 .remainingDailyGoalMinutes(remainingDailyGoalMinutes)
                 .remainingWeeklyGoalDays(remainingWeeklyGoal)
-                .personalDailyGoal(relation.getPersonalDailyGoal())
+                .personalDailyGoal(relation.getPersonalDailyGoal() * 60L)
                 .personalWeeklyGoal(relation.getPersonalWeeklyGoal())
                 .build();
     }
