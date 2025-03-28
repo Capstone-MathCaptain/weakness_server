@@ -3,8 +3,8 @@ package MathCaptain.weakness.domain.User.controller;
 import MathCaptain.weakness.domain.User.dto.request.*;
 import MathCaptain.weakness.domain.User.entity.Users;
 import MathCaptain.weakness.domain.User.dto.response.ChangePwdDto;
-import MathCaptain.weakness.domain.User.dto.response.UserCardResponseDto;
-import MathCaptain.weakness.domain.User.dto.response.UserResponseDto;
+import MathCaptain.weakness.domain.User.dto.response.UserCardResponse;
+import MathCaptain.weakness.domain.User.dto.response.UserResponse;
 import MathCaptain.weakness.domain.User.service.UserService;
 import MathCaptain.weakness.global.Api.ApiResponse;
 import MathCaptain.weakness.global.annotation.LoginUser;
@@ -22,36 +22,36 @@ public class UserController {
 
     // READ
     @GetMapping("/user/{userId}")
-    public ApiResponse<UserResponseDto> userInfo(@PathVariable Long userId) {
+    public ApiResponse<UserResponse> userInfo(@PathVariable Long userId) {
         return userService.getUserInfo(userId);
     }
 
     // CREATE
     @PostMapping("/user/signup")
-    public ApiResponse<UserResponseDto> saveUser(@Valid @RequestBody SaveUserRequestDto user) {
+    public ApiResponse<UserResponse> saveUser(@Valid @RequestBody SaveUserRequest user) {
         return userService.saveUser(user);
     }
 
     // UPDATE
     @PutMapping("/user")
-    public ApiResponse<UserResponseDto> updateUser(@Valid @LoginUser Users loginUser, @RequestBody UpdateUserRequestDto updateUser) {
+    public ApiResponse<UserResponse> updateUser(@Valid @LoginUser Users loginUser, @RequestBody UpdateUserRequest updateUser) {
         return userService.updateUser(loginUser, updateUser);
     }
 
     // DELETE
     @DeleteMapping("/user")
-    public ApiResponse<?> deleteUser(@LoginUser Users loginUser, @RequestBody UserDeleteRequestDto userDeleteRequestDto) {
-        return userService.deleteUser(loginUser, userDeleteRequestDto);
+    public ApiResponse<?> deleteUser(@LoginUser Users loginUser, @RequestBody UserDeleteRequest userDeleteRequest) {
+        return userService.deleteUser(loginUser, userDeleteRequest);
     }
 
     @PostMapping("/user/find/email")
-    public ApiResponse<?> findEmail(@Valid @RequestBody FindEmailRequestDto findEmailRequestDto) {
-        return userService.findEmail(findEmailRequestDto);
+    public ApiResponse<?> findEmail(@Valid @RequestBody FindEmailRequest findEmailRequest) {
+        return userService.findEmail(findEmailRequest);
     }
 
     @PostMapping("/user/find/password")
-    public ApiResponse<?> FindPwd(@Valid @RequestBody FindPwdRequestDto findPwdRequestDto) {
-        userService.findPwdRequest(findPwdRequestDto);
+    public ApiResponse<?> FindPwd(@Valid @RequestBody FindPwdRequest findPwdRequest) {
+        userService.findPwdRequest(findPwdRequest);
         return ApiResponse.ok("이메일로 비밀번호 재설정 링크를 보냈습니다.");
     }
 
@@ -62,7 +62,7 @@ public class UserController {
     }
 
     @GetMapping("/user/mypage")
-    public ApiResponse<UserCardResponseDto> getUserCard(@LoginUser Users loginUser) {
+    public ApiResponse<UserCardResponse> getUserCard(@LoginUser Users loginUser) {
         return userService.getUserCard(loginUser);
     }
 
