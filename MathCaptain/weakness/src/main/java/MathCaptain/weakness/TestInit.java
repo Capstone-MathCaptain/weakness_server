@@ -13,6 +13,7 @@ import MathCaptain.weakness.domain.Recruitment.entity.Recruitment;
 import MathCaptain.weakness.domain.Recruitment.enums.RecruitmentStatus;
 import MathCaptain.weakness.domain.Recruitment.repository.CommentRepository;
 import MathCaptain.weakness.domain.Recruitment.repository.RecruitmentRepository;
+import MathCaptain.weakness.domain.User.dto.request.SaveUserRequest;
 import MathCaptain.weakness.domain.User.entity.Users;
 import MathCaptain.weakness.domain.User.repository.UserRepository;
 import jakarta.annotation.PostConstruct;
@@ -52,48 +53,40 @@ public class TestInit {
 
         String email3 = "test@test.com";
 
+        SaveUserRequest saveUserRequest1 = SaveUserRequest.of(
+                email1, passwordEncoder.encode("password1"),
+                "tester01", "tester01", "01012345678"
+        );
+
+        SaveUserRequest saveUserRequest2 = SaveUserRequest.of(
+                email2, passwordEncoder.encode("password2"),
+                "tester02", "tester02", "01056781234"
+        );
+
+        SaveUserRequest saveUserRequest3 = SaveUserRequest.of(
+                email3, passwordEncoder.encode("test"),
+                "tester", "tester", "01011112111"
+        );
+
         /// 테스트 유저 생성
-        Users users1 = Users.builder()
-                .userId(1L)
-                .email(email1)
-                .password(passwordEncoder.encode("password1"))
-                .name("tester01")
-                .nickname("tester01")
-                .phoneNumber("01012345678")
-                .build();
+        Users users1 = Users.of(saveUserRequest1);
 
-        Users users2 = Users.builder()
-                .userId(2L)
-                .email(email2)
-                .password(passwordEncoder.encode("password2"))
-                .name("tester02")
-                .nickname("tester02")
-                .phoneNumber("01056781234")
-                .build();
+        Users users2 = Users.of(saveUserRequest2);
 
-        Users users3 = Users.builder()
-                .userId(3L)
-                .email(email3)
-                .password(passwordEncoder.encode("test"))
-                .name("tester")
-                .nickname("tester")
-                .phoneNumber("01011111111")
-                .build();
+        Users users3 = Users.of(saveUserRequest3);
 
         userRepository.save(users1);
         userRepository.save(users2);
         userRepository.save(users3);
 
         for (int i = 4; i <= 12; i++) {
-            Users users = Users.builder()
-                    .userId((long) i)
-                    .email("test" + i + "@test.com")
-                    .password(passwordEncoder.encode("test"))
-                    .name("tester" + i)
-                    .nickname("tester" + i)
-                    .phoneNumber("0101111111" + i % 10)
-                    .build();
-            userRepository.save(users);
+            SaveUserRequest saveUserRequest = SaveUserRequest.of(
+                    "test" + i + "@test.com", passwordEncoder.encode("test"),
+                    "tester" + i, "tester" + i, "0101111111" + i % 10
+            );
+
+            Users user = Users.of(saveUserRequest);
+            userRepository.save(user);
         }
 
         log.info("======== 👤테스트 유저 생성 완료 =========");
