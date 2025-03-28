@@ -11,7 +11,7 @@ import MathCaptain.weakness.domain.Group.dto.response.UserGroupCardResponseDto;
 import MathCaptain.weakness.domain.Group.enums.CategoryStatus;
 import MathCaptain.weakness.domain.Record.repository.RecordRepository;
 import MathCaptain.weakness.domain.Record.service.RecordService;
-import MathCaptain.weakness.domain.User.dto.response.UserResponseDto;
+import MathCaptain.weakness.domain.User.dto.response.UserResponse;
 import MathCaptain.weakness.domain.Group.repository.GroupRepository;
 import MathCaptain.weakness.domain.Group.repository.RelationRepository;
 import MathCaptain.weakness.domain.User.entity.Users;
@@ -96,7 +96,7 @@ public class GroupService {
     }
 
     // 그룹 내 멤버 조회
-    public List<UserResponseDto> getGroupMembers(Long groupId) {
+    public List<UserResponse> getGroupMembers(Long groupId) {
         Group group = groupRepository.findById(groupId)
                 .orElseThrow(() -> new ResourceNotFoundException("해당 그룹이 없습니다."));
 
@@ -273,8 +273,8 @@ public class GroupService {
                 .build();
     }
 
-    private static UserResponseDto buildUserResponse(Users user) {
-        return UserResponseDto.builder()
+    private static UserResponse buildUserResponse(Users user) {
+        return UserResponse.builder()
                 .userId(user.getUserId())
                 .name(user.getName())
                 .nickname(user.getNickname())

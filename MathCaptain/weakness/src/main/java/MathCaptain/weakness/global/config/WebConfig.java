@@ -1,6 +1,6 @@
 package MathCaptain.weakness.global.config;
 
-import MathCaptain.weakness.domain.Group.Login.LoginUserArgumentResolver;
+import MathCaptain.weakness.domain.User.Login.LoginUserArgumentResolver;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
