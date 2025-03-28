@@ -1,4 +1,4 @@
-package MathCaptain.weakness.domain.Group.Login;
+package MathCaptain.weakness.domain.User.Login;
 
 import MathCaptain.weakness.domain.User.entity.UserDetailsImpl;
 import MathCaptain.weakness.domain.User.entity.Users;
