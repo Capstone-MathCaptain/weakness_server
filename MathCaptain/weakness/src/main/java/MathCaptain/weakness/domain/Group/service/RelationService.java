@@ -8,7 +8,7 @@ import MathCaptain.weakness.domain.Group.dto.response.GroupResponseDto;
 import MathCaptain.weakness.domain.Group.dto.response.RelationResponseDto;
 import MathCaptain.weakness.domain.Group.repository.GroupRepository;
 import MathCaptain.weakness.domain.Record.repository.RecordRepository;
-import MathCaptain.weakness.domain.User.dto.response.UserResponseDto;
+import MathCaptain.weakness.domain.User.dto.response.UserResponse;
 import MathCaptain.weakness.domain.Group.enums.GroupRole;
 import MathCaptain.weakness.domain.Group.repository.RelationRepository;
 import MathCaptain.weakness.domain.User.entity.Users;
@@ -103,7 +103,7 @@ public class RelationService {
                 .groupImageUrl(relation.getGroup().getGroupImageUrl())
                 .build();
 
-        UserResponseDto member = UserResponseDto.builder()
+        UserResponse member = UserResponse.builder()
                 .userId(relation.getMember().getUserId())
                 .email(relation.getMember().getEmail())
                 .name(relation.getMember().getName())

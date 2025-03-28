@@ -1,7 +1,7 @@
 package MathCaptain.weakness.domain.Group.dto.response;
 
 import MathCaptain.weakness.domain.Group.enums.GroupRole;
-import MathCaptain.weakness.domain.User.dto.response.UserResponseDto;
+import MathCaptain.weakness.domain.User.dto.response.UserResponse;
 import lombok.Builder;
 import lombok.Data;
 
@@ -13,7 +13,7 @@ public class RelationResponseDto {
 
     private Long id;
 
-    private UserResponseDto member;
+    private UserResponse member;
 
     private GroupResponseDto group;
 

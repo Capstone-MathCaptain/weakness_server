@@ -7,7 +7,7 @@ import MathCaptain.weakness.domain.Group.dto.response.GroupMemberListResponseDto
 import MathCaptain.weakness.domain.Group.dto.response.GroupResponseDto;
 import MathCaptain.weakness.domain.Group.dto.response.RelationResponseDto;
 import MathCaptain.weakness.domain.User.entity.Users;
-import MathCaptain.weakness.domain.User.dto.response.UserResponseDto;
+import MathCaptain.weakness.domain.User.dto.response.UserResponse;
 import MathCaptain.weakness.domain.Group.service.GroupService;
 import MathCaptain.weakness.domain.Group.dto.request.GroupCreateRequestDto;
 import MathCaptain.weakness.domain.Group.service.RelationService;
@@ -65,7 +65,7 @@ public class GroupController {
 
     // 그룹 멤버 조회
     @GetMapping("/group/members/{groupId}")
-    public ApiResponse<List<UserResponseDto>> groupMembers(@PathVariable Long groupId) {
+    public ApiResponse<List<UserResponse>> groupMembers(@PathVariable Long groupId) {
         return ApiResponse.ok(groupService.getGroupMembers(groupId));
     }
 

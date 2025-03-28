@@ -3,7 +3,8 @@ package MathCaptain.weakness.domain.User.entity;
 import MathCaptain.weakness.domain.Group.entity.RelationBetweenUserAndGroup;
 import MathCaptain.weakness.domain.Recruitment.entity.Comment;
 import MathCaptain.weakness.domain.Recruitment.entity.Recruitment;
-import MathCaptain.weakness.domain.User.dto.request.UpdateUserRequestDto;
+import MathCaptain.weakness.domain.User.dto.request.SaveUserRequest;
+import MathCaptain.weakness.domain.User.dto.request.UpdateUserRequest;
 import MathCaptain.weakness.domain.User.enums.TierThresholds;
 import MathCaptain.weakness.domain.User.enums.Tiers;
 import jakarta.persistence.*;
@@ -15,8 +16,6 @@ import java.util.List;
 
 @Entity
 @Getter
-@Builder
-@AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "USERS")
 public class Users {
@@ -30,10 +29,13 @@ public class Users {
 
     private String password;
 
+    @Column(nullable = false)
     private String name;
 
+    @Column(nullable = false, unique = true)
     private String nickname;
 
+    @Column(nullable = false, unique = true)
     private String phoneNumber;
 
     @Range(min = 0)
@@ -69,34 +71,32 @@ public class Users {
         this.tier = Tiers.BRONZE;
     }
 
+    private Users(String email, String password, String name, String nickname, String phoneNumber) {
+        this.email = email;
+        this.password = password;
+        this.name = name;
+        this.nickname = nickname;
+        this.phoneNumber = phoneNumber;
+    }
+
+    public static Users of(SaveUserRequest userRequestDto) {
+        return new Users(
+                userRequestDto.getEmail(),
+                userRequestDto.getPassword(),
+                userRequestDto.getName(),
+                userRequestDto.getNickname(),
+                userRequestDto.getPhoneNumber());
+    }
+
     //== 수정 로직 ==//
-
-    public void updateName(String name) {
-        if (name != null && !name.equals(this.name)) {
-            this.name = name;
-        }
-    }
-
-    public void updateNickname(String nickname) {
-        if (nickname != null && !nickname.equals(this.nickname)) {
-            this.nickname = nickname;
-        }
-    }
-
-    public void updatePhoneNumber(String phoneNumber) {
-        if (phoneNumber != null && !phoneNumber.equals(this.phoneNumber)) {
-            this.phoneNumber = phoneNumber;
-        }
-    }
-
     public void updatePassword(String password, PasswordEncoder passwordEncoder) {
         this.password = passwordEncoder.encode(password);
     }
 
-    public void updateUser(UpdateUserRequestDto requestDto) {
-        updateName(requestDto.getName());
-        updateNickname(requestDto.getNickname());
-        updatePhoneNumber(requestDto.getPhoneNumber());
+    public void updateUser(UpdateUserRequest requestDto) {
+        this.nickname = requestDto.getNickname();
+        this.name = requestDto.getName();
+        this.phoneNumber = requestDto.getPhoneNumber();
     }
 
     public void updatePoint(Long point) {
@@ -109,7 +109,6 @@ public class Users {
         evaluateTier();
     }
 
-    // 10% 감소
     public void subtractPoint(Long point) {
         this.userPoint = Math.max(0, this.userPoint - point);
         evaluateTier();
@@ -131,5 +130,4 @@ public class Users {
             this.tier = Tiers.BRONZE;
         }
     }
-
 }
