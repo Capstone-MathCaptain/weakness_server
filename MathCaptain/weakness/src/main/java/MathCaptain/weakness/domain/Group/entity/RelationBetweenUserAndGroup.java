@@ -1,5 +1,7 @@
 package MathCaptain.weakness.domain.Group.entity;
 
+import MathCaptain.weakness.domain.Group.dto.request.GroupCreateRequest;
+import MathCaptain.weakness.domain.Group.dto.request.GroupJoinRequest;
 import MathCaptain.weakness.domain.Group.enums.GroupRole;
 import MathCaptain.weakness.domain.Group.enums.RequestStatus;
 import MathCaptain.weakness.domain.User.entity.Users;
@@ -13,9 +15,7 @@ import java.time.LocalDate;
 
 @Entity
 @Getter
-@Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor
 @Table(name = "RELATION_BETWEEN_USER_AND_GROUP")
 @EntityListeners(AuditingEntityListener.class)
 public class RelationBetweenUserAndGroup {
@@ -37,8 +37,8 @@ public class RelationBetweenUserAndGroup {
     @Column(nullable = false)
     private GroupRole groupRole;
 
-    @Column(nullable = false)
     @CreatedDate
+    @Column(nullable = false)
     private LocalDate joinDate;
 
     private RequestStatus requestStatus;
@@ -47,8 +47,8 @@ public class RelationBetweenUserAndGroup {
     @Range(min = 0, max = 24)
     private int personalDailyGoal;
 
-    @Column(nullable = false)
     @Range(min = 0)
+    @Column(nullable = false)
     private int personalWeeklyGoal;
 
     // 일간 인증 수행 시간
@@ -63,20 +63,47 @@ public class RelationBetweenUserAndGroup {
     @Range(min = 0)
     private int weeklyGoalAchieveStreak;
 
-    // 기본값 설정
-    @PrePersist
-    protected void onPrePersist() {
-
-        if (this.groupRole == null) {
-            this.groupRole = GroupRole.MEMBER; // 기본값 설정
-        }
-
+    @Builder
+    private RelationBetweenUserAndGroup(Users member, Group group, GroupRole groupRole, int personalDailyGoal, int personalWeeklyGoal) {
+        this.member = member;
+        this.group = group;
+        this.groupRole = groupRole;
         this.requestStatus = RequestStatus.WAITING;
-
+        this.personalDailyGoal = personalDailyGoal;
+        this.personalWeeklyGoal = personalWeeklyGoal;
+        this.personalDailyGoalAchieve = 0L;
         this.personalWeeklyGoalAchieve = 0;
         this.weeklyGoalAchieveStreak = 0;
-        this.personalDailyGoalAchieve = 0L;
+    }
 
+    public static RelationBetweenUserAndGroup of(Users leader, Group group, int dailyGoal, int weeklyGoal) {
+        return RelationBetweenUserAndGroup.builder()
+                .member(leader)
+                .groupRole(GroupRole.MEMBER)
+                .group(group)
+                .personalDailyGoal(dailyGoal)
+                .personalWeeklyGoal(weeklyGoal)
+                .build();
+    }
+
+    public static RelationBetweenUserAndGroup of(Users member, Group group, GroupCreateRequest groupCreateRequest) {
+        return RelationBetweenUserAndGroup.builder()
+                .member(member)
+                .groupRole(GroupRole.LEADER)
+                .group(group)
+                .personalDailyGoal(groupCreateRequest.getPersonalDailyGoal())
+                .personalWeeklyGoal(groupCreateRequest.getPersonalWeeklyGoal())
+                .build();
+    }
+
+    public static RelationBetweenUserAndGroup of(Users member, Group group, GroupJoinRequest groupJoinRequest) {
+        return RelationBetweenUserAndGroup.builder()
+                .member(member)
+                .groupRole(GroupRole.MEMBER)
+                .group(group)
+                .personalDailyGoal(groupJoinRequest.getPersonalDailyGoal())
+                .personalWeeklyGoal(groupJoinRequest.getPersonalWeeklyGoal())
+                .build();
     }
 
     public void subtractPoint(Long point) {

@@ -1,5 +1,6 @@
 package MathCaptain.weakness;
 
+import MathCaptain.weakness.domain.Group.dto.request.GroupCreateRequest;
 import MathCaptain.weakness.domain.Group.entity.Group;
 import MathCaptain.weakness.domain.Group.entity.RelationBetweenUserAndGroup;
 import MathCaptain.weakness.domain.Group.enums.CategoryStatus;
@@ -95,35 +96,18 @@ public class TestInit {
                 .orElseThrow(() -> new IllegalArgumentException("해당 유저가 없습니다."));
 
         /// 테스트 그룹 생성
-        Group group1 = Group.builder()
-                .name("testGroup1")
-                .category(CategoryStatus.STUDY)
-                .minDailyHours(2)
-                .minWeeklyDays(3)
-                .groupPoint(0L)
-                .hashtags(null)
-                .groupImageUrl("test")
-                .build();
+        GroupCreateRequest groupCreateRequest1 = GroupCreateRequest.of(users1.getUserId(), "testGroup1",
+                CategoryStatus.STUDY, 2, 3, 0L, null, "test1", 3, 4);
 
-        Group group2 = Group.builder()
-                .name("testGroup2")
-                .category(CategoryStatus.FITNESS)
-                .minDailyHours(2)
-                .minWeeklyDays(3)
-                .groupPoint(0L)
-                .hashtags(null)
-                .groupImageUrl("test1")
-                .build();
+        GroupCreateRequest groupCreateRequest2 = GroupCreateRequest.of(users1.getUserId(), "testGroup2",
+                CategoryStatus.FITNESS, 2, 3, 0L, null, "test2", 3, 4);
 
-        Group group3 = Group.builder()
-                .name("testGroup3")
-                .category(CategoryStatus.READING)
-                .minDailyHours(2)
-                .minWeeklyDays(3)
-                .groupPoint(0L)
-                .hashtags(null)
-                .groupImageUrl("test3")
-                .build();
+        GroupCreateRequest groupCreateRequest3 = GroupCreateRequest.of(users1.getUserId(), "testGroup3",
+                CategoryStatus.READING, 2, 3, 0L, null, "test3", 3, 4);
+
+        Group group1 = Group.of(groupCreateRequest1);
+        Group group2 = Group.of(groupCreateRequest2);
+        Group group3 = Group.of(groupCreateRequest3);
 
         groupRepository.save(group1);
         groupRepository.save(group2);
@@ -136,7 +120,6 @@ public class TestInit {
         group3.updateWeeklyGoalAchieveMap(DayOfWeek.FRIDAY, 10);
         group3.updateWeeklyGoalAchieveMap(DayOfWeek.SATURDAY, 1);
         group3.updateWeeklyGoalAchieveMap(DayOfWeek.SUNDAY, 0);
-
         groupRepository.save(group3);
 
         log.info("======== 👥 테스트 그룹 생성 완료 =========");

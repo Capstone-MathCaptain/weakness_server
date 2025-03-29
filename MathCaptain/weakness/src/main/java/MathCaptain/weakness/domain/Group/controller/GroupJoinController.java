@@ -1,6 +1,6 @@
 package MathCaptain.weakness.domain.Group.controller;
 
-import MathCaptain.weakness.domain.Group.dto.request.GroupJoinRequestDto;
+import MathCaptain.weakness.domain.Group.dto.request.GroupJoinRequest;
 import MathCaptain.weakness.domain.Group.enums.RequestStatus;
 import MathCaptain.weakness.domain.Group.service.GroupJoinService;
 import MathCaptain.weakness.domain.Group.service.RelationService;
@@ -32,8 +32,8 @@ public class GroupJoinController {
     @PostMapping("/group/join/{groupId}")
     public ApiResponse<?> joinGroup(@Valid @PathVariable Long groupId,
                                     @LoginUser Users loginUser,
-                                    @RequestBody GroupJoinRequestDto groupJoinRequestDto) {
-        groupJoinService.joinGroupRequest(groupId, loginUser, groupJoinRequestDto);
+                                    @RequestBody GroupJoinRequest groupJoinRequest) {
+        groupJoinService.joinGroupRequest(groupId, loginUser, groupJoinRequest);
         notificationService.notifyGroupJoinRequest(groupId, loginUser);
         return ApiResponse.ok("그룹 가입 요청이 완료되었습니다.");
     }

@@ -2,19 +2,14 @@ package MathCaptain.weakness.domain.Group.dto.request;
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.validator.constraints.Range;
 
 import java.util.List;
 
-@Data
-@Builder
-@AllArgsConstructor
-@NoArgsConstructor
-public class GroupUpdateRequestDto {
+@Getter
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+public class GroupUpdateRequest {
 
     @NotNull(message = "그룹 이름은 필수입니다.")
     @Size(min = 3, max = 15, message = "그룹 이름은 최소 3글자 이상, 15글자 이하입니다.")

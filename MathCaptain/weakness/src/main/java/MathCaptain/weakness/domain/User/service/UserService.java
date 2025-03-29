@@ -1,7 +1,8 @@
 package MathCaptain.weakness.domain.User.service;
 
-import MathCaptain.weakness.domain.Group.dto.response.GroupResponseDto;
-import MathCaptain.weakness.domain.Group.dto.response.UserGroupCardResponseDto;
+import MathCaptain.weakness.domain.Group.dto.response.GroupResponse;
+import MathCaptain.weakness.domain.Group.dto.response.UserGroupCardResponse;
+import MathCaptain.weakness.domain.Group.entity.Group;
 import MathCaptain.weakness.domain.Group.repository.RelationRepository;
 import MathCaptain.weakness.domain.Group.service.GroupService;
 import MathCaptain.weakness.domain.User.dto.request.*;
@@ -57,17 +58,16 @@ public class UserService {
     // 회원정보 수정
     public ApiResponse<UserResponse> updateUser(Users user, UpdateUserRequest userUpdateRequest) {
         user.updateUser(userUpdateRequest);
-        List<Long> joinedGroupsId = relationRepository.findGroupsIdByMember(user);
-        // TODO : 로직 수정 필요
-        List<GroupResponseDto> groupResponseList = groupService.getUsersGroups(joinedGroupsId);
+        List<Group> joinedGroups = relationRepository.findGroupsByMember(user);
+        List<GroupResponse> groupResponseList = groupService.getUsersGroups(joinedGroups);
         return ApiResponse.ok(UserResponse.of(user, groupResponseList));
     }
 
     // 회원정보 조회
     public ApiResponse<UserResponse> getUserInfo(Long userId) {
         Users user = findByUserId(userId);
-        List<Long> joinedGroupsId = relationRepository.findGroupsIdByUserId(user.getUserId());
-        List<GroupResponseDto> groupResponseList = groupService.getUsersGroups(joinedGroupsId);
+        List<Group> joinedGroups = relationRepository.findGroupsByMember(user);
+        List<GroupResponse> groupResponseList = groupService.getUsersGroups(joinedGroups);
         return ApiResponse.ok(UserResponse.of(user, groupResponseList));
     }
 
@@ -101,7 +101,7 @@ public class UserService {
     }
 
     public ApiResponse<UserCardResponse> getUserCard(Users user) {
-        List<UserGroupCardResponseDto> groupCards = groupService.getUserGroupCard(user);
+        List<UserGroupCardResponse> groupCards = groupService.getUserGroupCard(user);
         UserCardResponse userCardResponse = UserCardResponse.of(user, groupCards);
         return ApiResponse.ok(userCardResponse);
     }

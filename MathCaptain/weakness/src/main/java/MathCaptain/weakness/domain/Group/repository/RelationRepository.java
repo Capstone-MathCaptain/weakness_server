@@ -27,8 +27,8 @@ public interface RelationRepository extends JpaRepository<RelationBetweenUserAnd
     @Query("SELECT r.group.id FROM RelationBetweenUserAndGroup r WHERE r.member.userId = :userId")
     List<Long> findGroupsIdByUserId(@Param("userId") Long userId);
 
-    @Query("SELECT r.group.id FROM RelationBetweenUserAndGroup r WHERE r.member = :user")
-    List<Long> findGroupsIdByMember(@Param("user") Users user);
+    @Query("SELECT r.group FROM RelationBetweenUserAndGroup r WHERE r.member = :user")
+    List<Group> findGroupsByMember(@Param("user") Users user);
 
     @Query("SELECT SUM(r.personalWeeklyGoal) FROM RelationBetweenUserAndGroup r WHERE r.group.id = :groupId")
     Integer sumPersonalWeeklyGoalByGroupId(@Param("groupId") Long groupId);
