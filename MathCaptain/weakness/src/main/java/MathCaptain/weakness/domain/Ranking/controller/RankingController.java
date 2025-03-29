@@ -1,6 +1,6 @@
 package MathCaptain.weakness.domain.Ranking.controller;
 
-import MathCaptain.weakness.domain.Ranking.dto.response.GroupRankingResponseDto;
+import MathCaptain.weakness.domain.Ranking.dto.response.GroupRankingResponse;
 import MathCaptain.weakness.domain.Ranking.service.RankingService;
 import MathCaptain.weakness.global.Api.ApiResponse;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +19,7 @@ public class RankingController {
 
     // 그룹 랭킹 조회
     @GetMapping("/{page}")
-    public ApiResponse<Page<GroupRankingResponseDto>> getGroupRankings(
+    public ApiResponse<Page<GroupRankingResponse>> getGroupRankings(
             @PathVariable("page") int page) {
         // 페이지 번호를 기반으로 Pageable 생성
         Pageable pageable = PageRequest.of(page - 1, 10, Sort.by(Sort.Direction.DESC, "groupPoint"));
