@@ -11,6 +11,7 @@ import org.hibernate.validator.constraints.Range;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 
 @Entity
@@ -76,9 +77,9 @@ public class RelationBetweenUserAndGroup {
         this.weeklyGoalAchieveStreak = 0;
     }
 
-    public static RelationBetweenUserAndGroup of(Users leader, Group group, int dailyGoal, int weeklyGoal) {
+    public static RelationBetweenUserAndGroup of(Users member, Group group, int dailyGoal, int weeklyGoal) {
         return RelationBetweenUserAndGroup.builder()
-                .member(leader)
+                .member(member)
                 .groupRole(GroupRole.MEMBER)
                 .group(group)
                 .personalDailyGoal(dailyGoal)
@@ -86,9 +87,9 @@ public class RelationBetweenUserAndGroup {
                 .build();
     }
 
-    public static RelationBetweenUserAndGroup of(Users member, Group group, GroupCreateRequest groupCreateRequest) {
+    public static RelationBetweenUserAndGroup of(Users leader, Group group, GroupCreateRequest groupCreateRequest) {
         return RelationBetweenUserAndGroup.builder()
-                .member(member)
+                .member(leader)
                 .groupRole(GroupRole.LEADER)
                 .group(group)
                 .personalDailyGoal(groupCreateRequest.getPersonalDailyGoal())
@@ -125,18 +126,18 @@ public class RelationBetweenUserAndGroup {
     }
 
     // 주간 목표 업데이트
-    public void updatePersonalWeeklyGoalAchieved(int personalWeeklyGoalAchieve) {
-        this.personalWeeklyGoalAchieve = personalWeeklyGoalAchieve;
+    public void updatePersonalWeeklyGoalAchieved() {
+        this.personalWeeklyGoalAchieve += 1;
     }
 
     // 주간 목표 달성 연속 횟수 업데이트
-    public void updateWeeklyGoalAchieveStreak(int weeklyGoalAchieveStreak) {
-        this.weeklyGoalAchieveStreak = weeklyGoalAchieveStreak;
+    public void updateWeeklyGoalAchieveStreak() {
+        this.weeklyGoalAchieveStreak += 1;
     }
 
     // 일간 목표 초기화
     public void resetPersonalDailyGoalAchieve() {
-        this.personalDailyGoalAchieve = (Long) 0L;
+        this.personalDailyGoalAchieve = 0L;
     }
 
     // 주간 목표 초기화
@@ -153,4 +154,24 @@ public class RelationBetweenUserAndGroup {
         this.requestStatus = requestStatus;
     }
 
+    public void addPoint(Long point) {
+        this.group.addPoint(point);
+        this.member.addPoint(point);
+    }
+
+    public int weeklyAchieveBase() {
+        return this.getWeeklyGoalAchieveStreak() + this.getPersonalWeeklyGoal();
+    }
+
+    public void increaseWeeklyGroupCountOf(DayOfWeek dayOfWeek) {
+        this.group.increaseWeeklyGoalAchieveMap(dayOfWeek);
+    }
+
+    public Long remainingDailyGoalMinutes() {
+        return Math.max(this.getPersonalDailyGoal() * 60L - this.getPersonalDailyGoalAchieve(), 0L);
+    }
+
+    public int remainingWeeklyGoalDays() {
+        return Math.max(this.getPersonalWeeklyGoal() - this.getPersonalWeeklyGoalAchieve(), 0);
+    }
 }
