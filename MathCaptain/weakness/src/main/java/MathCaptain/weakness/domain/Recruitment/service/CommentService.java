@@ -2,10 +2,10 @@ package MathCaptain.weakness.domain.Recruitment.service;
 
 import MathCaptain.weakness.domain.Recruitment.entity.Comment;
 import MathCaptain.weakness.domain.Recruitment.entity.Recruitment;
-import MathCaptain.weakness.domain.Recruitment.dto.request.CreateCommentRequestDto;
-import MathCaptain.weakness.domain.Recruitment.dto.request.UpdateCommentRequestDto;
-import MathCaptain.weakness.domain.Recruitment.dto.response.CommentResponseDto;
-import MathCaptain.weakness.domain.Recruitment.dto.response.CommentSuccessDto;
+import MathCaptain.weakness.domain.Recruitment.dto.request.CreateCommentRequest;
+import MathCaptain.weakness.domain.Recruitment.dto.request.UpdateCommentRequest;
+import MathCaptain.weakness.domain.Recruitment.dto.response.CommentResponse;
+import MathCaptain.weakness.domain.Recruitment.dto.response.CommentSuccessResponse;
 import MathCaptain.weakness.domain.Recruitment.repository.CommentRepository;
 import MathCaptain.weakness.domain.Recruitment.repository.RecruitmentRepository;
 import MathCaptain.weakness.domain.User.entity.Users;
@@ -29,48 +29,42 @@ public class CommentService {
     /// 댓글 CRUD
 
     // 댓글 생성
-    public CommentSuccessDto createComment(Users user, Long recruitmentId, CreateCommentRequestDto createCommentRequestDto) {
-
-        Recruitment recruitment = recruitmentRepository.findById(recruitmentId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 모집글이 없습니다."));
-
-        String content = createCommentRequestDto.getContent();
-
-        Comment comment = Comment.builder()
-                .post(recruitment)
-                .author(user)
-                .content(content)
-                .build();
-
+    public CommentSuccessResponse createComment(Users user, Long recruitmentId, CreateCommentRequest createCommentRequest) {
+        Recruitment recruitment = findRecruitmentBy(recruitmentId);
+        Comment comment = Comment.of(recruitment, user, createCommentRequest);
         commentRepository.save(comment);
-
-        return CommentSuccessDto.builder()
-                .commentId(comment.getCommentId())
-                .recruitmentId(recruitmentId)
-                .build();
+        return CommentSuccessResponse.of(recruitmentId, comment);
     }
 
     // 댓글 수정
-    public ApiResponse<CommentSuccessDto> updateComment(Long recruitmentId, Long commentId, UpdateCommentRequestDto updateCommentRequestDto) {
-
-        Comment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 댓글이 없습니다."));
-
-        if (comment.isBelongToPost(recruitmentId)) {
-            throw new IllegalArgumentException("해당 댓글이 해당 모집글에 속해있지 않습니다.");
-        }
-
-        comment.updateComment(updateCommentRequestDto);
-
-        return ApiResponse.ok(CommentSuccessDto.builder()
-                .commentId(commentId)
-                .recruitmentId(recruitmentId)
-                .build());
+    public ApiResponse<CommentSuccessResponse> updateComment(Long recruitmentId, Long commentId, UpdateCommentRequest updateCommentRequest) {
+        Comment comment = findCommentBy(commentId, recruitmentId);
+        comment.updateComment(updateCommentRequest);
+        return ApiResponse.ok(CommentSuccessResponse.of(recruitmentId, commentId));
     }
 
     // 댓글 삭제
+    public ApiResponse<CommentSuccessResponse> deleteComment(Long recruitmentId, Long commentId) {
+        Comment comment = findCommentBy(commentId, recruitmentId);
+        commentRepository.delete(comment);
+        return ApiResponse.ok(CommentSuccessResponse.of(recruitmentId, commentId));
+    }
 
-    public ApiResponse<CommentSuccessDto> deleteComment(Long recruitmentId, Long commentId) {
+    // 댓글 조회
+    public List<CommentResponse> getComments(Long recruitmentId) {
+        Recruitment recruitment = findRecruitmentBy(recruitmentId);
+        List<Comment> commentList = commentRepository.findAllByPost(recruitment);
+        return commentList.stream()
+                .map(CommentResponse::of)
+                .toList();
+    }
+
+    private Recruitment findRecruitmentBy(Long recruitmentId) {
+        return recruitmentRepository.findById(recruitmentId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 모집글이 없습니다."));
+    }
+
+    private Comment findCommentBy(Long commentId, Long recruitmentId) {
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 댓글이 없습니다."));
 
@@ -78,38 +72,6 @@ public class CommentService {
             throw new IllegalArgumentException("해당 댓글이 해당 모집글에 속해있지 않습니다.");
         }
 
-        commentRepository.delete(comment);
-
-        return ApiResponse.ok(CommentSuccessDto.builder()
-                .commentId(commentId)
-                .recruitmentId(recruitmentId)
-                .build());
+        return comment;
     }
-    // 댓글 조회
-
-    public List<CommentResponseDto> getComments(Long recruitmentId) {
-        Recruitment recruitment = recruitmentRepository.findById(recruitmentId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 모집글이 없습니다."));
-
-        List<Comment> commentList = commentRepository.findAllByPost(recruitment);
-
-        return commentList.stream()
-                .map(this::buildCommentResponseDto)
-                .toList();
-    }
-
-    /// 빌더
-
-    private CommentResponseDto buildCommentResponseDto(Comment comment) {
-        return CommentResponseDto.builder()
-                .commentId(comment.getCommentId())
-                .authorName(comment.getAuthor().getName())
-                .authorName(comment.getAuthor().getName())
-                .content(comment.getContent())
-                .createdAt(comment.getCommentTime())
-                .updatedAt(comment.getLastModifiedTime())
-                .build();
-    }
-
-
 }
