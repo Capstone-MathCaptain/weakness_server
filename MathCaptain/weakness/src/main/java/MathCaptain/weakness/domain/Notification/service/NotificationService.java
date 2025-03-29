@@ -43,9 +43,7 @@ public class NotificationService {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
         NotificationController.sseEmitters.put(userId, sseEmitter);
-
         sseEmitter.onCompletion(() -> NotificationController.sseEmitters.remove(userId));
         sseEmitter.onTimeout(() -> NotificationController.sseEmitters.remove(userId));
         sseEmitter.onError((e) -> NotificationController.sseEmitters.remove(userId));
@@ -54,29 +52,22 @@ public class NotificationService {
     }
 
     public void notifyComment(Long recruitmentId, Long commentId) {
-        Recruitment recruitment = recruitmentRepository.findById(recruitmentId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 모집글이 존재하지 않습니다."));
 
-        Comment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 댓글이 존재하지 않습니다."));
-
+        Recruitment recruitment = findRecruitmentBy(recruitmentId);
+        Comment comment = findCommentBy(commentId);
         Long userId = recruitment.getAuthor().getUserId();
 
         if (NotificationController.sseEmitters.containsKey(userId)) {
             SseEmitter sseEmitter = NotificationController.sseEmitters.get(userId);
             try {
                 Map<String, String> eventData = buildNotificationData("댓글이 달렸습니다.", comment.getAuthor().getNickname(), comment.getCommentTime().toString(), comment.getContent());
-
                 sseEmitter.send(SseEmitter.event().name("addComment").data(eventData));
-
-                notificationRepository.save(buildNotification(eventData));
-
+                Notification notification = Notification.of(eventData);
+                notificationRepository.save(notification);
                 // 알림 개수 증가
                 notificationCounts.put(userId, notificationCounts.getOrDefault(userId, 0) + 1);
-
                 // 현재 알림 개수 전송
                 sseEmitter.send(SseEmitter.event().name("notificationCount").data(notificationCounts.get(userId)));
-
             } catch (IOException e) {
                 NotificationController.sseEmitters.remove(userId);
             }
@@ -85,30 +76,22 @@ public class NotificationService {
 
     public void notifyGroupJoinRequest(Long groupId, Users user) {
 
-        Group group = groupRepository.findById(groupId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 그룹이 존재하지 않습니다."));
-
-        Users leader = relationRepository.findLeaderByGroup(group)
-                .orElseThrow(() -> new IllegalArgumentException("해당 그룹의 리더가 존재하지 않습니다."));
-
+        Group group = findGroupBy(groupId);
+        Users leader = findLeaderBy(group);
         Long leaderId = leader.getUserId();
 
         if (NotificationController.sseEmitters.containsKey(leaderId)) {
             SseEmitter sseEmitter = NotificationController.sseEmitters.get(leaderId);
             try {
                 Map<String,String> eventData = buildNotificationData("그룹 가입 요청이 있습니다.", user.getNickname(), LocalDateTime.now().toString(), "가입 요청");
-
                 sseEmitter.send(SseEmitter.event().name("groupJoinRequest").data(eventData));
-
                 // DB 저장
-                notificationRepository.save(buildNotification(eventData));
-
+                Notification notification = Notification.of(eventData);
+                notificationRepository.save(notification);
                 // 알림 개수 증가
                 updateNotificationCount(leaderId);
-
                 // 현재 알림 개수 전송
                 sseEmitter.send(SseEmitter.event().name("notificationCount").data(notificationCounts.get(leaderId)));
-
             } catch (IOException e) {
                 NotificationController.sseEmitters.remove(leaderId);
             }
@@ -117,30 +100,22 @@ public class NotificationService {
     }
 
     public void notifyGroupJoinResult(Long groupId, Users user) {
-        Group group = groupRepository.findById(groupId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 그룹이 존재하지 않습니다."));
-
-        RelationBetweenUserAndGroup relation = relationRepository.findByMemberAndGroup(user, group)
-                .orElseThrow(() -> new IllegalArgumentException("해당 관계가 존재하지 않습니다."));
-
+        Group group = findGroupBy(groupId);
+        RelationBetweenUserAndGroup relation = findRelationBy(user, group);
         Long userId = user.getUserId();
 
         if (NotificationController.sseEmitters.containsKey(userId)) {
             SseEmitter sseEmitter = NotificationController.sseEmitters.get(userId);
             try {
                 Map<String,String> eventData = buildNotificationData("그룹 가입 요청 결과가 도착했습니다.", group.getName(), LocalDateTime.now().toString(), relation.getRequestStatus().toString());
-
                 sseEmitter.send(SseEmitter.event().name("groupJoinResult").data(eventData));
-
                 // DB 저장
-                notificationRepository.save(buildNotification(eventData));
-
+                Notification notification = Notification.of(eventData);
+                notificationRepository.save(notification);
                 // 알림 개수 증가
                 updateNotificationCount(userId);
-
                 // 현재 알림 개수 전송
                 sseEmitter.send(SseEmitter.event().name("notificationCount").data(notificationCounts.get(userId)));
-
             } catch (IOException e) {
                 NotificationController.sseEmitters.remove(userId);
             }
@@ -148,13 +123,9 @@ public class NotificationService {
     }
 
     public ApiResponse<?> deleteNotification(Users loginUser, Long notificationId) {
-        Notification notification = notificationRepository.findById(notificationId)
-                .orElseThrow(() -> new IllegalArgumentException("알림을 찾을 수 없습니다."));
-
+        Notification notification = findNotificationBy(notificationId);
         Long userId = loginUser.getUserId();
-
         notificationRepository.delete(notification);
-
         // 알림 개수 감소
         if (notificationCounts.containsKey(userId)) {
             int currentCount = notificationCounts.get(userId);
@@ -170,7 +141,6 @@ public class NotificationService {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
         return ApiResponse.ok("알림이 삭제되었습니다.");
     }
 
@@ -187,15 +157,35 @@ public class NotificationService {
         notificationCounts.put(userId, notificationCounts.getOrDefault(userId, 0) + 1);
     }
 
-    private Notification buildNotification(Map<String, String> eventData) {
-        return Notification.builder()
-                .sender(eventData.get("sender"))
-                .createdAt(LocalDateTime.parse(eventData.get("createdAt")))
-                .contents(eventData.get("message"))
-                .build();
+    private Comment findCommentBy(Long commentId) {
+        return commentRepository.findById(commentId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 댓글이 존재하지 않습니다."));
     }
 
+    private Recruitment findRecruitmentBy(Long recruitmentId) {
+        return recruitmentRepository.findById(recruitmentId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 모집글이 존재하지 않습니다."));
+    }
 
+    private Notification findNotificationBy(Long notificationId) {
+        return notificationRepository.findById(notificationId)
+                .orElseThrow(() -> new IllegalArgumentException("알림을 찾을 수 없습니다."));
+    }
+
+    private RelationBetweenUserAndGroup findRelationBy(Users user, Group group) {
+        return relationRepository.findByMemberAndGroup(user, group)
+                .orElseThrow(() -> new IllegalArgumentException("해당 관계가 존재하지 않습니다."));
+    }
+
+    private Group findGroupBy(Long groupId) {
+        return groupRepository.findById(groupId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 그룹이 존재하지 않습니다."));
+    }
+
+    private Users findLeaderBy(Group group) {
+        return relationRepository.findLeaderByGroup(group)
+                .orElseThrow(() -> new IllegalArgumentException("해당 그룹의 리더가 존재하지 않습니다."));
+    }
 
     // 알림 삭제
 //        public MsgResponseDto deleteNotification(Long id) throws IOException {

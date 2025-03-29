@@ -2,7 +2,7 @@ package MathCaptain.weakness.domain.Ranking.service;
 
 import MathCaptain.weakness.domain.Group.entity.Group;
 import MathCaptain.weakness.domain.Group.repository.GroupRepository;
-import MathCaptain.weakness.domain.Ranking.dto.response.GroupRankingResponseDto;
+import MathCaptain.weakness.domain.Ranking.dto.response.GroupRankingResponse;
 import lombok.Builder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -20,7 +20,7 @@ public class RankingService {
 
     private final GroupRepository groupRepository;
 
-    public Page<GroupRankingResponseDto> getGroupRankings(Pageable pageable) {
+    public Page<GroupRankingResponse> getGroupRankings(Pageable pageable) {
         // Repository 호출하여 페이징된 데이터 가져오기
         Page<Group> groupPage = groupRepository.findAllOrderByGroupPoint(pageable);
 
@@ -34,16 +34,6 @@ public class RankingService {
         });
 
         // 변경 사항을 데이터베이스에 반영
-        return groupPage.map(RankingService::buildGroupRankingResponse);
+        return groupPage.map(GroupRankingResponse::of);
     }
-
-    private static GroupRankingResponseDto buildGroupRankingResponse(Group group) {
-        return GroupRankingResponseDto.builder()
-                .groupId(group.getId())
-                .groupName(group.getName())
-                .groupPoint(group.getGroupPoint())
-                .ranking(group.getGroupRanking())
-                .build();
-    }
-
 }
