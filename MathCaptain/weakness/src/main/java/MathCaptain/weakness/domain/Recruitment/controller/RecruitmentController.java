@@ -1,10 +1,10 @@
 package MathCaptain.weakness.domain.Recruitment.controller;
 
 import MathCaptain.weakness.domain.Notification.service.NotificationService;
-import MathCaptain.weakness.domain.Recruitment.dto.request.CreateCommentRequestDto;
-import MathCaptain.weakness.domain.Recruitment.dto.request.CreateRecruitmentRequestDto;
-import MathCaptain.weakness.domain.Recruitment.dto.request.UpdateCommentRequestDto;
-import MathCaptain.weakness.domain.Recruitment.dto.request.UpdateRecruitmentRequestDto;
+import MathCaptain.weakness.domain.Recruitment.dto.request.CreateCommentRequest;
+import MathCaptain.weakness.domain.Recruitment.dto.request.CreateRecruitmentRequest;
+import MathCaptain.weakness.domain.Recruitment.dto.request.UpdateCommentRequest;
+import MathCaptain.weakness.domain.Recruitment.dto.request.UpdateRecruitmentRequest;
 import MathCaptain.weakness.domain.Recruitment.dto.response.*;
 import MathCaptain.weakness.domain.Recruitment.service.CommentService;
 import MathCaptain.weakness.domain.Recruitment.service.RecruitmentService;
@@ -32,61 +32,61 @@ public class RecruitmentController {
 
     // 모집글 리스트 조회
     @GetMapping
-    public ApiResponse<List<RecruitmentResponseDto>> recruitmentList() {
+    public ApiResponse<List<RecruitmentResponse>> recruitmentList() {
         return recruitmentService.getAllRecruitments();
     }
 
     // 모집글 작성 요청
     @GetMapping("/create")
-    public ApiResponse<RecruitmentCreateResponseDto> createRecruitmentPage(@LoginUser Users loginUser) {
+    public ApiResponse<RecruitmentCreateResponse> createRecruitmentPage(@LoginUser Users loginUser) {
          return recruitmentService.createRequest(loginUser);
     }
 
     // 모집글 생성
     @PostMapping("/create")
-    public ApiResponse<RecruitmentSuccessDto> createRecruitment(@Valid @LoginUser Users loginUser,
-                                                                @RequestBody CreateRecruitmentRequestDto createRecruitmentRequestDto) {
-        return recruitmentService.createRecruitment(loginUser, createRecruitmentRequestDto);
+    public ApiResponse<Long> createRecruitment(@Valid @LoginUser Users loginUser,
+                                                                @RequestBody CreateRecruitmentRequest createRecruitmentRequest) {
+        return recruitmentService.createRecruitment(loginUser, createRecruitmentRequest);
     }
 
     // 모집글 상세 조회
     @GetMapping("/{recruitmentId}")
-    public ApiResponse<RecruitmentDetailResponseDto> recruitmentDetailInfo(@PathVariable Long recruitmentId) {
+    public ApiResponse<RecruitmentDetailResponse> recruitmentDetailInfo(@PathVariable Long recruitmentId) {
         return recruitmentService.getRecruitment(recruitmentId);
     }
 
     // 모집글 수정
     @PutMapping("/{recruitmentId}")
-    public ApiResponse<RecruitmentSuccessDto> updateRecruitment(@Valid @PathVariable Long recruitmentId, @RequestBody UpdateRecruitmentRequestDto updateRecruitmentRequestDto) {
-        return recruitmentService.updateRecruitment(recruitmentId, updateRecruitmentRequestDto);
+    public ApiResponse<Long> updateRecruitment(@Valid @PathVariable Long recruitmentId, @RequestBody UpdateRecruitmentRequest updateRecruitmentRequest) {
+        return recruitmentService.updateRecruitment(recruitmentId, updateRecruitmentRequest);
     }
 
     // 모집글 삭제
     @DeleteMapping("/{recruitmentId}")
-    public ApiResponse<RecruitmentSuccessDto> deleteRecruitment(@PathVariable Long recruitmentId) {
+    public ApiResponse<Long> deleteRecruitment(@PathVariable Long recruitmentId) {
         return recruitmentService.deleteRecruitment(recruitmentId);
     }
 
     // 댓글 작성
     @PostMapping("/comment/{recruitmentId}")
-    public ApiResponse<CommentSuccessDto> createComment(@Valid @PathVariable Long recruitmentId,
-                                                        @LoginUser Users loginUser,
-                                                        @RequestBody CreateCommentRequestDto createCommentRequestDto) {
-        CommentSuccessDto commentSuccessDto = commentService.createComment(loginUser, recruitmentId, createCommentRequestDto);
-        notificationService.notifyComment(recruitmentId, commentSuccessDto.getCommentId());
-        return ApiResponse.ok(commentSuccessDto);
+    public ApiResponse<CommentSuccessResponse> createComment(@Valid @PathVariable Long recruitmentId,
+                                                             @LoginUser Users loginUser,
+                                                             @RequestBody CreateCommentRequest createCommentRequest) {
+        CommentSuccessResponse commentSuccessResponse = commentService.createComment(loginUser, recruitmentId, createCommentRequest);
+        notificationService.notifyComment(recruitmentId, commentSuccessResponse.getCommentId());
+        return ApiResponse.ok(commentSuccessResponse);
     }
 
     // 댓글 수정
     @PutMapping("/comment/{recruitmentId}/{commentId}")
-    public ApiResponse<CommentSuccessDto> updateComment(@Valid @PathVariable Long recruitmentId, @PathVariable Long commentId,
-                                      @RequestBody UpdateCommentRequestDto updateCommentRequestDto) {
-        return commentService.updateComment(recruitmentId, commentId, updateCommentRequestDto);
+    public ApiResponse<CommentSuccessResponse> updateComment(@Valid @PathVariable Long recruitmentId, @PathVariable Long commentId,
+                                                             @RequestBody UpdateCommentRequest updateCommentRequest) {
+        return commentService.updateComment(recruitmentId, commentId, updateCommentRequest);
     }
 
     // 댓글 삭제
     @DeleteMapping("/comment/{recruitmentId}/{commentId}")
-    public ApiResponse<CommentSuccessDto> deleteComment(@PathVariable Long recruitmentId, @PathVariable Long commentId) {
+    public ApiResponse<CommentSuccessResponse> deleteComment(@PathVariable Long recruitmentId, @PathVariable Long commentId) {
         return commentService.deleteComment(recruitmentId, commentId);
     }
 

@@ -1,19 +1,13 @@
 package MathCaptain.weakness.domain.Recruitment.dto.request;
 
-import MathCaptain.weakness.domain.Recruitment.enums.RecruitmentStatus;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
-@Builder
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
-public class UpdateRecruitmentRequestDto {
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+public class CreateRecruitmentRequest {
 
     @NotNull(message = "그룹을 입력해주세요!")
     @NotEmpty(message = "그룹을 입력해주세요!")
@@ -28,7 +22,13 @@ public class UpdateRecruitmentRequestDto {
     @NotEmpty(message = "내용을 입력해주세요!")
     private String content;
 
-    @NotNull(message = "모집 여부를 선택해주세요!")
-    @NotEmpty(message = "모집 여부를 선택해주세요!")
-    private RecruitmentStatus recruitmentStatus;
+    private CreateRecruitmentRequest(Long recruitGroupId, String title, String content) {
+        this.recruitGroupId = recruitGroupId;
+        this.title = title;
+        this.content = content;
+    }
+
+    public static CreateRecruitmentRequest of(Long recruitGroupId, String title, String content) {
+        return new CreateRecruitmentRequest(recruitGroupId, title, content);
+    }
 }

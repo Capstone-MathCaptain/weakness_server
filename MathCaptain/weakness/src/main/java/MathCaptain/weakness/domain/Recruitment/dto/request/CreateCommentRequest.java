@@ -2,13 +2,11 @@ package MathCaptain.weakness.domain.Recruitment.dto.request;
 
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
-@Data
-@NoArgsConstructor
-public class CreateCommentRequestDto {
+@Getter
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+public class CreateCommentRequest {
 
     @NotNull(message = "내용을 입력해주세요!")
     @NotEmpty(message = "내용을 입력해주세요!")
