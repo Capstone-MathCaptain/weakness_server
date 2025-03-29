@@ -1,12 +1,11 @@
 package MathCaptain.weakness.domain.Record.entity;
 
 import MathCaptain.weakness.domain.Group.entity.Group;
+import MathCaptain.weakness.domain.Group.entity.RelationBetweenUserAndGroup;
+import MathCaptain.weakness.domain.Record.dto.request.recordEndRequest;
 import MathCaptain.weakness.domain.User.entity.Users;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.validator.constraints.Range;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -16,9 +15,7 @@ import java.time.LocalDateTime;
 
 @Getter
 @Entity(name = "activity_record")
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @EntityListeners(AuditingEntityListener.class)
 public class ActivityRecord {
 
@@ -40,23 +37,50 @@ public class ActivityRecord {
     private LocalDateTime endTime; // 인증 종료 시간
 
     @Range(min = 0)
+    @Column(nullable = false)
     private Long durationInMinutes; // 활동 시간 (분)
 
     private boolean dailyGoalAchieved; // 일간 목표 달성 여부
 
     private boolean weeklyGoalAchieved; // 주간 목표 달성 여부
 
+    @Column(nullable = false)
     private DayOfWeek dayOfWeek; // 요일
 
-//    @PrePersist
-//    public void prePersist() {
-//        this.dailyGoalAchieved = false;
-//        this.weeklyGoalAchieved = false;
-//        this.durationInMinutes = 0L;
-//    }
-
-    public void updateEndTime(LocalDateTime endTime) {
+    @Builder
+    private ActivityRecord(Users user, Group group, LocalDateTime startTime, LocalDateTime endTime, Long durationInMinutes,
+                          boolean dailyGoalAchieved, boolean weeklyGoalAchieved, DayOfWeek dayOfWeek) {
+        this.user = user;
+        this.group = group;
+        this.startTime = startTime;
         this.endTime = endTime;
+        this.durationInMinutes = durationInMinutes;
+        this.dailyGoalAchieved = dailyGoalAchieved;
+        this.weeklyGoalAchieved = weeklyGoalAchieved;
+        this.dayOfWeek = dayOfWeek;
+    }
+
+    public static ActivityRecord of(RelationBetweenUserAndGroup relation, recordEndRequest endRequest, DayOfWeek dayOfWeek) {
+        return ActivityRecord.builder()
+                .user(relation.getMember())
+                .group(relation.getGroup())
+                .startTime(endRequest.getStartTime())
+                .endTime(endRequest.getEndTime())
+                .durationInMinutes(endRequest.getActivityTime())
+                .dayOfWeek(dayOfWeek)
+                .build();
+    }
+
+    public static ActivityRecord of(Users user, Group group, LocalDateTime startTime, LocalDateTime endTime,
+                                    Long activityTime, DayOfWeek dayOfWeek) {
+        return ActivityRecord.builder()
+                .user(user)
+                .group(group)
+                .startTime(startTime)
+                .endTime(endTime)
+                .durationInMinutes(activityTime)
+                .dayOfWeek(dayOfWeek)
+                .build();
     }
 
     public void updateDailyGoalAchieved(boolean dailyGoalAchieved) {
@@ -65,13 +89,5 @@ public class ActivityRecord {
 
     public void updateWeeklyGoalAchieved(boolean weeklyGoalAchieved) {
         this.weeklyGoalAchieved = weeklyGoalAchieved;
-    }
-
-    public void updateDayOfWeek(DayOfWeek dayOfWeek) {
-        this.dayOfWeek = dayOfWeek;
-    }
-
-    public void updateDurationInMinutes(Long durationInMinutes) {
-        this.durationInMinutes = durationInMinutes;
     }
 }
