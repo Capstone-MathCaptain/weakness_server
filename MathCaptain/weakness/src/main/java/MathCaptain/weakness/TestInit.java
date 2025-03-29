@@ -9,6 +9,7 @@ import MathCaptain.weakness.domain.Group.repository.GroupRepository;
 import MathCaptain.weakness.domain.Group.repository.RelationRepository;
 import MathCaptain.weakness.domain.Record.entity.ActivityRecord;
 import MathCaptain.weakness.domain.Record.repository.RecordRepository;
+import MathCaptain.weakness.domain.Recruitment.dto.request.CreateRecruitmentRequest;
 import MathCaptain.weakness.domain.Recruitment.entity.Comment;
 import MathCaptain.weakness.domain.Recruitment.entity.Recruitment;
 import MathCaptain.weakness.domain.Recruitment.enums.RecruitmentStatus;
@@ -90,7 +91,7 @@ public class TestInit {
             userRepository.save(user);
         }
 
-        log.info("======== 👤테스트 유저 생성 완료 =========");
+        log.info("======== 👤테스트 유저 데이터 생성 완료 =========");
 
         Users leader = userRepository.findByUserId(1L)
                 .orElseThrow(() -> new IllegalArgumentException("해당 유저가 없습니다."));
@@ -122,79 +123,41 @@ public class TestInit {
         group3.updateWeeklyGoalAchieveMap(DayOfWeek.SUNDAY, 0);
         groupRepository.save(group3);
 
-        log.info("======== 👥 테스트 그룹 생성 완료 =========");
+        log.info("======== 👥 테스트 그룹 데이터 생성 완료 =========");
 
-        RelationBetweenUserAndGroup join1 = RelationBetweenUserAndGroup.builder()
-                .member(users1)
-                .groupRole(GroupRole.LEADER)
-                .group(group1)
-                .personalDailyGoal(2)
-                .personalWeeklyGoal(3)
-                .build();
-
-        RelationBetweenUserAndGroup join2 = RelationBetweenUserAndGroup.builder()
-                .member(users2)
-                .groupRole(GroupRole.LEADER)
-                .group(group2)
-                .personalDailyGoal(2)
-                .personalWeeklyGoal(3)
-                .build();
-
-        RelationBetweenUserAndGroup join3 = RelationBetweenUserAndGroup.builder()
-                .member(users3)
-                .groupRole(GroupRole.LEADER)
-                .group(group3)
-                .personalDailyGoal(2)
-                .personalWeeklyGoal(3)
-                .build();
+        RelationBetweenUserAndGroup join1 = RelationBetweenUserAndGroup.of(users1, group1, groupCreateRequest1);
+        RelationBetweenUserAndGroup join2 = RelationBetweenUserAndGroup.of(users2, group2, groupCreateRequest2);
+        RelationBetweenUserAndGroup join3 = RelationBetweenUserAndGroup.of(users3, group3, groupCreateRequest3);
 
         relationRepository.save(join1);
         relationRepository.save(join2);
         relationRepository.save(join3);
 
         for (int i = 4; i <= 12; i++) {
-            RelationBetweenUserAndGroup join = RelationBetweenUserAndGroup.builder()
-                    .member(userRepository.findByUserId((long) i)
-                            .orElseThrow(() -> new IllegalArgumentException("해당 유저가 없습니다."))
-                    )
-                    .groupRole(GroupRole.MEMBER)
-                    .group(group3)
-                    .personalDailyGoal(3)
-                    .personalWeeklyGoal(5)
-                    .build();
+            Users member = userRepository.findByUserId((long) i)
+                    .orElseThrow(() -> new IllegalArgumentException("해당 유저가 없습니다."));
+            RelationBetweenUserAndGroup join = RelationBetweenUserAndGroup.of(member, group3, 3, 5);
             relationRepository.save(join);
         }
 
-        /// 테스트 모집글 생성
-        Recruitment recruitment = Recruitment.builder()
-                .postId(1L)
-                .author(users1)
-                .recruitGroup(group1)
-                .category(CategoryStatus.STUDY)
-                .title("testRecruitment")
-                .content("testContent")
-                .recruitmentStatus(RecruitmentStatus.RECRUITING)
-                .build();
+        log.info("======== 👥 테스트 관계 데이터 생성 완료 =========");
 
+        CreateRecruitmentRequest createRecruitmentRequest = CreateRecruitmentRequest.of(group1.getId(), "testRecruitment", "testContent");
+        Recruitment recruitment = Recruitment.of(users1, group1, createRecruitmentRequest);
         recruitmentRepository.save(recruitment);
+
         log.info("======== 🔖테스트 모집글 생성 완료 =========");
 
         /// 테스트 댓글 생성
-        Comment comment = Comment.builder()
-                .commentId(1L)
-                .author(users1)
-                .post(recruitment)
-                .content("testComment")
-                .build();
-
+        Comment comment = Comment.of(recruitment, users1, "testComment");
         commentRepository.save(comment);
+
         log.info("======== 💬테스트 댓글 생성 완료 =========");
 
         // ActivityRecord 생성 (currentProgress 설정: 10 이하로 조정)
 
         // 이번 주의 시작과 끝 시간 계산
         LocalDateTime startOfWeek = LocalDateTime.now().with(java.time.temporal.TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
-        LocalDateTime endOfWeek = startOfWeek.plusWeeks(1);
 
         // User ID: 4 -> currentProgress: 5
         createActivityRecords(userRepository.findByUserId(4L).orElseThrow(() -> new IllegalArgumentException("해당 유저가 없습니다.")), group3, startOfWeek, 5);
@@ -217,14 +180,22 @@ public class TestInit {
     // Helper 메서드: ActivityRecord 생성 (이번 주 내에서만 생성되도록 수정)
     private void createActivityRecords(Users user, Group group, LocalDateTime startOfWeek, int recordCount) {
         for (int i = 0; i < recordCount; i++) {
-            ActivityRecord record = ActivityRecord.builder()
-                    .user(user)
-                    .group(group)
-                    // 이번 주 내에서만 startTime 설정
-                    .startTime(startOfWeek.plusDays(i % 7)) // 월요일부터 시작해서 순차적으로 날짜 설정
-                    .dailyGoalAchieved(true) // 일간 목표 달성 여부 설정
-                    .weeklyGoalAchieved(false) // 주간 목표는 기본값으로 false
-                    .build();
+            // 시작 시간은 주어진 startOfWeek에서 i일을 더한 값
+            LocalDateTime startTime = startOfWeek.plusDays(i % 7);
+
+            // 종료 시간은 시작 시간에서 1시간을 더한 값으로 설정 (예시)
+            LocalDateTime endTime = startTime.plusHours(1);
+
+            // 활동 시간은 60분으로 설정 (예시)
+            Long activityTime = 60L;
+
+            // 요일은 시작 시간의 DayOfWeek를 사용
+            DayOfWeek dayOfWeek = startTime.getDayOfWeek();
+
+            // ActivityRecord 객체 생성
+            ActivityRecord record = ActivityRecord.of(user, group, startTime, endTime, activityTime, dayOfWeek);
+
+            // 저장소에 저장
             recordRepository.save(record);
         }
     }
