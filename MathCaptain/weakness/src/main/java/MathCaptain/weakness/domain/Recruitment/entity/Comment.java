@@ -1,6 +1,7 @@
 package MathCaptain.weakness.domain.Recruitment.entity;
 
-import MathCaptain.weakness.domain.Recruitment.dto.request.UpdateCommentRequestDto;
+import MathCaptain.weakness.domain.Recruitment.dto.request.CreateCommentRequest;
+import MathCaptain.weakness.domain.Recruitment.dto.request.UpdateCommentRequest;
 import MathCaptain.weakness.domain.User.entity.Users;
 import jakarta.persistence.*;
 import lombok.*;
@@ -12,9 +13,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Getter
-@Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
 @Table(name = "COMMENT")
 public class Comment {
@@ -41,16 +40,26 @@ public class Comment {
     @LastModifiedDate
     private LocalDateTime lastModifiedTime;
 
-    //==수정==//
-    public void updateContent(String content) {
-        if (content != null && !content.equals(this.content)) {
-            this.content = content;
-            this.lastModifiedTime = LocalDateTime.now();
-        }
+    @Builder
+    private Comment(Recruitment post, Users author, String content) {
+        this.post = post;
+        this.author = author;
+        this.content = content;
+        this.commentTime = LocalDateTime.now();
+        this.lastModifiedTime = LocalDateTime.now();
     }
 
-    public void updateComment(UpdateCommentRequestDto requestDto) {
-        updateContent(requestDto.getContent());
+    public static Comment of(Recruitment recruitment, Users author, CreateCommentRequest createCommentRequest) {
+        return new Comment(recruitment, author, createCommentRequest.getContent());
+    }
+
+    public static Comment of(Recruitment recruitment, Users author, String content) {
+        return new Comment(recruitment, author, content);
+    }
+
+    public void updateComment(UpdateCommentRequest updateRequest) {
+        this.content = updateRequest.getContent();
+        this.lastModifiedTime = LocalDateTime.now();
     }
 
     public Boolean isBelongToPost(Long recruitmentId) {

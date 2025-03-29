@@ -2,7 +2,8 @@ package MathCaptain.weakness.domain.Recruitment.entity;
 
 import MathCaptain.weakness.domain.Group.entity.Group;
 import MathCaptain.weakness.domain.Group.enums.CategoryStatus;
-import MathCaptain.weakness.domain.Recruitment.dto.request.UpdateRecruitmentRequestDto;
+import MathCaptain.weakness.domain.Recruitment.dto.request.CreateRecruitmentRequest;
+import MathCaptain.weakness.domain.Recruitment.dto.request.UpdateRecruitmentRequest;
 import MathCaptain.weakness.domain.Recruitment.enums.RecruitmentStatus;
 import MathCaptain.weakness.domain.User.entity.Users;
 import jakarta.persistence.*;
@@ -17,9 +18,7 @@ import java.util.List;
 
 @Entity
 @Getter
-@Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
 public class Recruitment {
 
@@ -62,52 +61,35 @@ public class Recruitment {
     @LastModifiedDate
     private LocalDateTime lastModifiedTime;
 
-    // 기본값 설정
-    @PrePersist
-    protected void onCreate() {
-        this.postTime = LocalDateTime.now();
-        this.lastModifiedTime = LocalDateTime.now();
+    @Builder
+    private Recruitment(Users author, Group recruitGroup, CategoryStatus category, String title, String content, List<Comment> comments) {
+        this.author = author;
+        this.recruitGroup = recruitGroup;
+        this.category = category;
+        this.title = title;
+        this.content = content;
         this.recruitmentStatus = RecruitmentStatus.RECRUITING;
         this.interestCount = 0L;
+        this.comments = comments;
+        this.postTime = LocalDateTime.now();
+        this.lastModifiedTime = LocalDateTime.now();
+    }
+
+    public static Recruitment of(Users author, Group group, CreateRecruitmentRequest createRecruitmentRequest) {
+        return Recruitment.builder()
+                .author(author)
+                .recruitGroup(group)
+                .title(createRecruitmentRequest.getTitle())
+                .content(createRecruitmentRequest.getContent())
+                .category(group.getCategory())
+                .build();
     }
 
     //== 수정 로직 ==//
-    @PreUpdate
-    protected void onUpdate() {
+    public void updateRecruitment(UpdateRecruitmentRequest requestDto) {
+        this.title = requestDto.getTitle();
+        this.content = requestDto.getContent();
+        this.recruitmentStatus = requestDto.getRecruitmentStatus();
         this.lastModifiedTime = LocalDateTime.now();
-    }
-
-    public void updateTitle(String title) {
-        if (title != null && !title.equals(this.title))
-        {
-            this.title = title;
-            updateLastModifiedTime();
-        }
-    }
-
-    public void updateContent(String content) {
-        if (content != null && !content.equals(this.content))
-        {
-            this.content = content;
-            updateLastModifiedTime();
-        }
-    }
-
-    public void updateRecruitmentStatus(RecruitmentStatus recruitmentStatus) {
-        if (recruitmentStatus != null && !recruitmentStatus.equals(this.recruitmentStatus))
-        {
-            this.recruitmentStatus = recruitmentStatus;
-            updateLastModifiedTime();
-        }
-    }
-
-    private void updateLastModifiedTime() {
-        this.lastModifiedTime = LocalDateTime.now();
-    }
-
-    public void updateRecruitment(UpdateRecruitmentRequestDto requestDto) {
-        updateTitle(requestDto.getTitle());
-        updateContent(requestDto.getContent());
-        updateRecruitmentStatus(requestDto.getRecruitmentStatus());
     }
 }
