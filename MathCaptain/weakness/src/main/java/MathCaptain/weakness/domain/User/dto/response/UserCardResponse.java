@@ -1,6 +1,6 @@
 package MathCaptain.weakness.domain.User.dto.response;
 
-import MathCaptain.weakness.domain.Group.dto.response.UserGroupCardResponseDto;
+import MathCaptain.weakness.domain.Group.dto.response.UserGroupCardResponse;
 import MathCaptain.weakness.domain.User.entity.Users;
 import MathCaptain.weakness.domain.User.enums.Tiers;
 import lombok.*;
@@ -19,10 +19,10 @@ public class UserCardResponse {
 
     private Long userPoint;
 
-    private List<UserGroupCardResponseDto> groupCards;
+    private List<UserGroupCardResponse> groupCards;
 
     @Builder
-    private UserCardResponse(Long userId, String userName, Tiers userTier, Long userPoint, List<UserGroupCardResponseDto> groupCards) {
+    private UserCardResponse(Long userId, String userName, Tiers userTier, Long userPoint, List<UserGroupCardResponse> groupCards) {
         this.userId = userId;
         this.userName = userName;
         this.userTier = userTier;
@@ -40,7 +40,7 @@ public class UserCardResponse {
                 .build();
     }
 
-    public static UserCardResponse of(Users user, List<UserGroupCardResponseDto> groupCards) {
+    public static UserCardResponse of(Users user, List<UserGroupCardResponse> groupCards) {
         return UserCardResponse.builder()
                 .userId(user.getUserId())
                 .userName(user.getName())
