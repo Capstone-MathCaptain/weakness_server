@@ -1,13 +1,11 @@
 package MathCaptain.weakness.domain.Group.entity;
 
-import MathCaptain.weakness.domain.Group.dto.request.GroupUpdateRequestDto;
+import MathCaptain.weakness.domain.Group.dto.request.GroupCreateRequest;
+import MathCaptain.weakness.domain.Group.dto.request.GroupUpdateRequest;
 import MathCaptain.weakness.domain.Group.enums.CategoryStatus;
 import MathCaptain.weakness.domain.Recruitment.entity.Recruitment;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 
 import java.time.DayOfWeek;
@@ -18,10 +16,8 @@ import java.util.Map;
 
 @Entity
 @Getter
-@Builder
 @Table(name = "UserGroup")
-@NoArgsConstructor
-@AllArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Group {
 
     @Id
@@ -40,8 +36,10 @@ public class Group {
     private CategoryStatus category;
 
     // 하루 최소 수행 시간
+    @Column(nullable = false)
     private int minDailyHours;
 
+    @Column(nullable = false)
     private int minWeeklyDays;
 
     private Long groupPoint;
@@ -63,60 +61,45 @@ public class Group {
     @CollectionTable(name = "group_weekly_goal_achieve", joinColumns = @JoinColumn(name = "group_id"))
     @MapKeyColumn(name = "day_of_week") // 요일을 키로 사용
     @Column(name = "goal_count") // 카운트를 값으로 사용
-    private Map<DayOfWeek, Integer> weeklyGoalAchieveMap;
+    private Map<DayOfWeek, Integer> weeklyGoalAchieveMap = new EnumMap<>(DayOfWeek.class);
 
     @OneToMany(mappedBy = "recruitGroup")
     private List<Recruitment> recruitments;
 
+    @Builder
+    private Group(List<RelationBetweenUserAndGroup> relationBetweenUserAndGroup, String name, CategoryStatus category, int minDailyHours, int minWeeklyDays, List<String> hashtags, String groupImageUrl) {
+        this.relationBetweenUserAndGroup = relationBetweenUserAndGroup;
+        this.name = name;
+        this.category = category;
+        this.minDailyHours = minDailyHours;
+        this.minWeeklyDays = minWeeklyDays;
+        this.createDate = LocalDate.now();
+        this.groupPoint = 0L;
+        this.hashtags = hashtags;
+        this.groupImageUrl = groupImageUrl;
+    }
+
+    public static Group of(GroupCreateRequest groupCreateRequest) {
+        return Group.builder()
+                .name(groupCreateRequest.getGroupName())
+                .category(groupCreateRequest.getCategory())
+                .minDailyHours(groupCreateRequest.getMinDailyHours())
+                .minWeeklyDays(groupCreateRequest.getMinWeeklyDays())
+                .hashtags(groupCreateRequest.getHashtags())
+                .groupImageUrl(groupCreateRequest.getGroupImageUrl())
+                .build();
+    }
+
     @PrePersist
     protected void onCreate() {
-
-        if (this.weeklyGoalAchieveMap == null) {
-            this.weeklyGoalAchieveMap = new EnumMap<>(DayOfWeek.class);
-        }
         for (DayOfWeek dayOfWeek : DayOfWeek.values()) {
             weeklyGoalAchieveMap.put(dayOfWeek, 0);
         }
     }
 
     //==수정 로직==//
-
-    public void updateName(String name) {
-        if (name != null && !name.equals(this.name)) {
-            this.name = name;
-        }
-    }
-
-    public void updateCategory(CategoryStatus category) {
-        if (category != null && !category.equals(this.category)) {
-            this.category = category;
-        }
-    }
-
-    public void updateMinDailyHours(int min_daily_hours) {
-        if (min_daily_hours > 0 &&  min_daily_hours != this.minDailyHours) {
-            this.minDailyHours = min_daily_hours;
-        }
-    }
-
-    public void updateMinWeeklyDays(int min_weekly_days) {
-        if (min_weekly_days > 0 && min_weekly_days != this.minWeeklyDays) {
-            this.minWeeklyDays = min_weekly_days;
-        }
-    }
-
     public void updateGroupPoint(Long group_point) {
         this.groupPoint = group_point;
-    }
-
-    public void updateHashtags(List<String> hashtags) {
-        this.hashtags = hashtags;
-    }
-
-    public void updateGroupImageUrl(String group_image_url) {
-        if (group_image_url != null && !group_image_url.equals(this.groupImageUrl)) {
-            this.groupImageUrl = group_image_url;
-        }
     }
 
     public void updateGroupRanking(int groupRanking) {
@@ -127,12 +110,12 @@ public class Group {
         weeklyGoalAchieveMap.put(dayOfWeek, goalCount);
     }
 
-    public void updateGroup(GroupUpdateRequestDto requestDto) {
-        updateName(requestDto.getGroupName());
-        updateMinDailyHours(requestDto.getMinDailyHours());
-        updateMinWeeklyDays(requestDto.getMinWeeklyDays());
-        updateHashtags(requestDto.getHashtags());
-        updateGroupImageUrl(requestDto.getGroupImageUrl());
+    public void updateGroup(GroupUpdateRequest requestDto) {
+        this.name = requestDto.getGroupName();
+        this.minDailyHours = requestDto.getMinDailyHours();
+        this.minWeeklyDays = requestDto.getMinWeeklyDays();
+        this.hashtags = requestDto.getHashtags();
+        this.groupImageUrl = requestDto.getGroupImageUrl();
     }
 
     public boolean checkJoin(int dailyGoal, int weeklyGoal) {
