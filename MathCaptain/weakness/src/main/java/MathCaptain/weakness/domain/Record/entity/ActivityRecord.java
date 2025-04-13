@@ -2,7 +2,8 @@ package MathCaptain.weakness.domain.Record.entity;
 
 import MathCaptain.weakness.domain.Group.entity.Group;
 import MathCaptain.weakness.domain.Group.entity.RelationBetweenUserAndGroup;
-import MathCaptain.weakness.domain.Record.dto.request.recordEndRequest;
+import MathCaptain.weakness.domain.Record.dto.request.ActivityLogEnrollRequest;
+import MathCaptain.weakness.domain.Record.dto.request.RecordEndRequest;
 import MathCaptain.weakness.domain.User.entity.Users;
 import jakarta.persistence.*;
 import lombok.*;
@@ -23,11 +24,11 @@ public class ActivityRecord {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     @JoinColumn(name = "user_id")
     private Users user;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     @JoinColumn(name = "group_id")
     private Group group;
 
@@ -60,14 +61,28 @@ public class ActivityRecord {
         this.dayOfWeek = dayOfWeek;
     }
 
-    public static ActivityRecord of(RelationBetweenUserAndGroup relation, recordEndRequest endRequest, DayOfWeek dayOfWeek) {
+    public static ActivityRecord of(
+            RelationBetweenUserAndGroup relation,
+            DayOfWeek dayOfWeek, LocalDateTime startTime, LocalDateTime endTime, Long duration) {
         return ActivityRecord.builder()
                 .user(relation.getMember())
                 .group(relation.getGroup())
-                .startTime(endRequest.getStartTime())
-                .endTime(endRequest.getEndTime())
-                .durationInMinutes(endRequest.getActivityTime())
+                .startTime(startTime)
+                .endTime(endTime)
+                .durationInMinutes(duration)
                 .dayOfWeek(dayOfWeek)
+                .build();
+    }
+
+    public static ActivityRecord of(
+            RelationBetweenUserAndGroup relation, ActivityLogEnrollRequest request) {
+        return ActivityRecord.builder()
+                .user(relation.getMember())
+                .group(relation.getGroup())
+                .startTime(request.getStartTime())
+                .endTime(request.getEndTime())
+                .durationInMinutes(request.getActivityTime())
+                .dayOfWeek(request.getStartTime().getDayOfWeek())
                 .build();
     }
 

@@ -35,11 +35,16 @@ public class RecordSummaryResponse {
     // 사용자가 설정한 주간 목표
     private int personalWeeklyGoal;
 
-    @Builder
-    private RecordSummaryResponse(String userName, String groupName, Long durationInMinutes,
-                                  boolean dailyGoalAchieved, boolean weeklyGoalAchieved,
-                                  Long remainingDailyGoalMinutes, int remainingWeeklyGoalDays,
-                                  Long personalDailyGoal, int personalWeeklyGoal) {
+    private FitnessLogResponse fitnessLogResponse;
+
+    private RunningLogResponse runningLogResponse;
+
+    private StudyLogResponse studyLogResponse;
+
+    private RecordSummaryResponse(String userName, String groupName, Long durationInMinutes, boolean dailyGoalAchieved,
+                                 boolean weeklyGoalAchieved, Long remainingDailyGoalMinutes, int remainingWeeklyGoalDays,
+                                 Long personalDailyGoal, int personalWeeklyGoal, FitnessLogResponse fitnessLogResponse,
+                                 RunningLogResponse runningLogResponse, StudyLogResponse studyLogResponse) {
         this.userName = userName;
         this.groupName = groupName;
         this.durationInMinutes = durationInMinutes;
@@ -49,19 +54,31 @@ public class RecordSummaryResponse {
         this.remainingWeeklyGoalDays = remainingWeeklyGoalDays;
         this.personalDailyGoal = personalDailyGoal;
         this.personalWeeklyGoal = personalWeeklyGoal;
+        this.fitnessLogResponse = fitnessLogResponse;
+        this.runningLogResponse = runningLogResponse;
+        this.studyLogResponse = studyLogResponse;
     }
 
-    public static RecordSummaryResponse of(ActivityRecord record, RelationBetweenUserAndGroup relation) {
-        return RecordSummaryResponse.builder()
-                .userName(record.getUser().getName())
-                .groupName(record.getGroup().getName())
-                .durationInMinutes(record.getDurationInMinutes())
-                .dailyGoalAchieved(record.isDailyGoalAchieved())
-                .weeklyGoalAchieved(record.isWeeklyGoalAchieved())
-                .remainingDailyGoalMinutes(relation.remainingDailyGoalMinutes())
-                .remainingWeeklyGoalDays(relation.remainingWeeklyGoalDays())
-                .personalDailyGoal(relation.getPersonalDailyGoal() * 60L)
-                .personalWeeklyGoal(relation.getPersonalWeeklyGoal())
-                .build();
+    public static RecordSummaryResponse of(
+            ActivityRecord record,
+            RelationBetweenUserAndGroup relation,
+            FitnessLogResponse fitnessLog,
+            RunningLogResponse runningLog,
+            StudyLogResponse studyLog
+    ) {
+        return new RecordSummaryResponse(
+                record.getUser().getName(),
+                record.getGroup().getName(),
+                record.getDurationInMinutes(),
+                record.isDailyGoalAchieved(),
+                record.isWeeklyGoalAchieved(),
+                relation.remainingDailyGoalMinutes(),
+                relation.remainingWeeklyGoalDays(),
+                relation.getPersonalDailyGoal() * 60L,
+                relation.getPersonalWeeklyGoal(),
+                fitnessLog,
+                runningLog,
+                studyLog
+        );
     }
 }
