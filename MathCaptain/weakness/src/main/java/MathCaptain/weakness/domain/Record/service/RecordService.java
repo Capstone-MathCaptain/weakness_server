@@ -80,63 +80,11 @@ public class RecordService {
                 studyLogResponse = activityDetailService.enrollStudyLog(activityId, (StudyLogEnrollRequest) logRequest);
                 break;
             default:
-                throw new IllegalArgumentException("Unsupported activity type: " + activityType);
+                throw new IllegalArgumentException("지원되지 않는 인증 타입입니다: " + activityType);
         }
 
         return RecordSummaryResponse.of(record, relation, fitnessLogResponse, runningLogResponse, studyLogResponse);
     }
-//
-//    public RecordSummaryResponse endFitnessActivity(Users user, Long groupId, FitnessLogEnrollRequest logRequest) {
-//        // 활동 기록 저장
-//        RelationBetweenUserAndGroup relation = findRelationByMemberAndGroup(user, groupId);
-//        DayOfWeek nowDay = LocalDate.now().getDayOfWeek();
-//
-//        LocalDateTime startTime = logRequest.getStartTime();
-//        LocalDateTime endTime = logRequest.getEndTime();
-//        Long duration = logRequest.getActivityTime();
-//
-//        ActivityRecord record = ActivityRecord.of(relation, nowDay, startTime, endTime, duration);
-//        updateGoalAchieve(relation, record, nowDay);
-//        Long activityId = recordRepository.save(record).getId();
-//
-//        // 피트니스 로그 저장
-//        FitnessLogResponse fitnessLogResponse = activityDetailService.enrollFitnessLog(activityId, logRequest);
-//        return RecordSummaryResponse.of(record, relation, fitnessLogResponse, null, null);
-//    }
-//
-//    public RecordSummaryResponse endRunningActivity(Users user, Long groupId, RunningLogEnrollRequest logRequest) {
-//        // 활동 기록 저장
-//        RelationBetweenUserAndGroup relation = findRelationByMemberAndGroup(user, groupId);
-//        DayOfWeek nowDay = LocalDate.now().getDayOfWeek();
-//        LocalDateTime startTime = logRequest.getStartTime();
-//        LocalDateTime endTime = logRequest.getEndTime();
-//        Long duration = logRequest.getActivityTime();
-//
-//        ActivityRecord record = ActivityRecord.of(relation, nowDay, startTime, endTime, duration);
-//        updateGoalAchieve(relation, record, nowDay);
-//        Long activityId = recordRepository.save(record).getId();
-//
-//        // 러닝 로그 저장
-//        RunningLogResponse runningLogResponse = activityDetailService.enrollRunningLog(activityId, logRequest);
-//        return RecordSummaryResponse.of(record, relation, null, runningLogResponse, null);
-//    }
-//
-//    public RecordSummaryResponse endStudyActivity(Users user, Long groupId, StudyLogEnrollRequest logRequest) {
-//        // 활동 기록 저장
-//        RelationBetweenUserAndGroup relation = findRelationByMemberAndGroup(user, groupId);
-//        DayOfWeek nowDay = LocalDate.now().getDayOfWeek();
-//        LocalDateTime startTime = logRequest.getStartTime();
-//        LocalDateTime endTime = logRequest.getEndTime();
-//        Long duration = logRequest.getActivityTime();
-//
-//        ActivityRecord record = ActivityRecord.of(relation, nowDay, startTime, endTime, duration);
-//        updateGoalAchieve(relation, record, nowDay);
-//        Long activityId = recordRepository.save(record).getId();
-//
-//        // 스터디 로그 저장
-//        StudyLogResponse studyLogResponse = activityDetailService.enrollStudyLog(activityId, logRequest);
-//        return RecordSummaryResponse.of(record, relation, null, null, studyLogResponse);
-//    }
 
     // 주간 목표 달성 여부 조회
     public Map<DayOfWeek, Boolean> getWeeklyGoalStatus(Users user, Group group, LocalDateTime weekStart) {
