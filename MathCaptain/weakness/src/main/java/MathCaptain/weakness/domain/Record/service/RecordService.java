@@ -2,11 +2,18 @@ package MathCaptain.weakness.domain.Record.service;
 
 import MathCaptain.weakness.domain.Group.entity.Group;
 import MathCaptain.weakness.domain.Group.entity.RelationBetweenUserAndGroup;
+import MathCaptain.weakness.domain.Group.enums.CategoryStatus;
 import MathCaptain.weakness.domain.Group.repository.RelationRepository;
+import MathCaptain.weakness.domain.Record.dto.request.*;
+import MathCaptain.weakness.domain.Record.dto.response.FitnessLogResponse;
+import MathCaptain.weakness.domain.Record.dto.response.RunningLogResponse;
+import MathCaptain.weakness.domain.Record.dto.response.StudyLogResponse;
 import MathCaptain.weakness.domain.Record.entity.ActivityRecord;
-import MathCaptain.weakness.domain.Record.dto.request.recordEndRequest;
 import MathCaptain.weakness.domain.Record.dto.response.RecordSummaryResponse;
-import MathCaptain.weakness.domain.Record.repository.RecordRepository;
+import MathCaptain.weakness.domain.Record.entity.UserLog.FitnessDetail;
+import MathCaptain.weakness.domain.Record.entity.UserLog.RunningDetail;
+import MathCaptain.weakness.domain.Record.entity.UserLog.StudyDetail;
+import MathCaptain.weakness.domain.Record.repository.record.RecordRepository;
 import MathCaptain.weakness.domain.User.entity.Users;
 import MathCaptain.weakness.global.PointSet;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +28,8 @@ import java.time.temporal.TemporalAdjusters;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static MathCaptain.weakness.domain.Group.enums.CategoryStatus.*;
+
 @Slf4j
 @Service
 @Transactional
@@ -32,19 +41,102 @@ public class RecordService {
 
     private final RecordRepository recordRepository;
     private final RelationRepository relationRepository;
+    private final ActivityDetailService activityDetailService;
 
     /// 기록
 
     // 기록 저장
-    public RecordSummaryResponse endActivity(Users user, Long groupId, recordEndRequest endRequest) {
+    public RecordSummaryResponse endActivity(Users user, Long groupId, ActivityLogEnrollRequest logRequest, CategoryStatus activityType) {
+        // 활동 기록 저장
         RelationBetweenUserAndGroup relation = findRelationByMemberAndGroup(user, groupId);
 
-        DayOfWeek nowDay = LocalDate.now().getDayOfWeek();
-        ActivityRecord record = ActivityRecord.of(relation, endRequest, nowDay);
-        updateGoalAchieve(relation, record, nowDay);
-        recordRepository.save(record);
-        return RecordSummaryResponse.of(record, relation);
+        ActivityRecord record = ActivityRecord.of(relation, logRequest);
+        updateGoalAchieve(relation, record);
+        Long activityId = recordRepository.save(record).getId();
+
+        // 활동 로그 저장 및 응답 생성
+        return createRecordSummaryResponse(activityType, activityId, logRequest, record, relation);
     }
+
+    private RecordSummaryResponse createRecordSummaryResponse(
+            CategoryStatus activityType,
+            Long activityId,
+            ActivityLogEnrollRequest logRequest,
+            ActivityRecord record,
+            RelationBetweenUserAndGroup relation) {
+
+        FitnessLogResponse fitnessLogResponse = null;
+        RunningLogResponse runningLogResponse = null;
+        StudyLogResponse studyLogResponse = null;
+
+        switch (activityType) {
+            case FITNESS:
+                fitnessLogResponse = activityDetailService.enrollFitnessLog(activityId, (FitnessLogEnrollRequest) logRequest);
+                break;
+            case RUNNING:
+                runningLogResponse = activityDetailService.enrollRunningLog(activityId, (RunningLogEnrollRequest) logRequest);
+                break;
+            case STUDY:
+                studyLogResponse = activityDetailService.enrollStudyLog(activityId, (StudyLogEnrollRequest) logRequest);
+                break;
+            default:
+                throw new IllegalArgumentException("Unsupported activity type: " + activityType);
+        }
+
+        return RecordSummaryResponse.of(record, relation, fitnessLogResponse, runningLogResponse, studyLogResponse);
+    }
+//
+//    public RecordSummaryResponse endFitnessActivity(Users user, Long groupId, FitnessLogEnrollRequest logRequest) {
+//        // 활동 기록 저장
+//        RelationBetweenUserAndGroup relation = findRelationByMemberAndGroup(user, groupId);
+//        DayOfWeek nowDay = LocalDate.now().getDayOfWeek();
+//
+//        LocalDateTime startTime = logRequest.getStartTime();
+//        LocalDateTime endTime = logRequest.getEndTime();
+//        Long duration = logRequest.getActivityTime();
+//
+//        ActivityRecord record = ActivityRecord.of(relation, nowDay, startTime, endTime, duration);
+//        updateGoalAchieve(relation, record, nowDay);
+//        Long activityId = recordRepository.save(record).getId();
+//
+//        // 피트니스 로그 저장
+//        FitnessLogResponse fitnessLogResponse = activityDetailService.enrollFitnessLog(activityId, logRequest);
+//        return RecordSummaryResponse.of(record, relation, fitnessLogResponse, null, null);
+//    }
+//
+//    public RecordSummaryResponse endRunningActivity(Users user, Long groupId, RunningLogEnrollRequest logRequest) {
+//        // 활동 기록 저장
+//        RelationBetweenUserAndGroup relation = findRelationByMemberAndGroup(user, groupId);
+//        DayOfWeek nowDay = LocalDate.now().getDayOfWeek();
+//        LocalDateTime startTime = logRequest.getStartTime();
+//        LocalDateTime endTime = logRequest.getEndTime();
+//        Long duration = logRequest.getActivityTime();
+//
+//        ActivityRecord record = ActivityRecord.of(relation, nowDay, startTime, endTime, duration);
+//        updateGoalAchieve(relation, record, nowDay);
+//        Long activityId = recordRepository.save(record).getId();
+//
+//        // 러닝 로그 저장
+//        RunningLogResponse runningLogResponse = activityDetailService.enrollRunningLog(activityId, logRequest);
+//        return RecordSummaryResponse.of(record, relation, null, runningLogResponse, null);
+//    }
+//
+//    public RecordSummaryResponse endStudyActivity(Users user, Long groupId, StudyLogEnrollRequest logRequest) {
+//        // 활동 기록 저장
+//        RelationBetweenUserAndGroup relation = findRelationByMemberAndGroup(user, groupId);
+//        DayOfWeek nowDay = LocalDate.now().getDayOfWeek();
+//        LocalDateTime startTime = logRequest.getStartTime();
+//        LocalDateTime endTime = logRequest.getEndTime();
+//        Long duration = logRequest.getActivityTime();
+//
+//        ActivityRecord record = ActivityRecord.of(relation, nowDay, startTime, endTime, duration);
+//        updateGoalAchieve(relation, record, nowDay);
+//        Long activityId = recordRepository.save(record).getId();
+//
+//        // 스터디 로그 저장
+//        StudyLogResponse studyLogResponse = activityDetailService.enrollStudyLog(activityId, logRequest);
+//        return RecordSummaryResponse.of(record, relation, null, null, studyLogResponse);
+//    }
 
     // 주간 목표 달성 여부 조회
     public Map<DayOfWeek, Boolean> getWeeklyGoalStatus(Users user, Group group, LocalDateTime weekStart) {
@@ -69,7 +161,7 @@ public class RecordService {
     }
 
     // 그룹의 요일 목표 수행 카운트 증가
-    private void updateGoalAchieve(RelationBetweenUserAndGroup relation, ActivityRecord record, DayOfWeek nowDay) {
+    private void updateGoalAchieve(RelationBetweenUserAndGroup relation, ActivityRecord record) {
 
         // 일간 달성 시간 업데이트 (분)
         relation.updatePersonalDailyGoalAchieved(
@@ -78,7 +170,7 @@ public class RecordService {
         // 일간 목표 시간 달성시
         if (isDailyGoalAchieved(relation)) {
             record.updateDailyGoalAchieved(true);
-            relation.increaseWeeklyGroupCountOf(nowDay);
+            relation.increaseWeeklyGroupCountOf(record.getDayOfWeek());
             addPoint(relation, DAILY_GOAL_ACHIEVE);
             relation.updatePersonalWeeklyGoalAchieved();
         }

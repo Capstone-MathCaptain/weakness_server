@@ -1,4 +1,4 @@
-package MathCaptain.weakness.domain.Record.repository;
+package MathCaptain.weakness.domain.Record.repository.record;
 
 import MathCaptain.weakness.domain.Group.entity.Group;
 import MathCaptain.weakness.domain.Record.entity.ActivityRecord;

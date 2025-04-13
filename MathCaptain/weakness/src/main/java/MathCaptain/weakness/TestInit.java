@@ -4,15 +4,13 @@ import MathCaptain.weakness.domain.Group.dto.request.GroupCreateRequest;
 import MathCaptain.weakness.domain.Group.entity.Group;
 import MathCaptain.weakness.domain.Group.entity.RelationBetweenUserAndGroup;
 import MathCaptain.weakness.domain.Group.enums.CategoryStatus;
-import MathCaptain.weakness.domain.Group.enums.GroupRole;
 import MathCaptain.weakness.domain.Group.repository.GroupRepository;
 import MathCaptain.weakness.domain.Group.repository.RelationRepository;
 import MathCaptain.weakness.domain.Record.entity.ActivityRecord;
-import MathCaptain.weakness.domain.Record.repository.RecordRepository;
+import MathCaptain.weakness.domain.Record.repository.record.RecordRepository;
 import MathCaptain.weakness.domain.Recruitment.dto.request.CreateRecruitmentRequest;
 import MathCaptain.weakness.domain.Recruitment.entity.Comment;
 import MathCaptain.weakness.domain.Recruitment.entity.Recruitment;
-import MathCaptain.weakness.domain.Recruitment.enums.RecruitmentStatus;
 import MathCaptain.weakness.domain.Recruitment.repository.CommentRepository;
 import MathCaptain.weakness.domain.Recruitment.repository.RecruitmentRepository;
 import MathCaptain.weakness.domain.User.dto.request.SaveUserRequest;
@@ -33,7 +31,7 @@ import java.time.LocalDateTime;
 @Component
 @RequiredArgsConstructor
 @Transactional
-@DependsOn("entityManagerFactory")
+@DependsOn("primaryEntityManagerFactory")
 public class TestInit {
 
     private final UserRepository userRepository;
@@ -104,7 +102,7 @@ public class TestInit {
                 CategoryStatus.FITNESS, 2, 3, 0L, null, "test2", 3, 4);
 
         GroupCreateRequest groupCreateRequest3 = GroupCreateRequest.of(users1.getUserId(), "testGroup3",
-                CategoryStatus.READING, 2, 3, 0L, null, "test3", 3, 4);
+                CategoryStatus.RUNNING, 2, 3, 0L, null, "test3", 3, 4);
 
         Group group1 = Group.of(groupCreateRequest1);
         Group group2 = Group.of(groupCreateRequest2);

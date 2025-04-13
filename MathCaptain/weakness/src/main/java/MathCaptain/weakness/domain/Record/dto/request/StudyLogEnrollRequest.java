@@ -1,18 +1,21 @@
 package MathCaptain.weakness.domain.Record.dto.request;
 
-import lombok.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
 @Getter
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
-public class recordEndRequest {
+@NoArgsConstructor
+public class StudyLogEnrollRequest extends ActivityLogEnrollRequest{
 
-    // 수행 시간 (분)
     private Long activityTime;
 
     private LocalDateTime startTime;
 
     private LocalDateTime endTime;
 
+    private String subject;
+
+    private String memo;
 }
