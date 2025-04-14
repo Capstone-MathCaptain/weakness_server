@@ -8,7 +8,6 @@ import MathCaptain.weakness.domain.User.entity.Users;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.validator.constraints.Range;
-import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.DayOfWeek;
@@ -32,7 +31,6 @@ public class ActivityRecord {
     @JoinColumn(name = "group_id")
     private Group group;
 
-    @CreatedDate
     private LocalDateTime startTime; // 인증 시작 시간
 
     private LocalDateTime endTime; // 인증 종료 시간
