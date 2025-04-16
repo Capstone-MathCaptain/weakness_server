@@ -7,7 +7,14 @@ import MathCaptain.weakness.domain.Group.enums.CategoryStatus;
 import MathCaptain.weakness.domain.Group.repository.GroupRepository;
 import MathCaptain.weakness.domain.Group.repository.RelationRepository;
 import MathCaptain.weakness.domain.Record.entity.ActivityRecord;
+import MathCaptain.weakness.domain.Record.entity.UserLog.ExerciseInfo;
+import MathCaptain.weakness.domain.Record.entity.UserLog.FitnessDetail;
+import MathCaptain.weakness.domain.Record.entity.UserLog.RunningDetail;
+import MathCaptain.weakness.domain.Record.entity.UserLog.StudyDetail;
 import MathCaptain.weakness.domain.Record.repository.record.RecordRepository;
+import MathCaptain.weakness.domain.Record.repository.userLog.FitnessLogRepository;
+import MathCaptain.weakness.domain.Record.repository.userLog.RunningLogRepository;
+import MathCaptain.weakness.domain.Record.repository.userLog.StudyLogRepository;
 import MathCaptain.weakness.domain.Recruitment.dto.request.CreateRecruitmentRequest;
 import MathCaptain.weakness.domain.Recruitment.entity.Comment;
 import MathCaptain.weakness.domain.Recruitment.entity.Recruitment;
@@ -25,13 +32,15 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
 @Transactional
-@DependsOn("primaryEntityManagerFactory")
+@DependsOn("entityManagerFactory")
 public class TestInit {
 
     private final UserRepository userRepository;
@@ -41,6 +50,9 @@ public class TestInit {
     private final RecruitmentRepository recruitmentRepository;
     private final CommentRepository commentRepository;
     private final RecordRepository recordRepository;
+    private final FitnessLogRepository fitnessLogRepository;
+    private final RunningLogRepository runningLogRepository;
+    private final StudyLogRepository studyLogRepository;
 
 
     @PostConstruct
@@ -158,25 +170,53 @@ public class TestInit {
         LocalDateTime startOfWeek = LocalDateTime.now().with(java.time.temporal.TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
 
         // User ID: 4 -> currentProgress: 5
-        createActivityRecords(userRepository.findByUserId(4L).orElseThrow(() -> new IllegalArgumentException("해당 유저가 없습니다.")), group3, startOfWeek, 5);
+        createActivityRecords(userRepository.findByUserId(4L)
+                        .orElseThrow(() -> new IllegalArgumentException("해당 유저가 없습니다.")),
+                group3, startOfWeek, 5, CategoryStatus.RUNNING, chestList);
 
         // User ID: 5 -> currentProgress: 8
-        createActivityRecords(userRepository.findByUserId(5L).orElseThrow(() -> new IllegalArgumentException("해당 유저가 없습니다.")), group3, startOfWeek, 8);
+        createActivityRecords(userRepository.findByUserId(5L)
+                .orElseThrow(() -> new IllegalArgumentException("해당 유저가 없습니다.")),
+                group3, startOfWeek, 8, CategoryStatus.RUNNING, chestList);
 
         // User ID: 6 -> currentProgress: 10
-        createActivityRecords(userRepository.findByUserId(6L).orElseThrow(() -> new IllegalArgumentException("해당 유저가 없습니다.")), group3, startOfWeek, 10);
+        createActivityRecords(userRepository.findByUserId(6L)
+                .orElseThrow(() -> new IllegalArgumentException("해당 유저가 없습니다.")),
+                group3, startOfWeek, 10, CategoryStatus.RUNNING, chestList);
 
         // User ID: 7 -> currentProgress: 7
-        createActivityRecords(userRepository.findByUserId(7L).orElseThrow(() -> new IllegalArgumentException("해당 유저가 없습니다.")), group3, startOfWeek, 7);
+        createActivityRecords(userRepository.findByUserId(7L)
+                .orElseThrow(() -> new IllegalArgumentException("해당 유저가 없습니다.")),
+                group3, startOfWeek, 7, CategoryStatus.RUNNING, chestList);
 
         // User ID: 8 -> currentProgress: 6
-        createActivityRecords(userRepository.findByUserId(8L).orElseThrow(() -> new IllegalArgumentException("해당 유저가 없습니다.")), group3, startOfWeek, 6);
+        createActivityRecords(userRepository.findByUserId(8L)
+                .orElseThrow(() -> new IllegalArgumentException("해당 유저가 없습니다.")),
+                group3, startOfWeek, 6, CategoryStatus.RUNNING, chestList);
+
+        createActivityRecords(userRepository.findByUserId(1L)
+                .orElseThrow(() -> new IllegalArgumentException("해당 유저가 없습니다.")),
+                group1, startOfWeek, 4, CategoryStatus.FITNESS, chestList);
+        createActivityRecords(userRepository.findByUserId(1L)
+                .orElseThrow(() -> new IllegalArgumentException("해당 유저가 없습니다.")),
+                group1, startOfWeek, 3, CategoryStatus.FITNESS, backList);
+        createActivityRecords(userRepository.findByUserId(1L)
+                .orElseThrow(() -> new IllegalArgumentException("해당 유저가 없습니다.")),
+                group1, startOfWeek, 3, CategoryStatus.FITNESS, legList);
+
+        createActivityRecords(userRepository.findByUserId(2L).
+                orElseThrow(() -> new IllegalArgumentException("해당 유저가 없습니다.")),
+                group2, startOfWeek, 3, CategoryStatus.STUDY, chestList);
 
         log.info("======== 🏃‍♂️테스트 목표 기록 생성 완료 =========");
     }
 
     // Helper 메서드: ActivityRecord 생성 (이번 주 내에서만 생성되도록 수정)
-    private void createActivityRecords(Users user, Group group, LocalDateTime startOfWeek, int recordCount) {
+    private void createActivityRecords(
+            Users user, Group group, LocalDateTime startOfWeek,
+            int recordCount, CategoryStatus category,
+            List<ExerciseInfo> exerciseInfoList
+    ) {
         for (int i = 0; i < recordCount; i++) {
             // 시작 시간은 주어진 startOfWeek에서 i일을 더한 값
             LocalDateTime startTime = startOfWeek.plusDays(i % 7);
@@ -195,6 +235,49 @@ public class TestInit {
 
             // 저장소에 저장
             recordRepository.save(record);
+
+            if (category == CategoryStatus.FITNESS) {
+                fitnessLogCreate(record);
+            } else if (category == CategoryStatus.RUNNING) {
+                runningLogCreate(record);
+            } else if (category == CategoryStatus.STUDY) {
+                studyLogCreate(record);
+            }
         }
     }
+
+    ExerciseInfo chest1 = ExerciseInfo.of("덤벨 프레스", 70, 10, 5);
+    ExerciseInfo chest2 = ExerciseInfo.of("벤치 프레스", 80, 10, 5);
+    ExerciseInfo chest3 = ExerciseInfo.of("밀리터리 프레스", 60, 10, 5);
+    ExerciseInfo chest4 = ExerciseInfo.of("디클라인 벤치 프레스", 70, 10, 5);
+    List<ExerciseInfo> chestList = List.of(chest1, chest2, chest3, chest4);
+
+    ExerciseInfo back1 = ExerciseInfo.of("데드 리프트", 120, 10, 5);
+    ExerciseInfo back2 = ExerciseInfo.of("랫풀다운", 80, 10, 5);
+    ExerciseInfo back3 = ExerciseInfo.of("시티드 로우", 70, 10, 5);
+    List<ExerciseInfo> backList = List.of(back1, back2, back3);
+
+    ExerciseInfo leg1 = ExerciseInfo.of("스쿼트", 100, 10, 5);
+    ExerciseInfo leg2 = ExerciseInfo.of("레그 프레스", 150, 10, 5);
+    ExerciseInfo leg3 = ExerciseInfo.of("레그 익스텐션", 80, 10, 5);
+    ExerciseInfo leg4 = ExerciseInfo.of("레그 컬", 70, 10, 5);
+    List<ExerciseInfo> legList = List.of(leg1, leg2, leg3, leg4);
+
+
+
+    private void studyLogCreate(ActivityRecord record) {
+        StudyDetail log = StudyDetail.of(record, "수학", 60L, "지수함수의 미분");
+        studyLogRepository.save(log);
+    }
+
+    private void runningLogCreate(ActivityRecord record) {
+        RunningDetail log = RunningDetail.of(record, 5L, "원인재에서 동춘역까지");
+        runningLogRepository.save(log);
+    }
+
+    private void fitnessLogCreate(ActivityRecord record) {
+         FitnessDetail log = FitnessDetail.of(record, chestList);
+         fitnessLogRepository.save(log);
+    }
 }
+//
