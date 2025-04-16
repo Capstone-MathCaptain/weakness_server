@@ -26,27 +26,23 @@ public class ActivityDetailService {
     private final FitnessLogRepository fitnessLogRepository;
     private final StudyLogRepository studyLogRepository;
     private final RunningLogRepository runningLogRepository;
-    private final RecordRepository recordRepository;
 
     @Transactional
-    public FitnessLogResponse enrollFitnessLog(Long activityId, FitnessLogEnrollRequest request) {
-        ActivityRecord record = findRecordBy(activityId);
+    public FitnessLogResponse enrollFitnessLog(ActivityRecord record, FitnessLogEnrollRequest request) {;
         FitnessDetail fitnessDetail = FitnessDetail.of(record, request);
         fitnessLogRepository.save(fitnessDetail);
         return FitnessLogResponse.of(fitnessDetail);
     }
 
     @Transactional
-    public RunningLogResponse enrollRunningLog(Long activityId, RunningLogEnrollRequest request) {
-        ActivityRecord record = findRecordBy(activityId);
+    public RunningLogResponse enrollRunningLog(ActivityRecord record, RunningLogEnrollRequest request) {
         RunningDetail runningDetail = RunningDetail.of(record, request);
         runningLogRepository.save(runningDetail);
         return RunningLogResponse.of(runningDetail);
     }
 
     @Transactional
-    public StudyLogResponse enrollStudyLog(Long activityId, StudyLogEnrollRequest request) {
-        ActivityRecord record = findRecordBy(activityId);
+    public StudyLogResponse enrollStudyLog(ActivityRecord record, StudyLogEnrollRequest request) {
         StudyDetail studyDetail = StudyDetail.of(record, request);
         studyLogRepository.save(studyDetail);
         return StudyLogResponse.of(studyDetail);
@@ -70,7 +66,6 @@ public class ActivityDetailService {
         return RunningLogResponse.of(runningDetail);
     }
 
-
     /// 로직
 
     private StudyDetail findStudyLogBy(Long activityId) {
@@ -85,12 +80,6 @@ public class ActivityDetailService {
 
     private FitnessDetail findFitnessLogBy(Long activityId) {
         return fitnessLogRepository.findById(activityId)
-                .orElseThrow(() -> new ResourceNotFoundException("해당 기록을 찾을 수 없습니다."));
-    }
-
-
-    private ActivityRecord findRecordBy(Long activityId) {
-        return recordRepository.findById(activityId)
                 .orElseThrow(() -> new ResourceNotFoundException("해당 기록을 찾을 수 없습니다."));
     }
 

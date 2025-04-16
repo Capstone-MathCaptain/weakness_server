@@ -46,21 +46,21 @@ public class RecordService {
     /// 기록
 
     // 기록 저장
+    @Transactional
     public RecordSummaryResponse endActivity(Users user, Long groupId, ActivityLogEnrollRequest logRequest, CategoryStatus activityType) {
         // 활동 기록 저장
         RelationBetweenUserAndGroup relation = findRelationByMemberAndGroup(user, groupId);
 
         ActivityRecord record = ActivityRecord.of(relation, logRequest);
         updateGoalAchieve(relation, record);
-        Long activityId = recordRepository.save(record).getId();
+         recordRepository.save(record);
 
         // 활동 로그 저장 및 응답 생성
-        return createRecordSummaryResponse(activityType, activityId, logRequest, record, relation);
+        return createRecordSummaryResponse(activityType, logRequest, record, relation);
     }
 
     private RecordSummaryResponse createRecordSummaryResponse(
             CategoryStatus activityType,
-            Long activityId,
             ActivityLogEnrollRequest logRequest,
             ActivityRecord record,
             RelationBetweenUserAndGroup relation) {
@@ -71,13 +71,16 @@ public class RecordService {
 
         switch (activityType) {
             case FITNESS:
-                fitnessLogResponse = activityDetailService.enrollFitnessLog(activityId, (FitnessLogEnrollRequest) logRequest);
+                log.info("피트니스 로그 저장 시작");
+                fitnessLogResponse = activityDetailService.enrollFitnessLog(record, (FitnessLogEnrollRequest) logRequest);
                 break;
             case RUNNING:
-                runningLogResponse = activityDetailService.enrollRunningLog(activityId, (RunningLogEnrollRequest) logRequest);
+                log.info("러닝 로그 저장 시작");
+                runningLogResponse = activityDetailService.enrollRunningLog(record, (RunningLogEnrollRequest) logRequest);
                 break;
             case STUDY:
-                studyLogResponse = activityDetailService.enrollStudyLog(activityId, (StudyLogEnrollRequest) logRequest);
+                log.info("스터디 로그 저장 시작");
+                studyLogResponse = activityDetailService.enrollStudyLog(record, (StudyLogEnrollRequest) logRequest);
                 break;
             default:
                 throw new IllegalArgumentException("지원되지 않는 인증 타입입니다: " + activityType);
