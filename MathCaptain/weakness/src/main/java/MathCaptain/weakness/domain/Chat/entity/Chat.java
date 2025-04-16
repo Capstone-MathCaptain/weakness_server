@@ -1,0 +1,33 @@
+package MathCaptain.weakness.domain.Chat.entity;
+
+import MathCaptain.weakness.domain.Chat.enums.ChatRole;
+import jakarta.persistence.*;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
+import java.time.LocalDateTime;
+
+@Getter
+@Entity
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@EntityListeners(AuditingEntityListener.class)
+public class Chat {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private Long userId;
+
+    @Enumerated(EnumType.STRING)
+    private ChatRole role;
+
+    private String message;
+
+    @CreatedDate
+    @Column(updatable = false)
+    private LocalDateTime sendTime;
+}
