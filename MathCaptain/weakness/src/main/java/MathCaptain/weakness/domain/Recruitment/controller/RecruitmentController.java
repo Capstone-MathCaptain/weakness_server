@@ -36,16 +36,11 @@ public class RecruitmentController {
         return recruitmentService.getAllRecruitments();
     }
 
-    // 모집글 작성 요청
-    @GetMapping("/create")
-    public ApiResponse<RecruitmentCreateResponse> createRecruitmentPage(@LoginUser Users loginUser) {
-         return recruitmentService.createRequest(loginUser);
-    }
-
     // 모집글 생성
     @PostMapping("/create")
-    public ApiResponse<Long> createRecruitment(@Valid @LoginUser Users loginUser,
-                                                                @RequestBody CreateRecruitmentRequest createRecruitmentRequest) {
+    public ApiResponse<RecruitmentDetailResponse> createRecruitment(
+            @Valid @LoginUser Users loginUser,
+            @RequestBody CreateRecruitmentRequest createRecruitmentRequest) {
         return recruitmentService.createRecruitment(loginUser, createRecruitmentRequest);
     }
 

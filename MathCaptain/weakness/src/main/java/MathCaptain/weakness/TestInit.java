@@ -171,7 +171,7 @@ public class TestInit {
 
         log.info("======== 👥 테스트 관계 데이터 생성 완료 =========");
 
-        CreateRecruitmentRequest createRecruitmentRequest = CreateRecruitmentRequest.of(group1.getId(), "그룹 1 모집글", "테스트");
+        CreateRecruitmentRequest createRecruitmentRequest = CreateRecruitmentRequest.of("그룹 1 모집글", "테스트");
         Recruitment recruitment = Recruitment.of(users1, group1, createRecruitmentRequest);
         recruitmentRepository.save(recruitment);
 
