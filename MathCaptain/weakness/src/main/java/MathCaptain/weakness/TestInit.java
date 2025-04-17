@@ -67,17 +67,17 @@ public class TestInit {
 
         SaveUserRequest saveUserRequest1 = SaveUserRequest.of(
                 email1, passwordEncoder.encode("password1"),
-                "tester01", "tester01", "01012345678"
+                "테스트 유저 1", "테스트 유저 1", "01012345678"
         );
 
         SaveUserRequest saveUserRequest2 = SaveUserRequest.of(
                 email2, passwordEncoder.encode("password2"),
-                "tester02", "tester02", "01056781234"
+                "테스트 유저 2", "테스트 유저 2", "01056781234"
         );
 
         SaveUserRequest saveUserRequest3 = SaveUserRequest.of(
                 email3, passwordEncoder.encode("test"),
-                "tester", "tester", "01011112111"
+                "테스트", "테스터", "01011112111"
         );
 
         /// 테스트 유저 생성
@@ -107,22 +107,39 @@ public class TestInit {
                 .orElseThrow(() -> new IllegalArgumentException("해당 유저가 없습니다."));
 
         /// 테스트 그룹 생성
-        GroupCreateRequest groupCreateRequest1 = GroupCreateRequest.of(users1.getUserId(), "testGroup1",
+        GroupCreateRequest groupCreateRequest1 = GroupCreateRequest.of(users1.getUserId(), "테스트그룹1",
                 CategoryStatus.STUDY, 2, 3, 0L, null, "test1", 3, 4);
 
-        GroupCreateRequest groupCreateRequest2 = GroupCreateRequest.of(users1.getUserId(), "testGroup2",
+        GroupCreateRequest groupCreateRequest2 = GroupCreateRequest.of(users1.getUserId(), "테스트그룹2",
                 CategoryStatus.FITNESS, 2, 3, 0L, null, "test2", 3, 4);
 
-        GroupCreateRequest groupCreateRequest3 = GroupCreateRequest.of(users1.getUserId(), "testGroup3",
+        GroupCreateRequest groupCreateRequest3 = GroupCreateRequest.of(users1.getUserId(), "테스트그룹3",
+                CategoryStatus.RUNNING, 2, 3, 0L, null, "test3", 3, 4);
+
+        GroupCreateRequest groupCreateRequest4 = GroupCreateRequest.of(users1.getUserId(), "테스트그룹4",
+                CategoryStatus.RUNNING, 2, 3, 0L, null, "test4", 3, 4);
+
+        GroupCreateRequest groupCreateRequest5 = GroupCreateRequest.of(users1.getUserId(), "테스트그룹5",
                 CategoryStatus.RUNNING, 2, 3, 0L, null, "test3", 3, 4);
 
         Group group1 = Group.of(groupCreateRequest1);
         Group group2 = Group.of(groupCreateRequest2);
         Group group3 = Group.of(groupCreateRequest3);
+        Group group4 = Group.of(groupCreateRequest4);
+        Group group5 = Group.of(groupCreateRequest5);
+
+        group1.addPoint(300L);
+        group2.addPoint(200L);
+        group3.addPoint(100L);
+        group4.addPoint(50L);
+        group5.addPoint(10L);
 
         groupRepository.save(group1);
         groupRepository.save(group2);
         groupRepository.save(group3);
+        groupRepository.save(group4);
+        groupRepository.save(group5);
+
 
         group3.updateWeeklyGoalAchieveMap(DayOfWeek.MONDAY, 2);
         group3.updateWeeklyGoalAchieveMap(DayOfWeek.TUESDAY, 4);
@@ -139,9 +156,11 @@ public class TestInit {
         RelationBetweenUserAndGroup join2 = RelationBetweenUserAndGroup.of(users2, group2, groupCreateRequest2);
         RelationBetweenUserAndGroup join3 = RelationBetweenUserAndGroup.of(users3, group3, groupCreateRequest3);
 
+        RelationBetweenUserAndGroup join4 = RelationBetweenUserAndGroup.of(users3, group1, 3, 4);
         relationRepository.save(join1);
         relationRepository.save(join2);
         relationRepository.save(join3);
+        relationRepository.save(join4);
 
         for (int i = 4; i <= 12; i++) {
             Users member = userRepository.findByUserId((long) i)
@@ -152,14 +171,14 @@ public class TestInit {
 
         log.info("======== 👥 테스트 관계 데이터 생성 완료 =========");
 
-        CreateRecruitmentRequest createRecruitmentRequest = CreateRecruitmentRequest.of(group1.getId(), "testRecruitment", "testContent");
+        CreateRecruitmentRequest createRecruitmentRequest = CreateRecruitmentRequest.of("그룹 1 모집글", "테스트");
         Recruitment recruitment = Recruitment.of(users1, group1, createRecruitmentRequest);
         recruitmentRepository.save(recruitment);
 
         log.info("======== 🔖테스트 모집글 생성 완료 =========");
 
         /// 테스트 댓글 생성
-        Comment comment = Comment.of(recruitment, users1, "testComment");
+        Comment comment = Comment.of(recruitment, users1, "테스트 댓글");
         commentRepository.save(comment);
 
         log.info("======== 💬테스트 댓글 생성 완료 =========");
@@ -170,7 +189,7 @@ public class TestInit {
         LocalDateTime startOfWeek = LocalDateTime.now().with(java.time.temporal.TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
 
         // User ID: 4 -> currentProgress: 5
-        createActivityRecords(userRepository.findByUserId(4L)
+        createActivityRecords(userRepository.findByUserId(3L)
                         .orElseThrow(() -> new IllegalArgumentException("해당 유저가 없습니다.")),
                 group3, startOfWeek, 5, CategoryStatus.RUNNING, chestList);
 

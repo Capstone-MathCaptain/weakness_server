@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @Slf4j
@@ -32,19 +33,16 @@ public class RecruitmentService {
     private final CommentService commentService;
 
     /// 모집 CRUD
-    // 모집글 작성 요청 (그룹 정보 반환)
-    public ApiResponse<RecruitmentCreateResponse> createRequest(Users user) {
-        RelationBetweenUserAndGroup relation = findLeaderRelationBy(user);
-        return ApiResponse.ok(RecruitmentCreateResponse.of(relation));
-    }
 
     // 모집글 생성
-    public ApiResponse<Long>createRecruitment(Users author, CreateRecruitmentRequest createRecruitmentRequest) {
-        Group group = getGroupBy(createRecruitmentRequest);
+    public ApiResponse<RecruitmentDetailResponse>createRecruitment(Users author, CreateRecruitmentRequest createRecruitmentRequest) {
+        Group group = findLeaderGroupByUser(author);
         Recruitment recruitment = Recruitment.of(author, group, createRecruitmentRequest);
-        Long recruitmentId = recruitmentRepository.save(recruitment).getPostId();
-        return ApiResponse.ok(recruitmentId);
+        recruitmentRepository.save(recruitment);
+        RecruitmentDetailResponse recruitmentResponse = RecruitmentDetailResponse.of(recruitment, List.of());
+        return ApiResponse.ok(recruitmentResponse);
     }
+
 
     // 모집글 조회
     public ApiResponse<RecruitmentDetailResponse> getRecruitment(Long recruitmentId) {
@@ -74,11 +72,6 @@ public class RecruitmentService {
                 .toList());
     }
 
-    private Group getGroupBy(CreateRecruitmentRequest createRecruitmentRequest) {
-        return groupRepository.findById(createRecruitmentRequest.getRecruitGroupId()).
-                orElseThrow(() -> new ResourceNotFoundException("해당 그룹이 없습니다."));
-    }
-
     private RelationBetweenUserAndGroup findLeaderRelationBy(Users user) {
         return relationRepository.findByMemberAndGroupRole(user, GroupRole.LEADER)
                 .orElseThrow(() -> new IllegalArgumentException("그룹장만 모집글을 작성할 수 있습니다."));
@@ -89,4 +82,9 @@ public class RecruitmentService {
                 orElseThrow(() -> new ResourceNotFoundException("해당 모집글이 없습니다."));
     }
 
+    private Group findLeaderGroupByUser(Users author) {
+        RelationBetweenUserAndGroup relation = relationRepository.findByMemberAndGroupRole(author, GroupRole.LEADER)
+                .orElseThrow(() -> new ResourceNotFoundException("그룹장으로 가입된 그룹이 없습니다."));
+        return relation.getGroup();
+    }
 }

@@ -12,6 +12,10 @@ import java.util.List;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class RecruitmentDetailResponse {
 
+    private Long authorId;
+
+    private Long recruitGroupId;
+
     private String authorName;
 
     private String recruitGroupName;
@@ -31,9 +35,11 @@ public class RecruitmentDetailResponse {
     private List<CommentResponse> comments;
 
     @Builder
-    private RecruitmentDetailResponse(String authorName, String recruitGroupName, String title,
+    private RecruitmentDetailResponse(Long authorId, Long recruitGroupId, String authorName, String recruitGroupName, String title,
                                       CategoryStatus category, String content, RecruitmentStatus recruitmentStatus,
                                       LocalDateTime createdAt, LocalDateTime updatedAt, List<CommentResponse> comments) {
+        this.authorId = authorId;
+        this.recruitGroupId = recruitGroupId;
         this.authorName = authorName;
         this.recruitGroupName = recruitGroupName;
         this.title = title;
@@ -47,6 +53,8 @@ public class RecruitmentDetailResponse {
 
     public static RecruitmentDetailResponse of(Recruitment recruitment, List<CommentResponse> comments) {
         return RecruitmentDetailResponse.builder()
+                .authorId(recruitment.getAuthor().getUserId())
+                .recruitGroupId(recruitment.getRecruitGroup().getId())
                 .authorName(recruitment.getAuthor().getName())
                 .recruitGroupName(recruitment.getRecruitGroup().getName())
                 .title(recruitment.getTitle())

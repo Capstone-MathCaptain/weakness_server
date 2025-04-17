@@ -53,7 +53,7 @@ public class RecordService {
 
         ActivityRecord record = ActivityRecord.of(relation, logRequest);
         updateGoalAchieve(relation, record);
-         recordRepository.save(record);
+        recordRepository.save(record);
 
         // 활동 로그 저장 및 응답 생성
         return createRecordSummaryResponse(activityType, logRequest, record, relation);
