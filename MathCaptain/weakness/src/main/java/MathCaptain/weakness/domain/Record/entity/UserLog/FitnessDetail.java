@@ -32,7 +32,7 @@ public class FitnessDetail {
     @ElementCollection
     @CollectionTable(
             name = "fitnessdetail_exerciseinfolist",
-            joinColumns = @JoinColumn(name = "fitness detail_id")
+            joinColumns = @JoinColumn(name = "fitness_detail_id")
     )
     private List<ExerciseInfo> exerciseInfoList;
 
