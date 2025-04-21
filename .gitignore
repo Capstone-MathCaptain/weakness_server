@@ -50,3 +50,6 @@ MathCaptain/weakness.trace.db
 
 ### Secret key ###
 MathCaptain/weakness/src/main/resources/application.properties
+
+### TEST ###
+**/TestInit.java
