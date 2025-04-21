@@ -46,8 +46,11 @@ public class RecruitmentController {
 
     // 모집글 상세 조회
     @GetMapping("/{recruitmentId}")
-    public ApiResponse<RecruitmentDetailResponse> recruitmentDetailInfo(@PathVariable Long recruitmentId) {
-        return recruitmentService.getRecruitment(recruitmentId);
+    public ApiResponse<RecruitmentDetailResponse> recruitmentDetailInfo(
+            @LoginUser Users loginUser,
+            @PathVariable Long recruitmentId
+    ) {
+        return recruitmentService.getRecruitment(recruitmentId, loginUser);
     }
 
     // 모집글 수정

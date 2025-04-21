@@ -10,6 +10,6 @@ import java.util.Optional;
 @Repository
 public interface RecruitmentRepository extends JpaRepository<Recruitment, Long> {
 
-    @Query("SELECT r.author.userId FROM Recruitment r WHERE r.postId = :recruitmentId")
+    @Query("SELECT r.author.userId FROM Recruitment r WHERE r.id = :recruitmentId")
     Optional<Long> findAuthorIdByRecruitmentId(Long recruitmentId);
 }
