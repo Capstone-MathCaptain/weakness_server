@@ -63,6 +63,6 @@ public class Comment {
     }
 
     public Boolean isBelongToPost(Long recruitmentId) {
-        return this.post.getPostId().equals(recruitmentId);
+        return this.post.getId().equals(recruitmentId);
     }
 }

@@ -3,6 +3,7 @@ package MathCaptain.weakness.domain.Recruitment.dto.response;
 import MathCaptain.weakness.domain.Group.enums.CategoryStatus;
 import MathCaptain.weakness.domain.Recruitment.entity.Recruitment;
 import MathCaptain.weakness.domain.Recruitment.enums.RecruitmentStatus;
+import MathCaptain.weakness.domain.User.entity.Users;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -34,10 +35,12 @@ public class RecruitmentDetailResponse {
 
     private List<CommentResponse> comments;
 
+    private boolean isAuthor;
+
     @Builder
     private RecruitmentDetailResponse(Long authorId, Long recruitGroupId, String authorName, String recruitGroupName, String title,
                                       CategoryStatus category, String content, RecruitmentStatus recruitmentStatus,
-                                      LocalDateTime createdAt, LocalDateTime updatedAt, List<CommentResponse> comments) {
+                                      LocalDateTime createdAt, LocalDateTime updatedAt, List<CommentResponse> comments, boolean isAuthor) {
         this.authorId = authorId;
         this.recruitGroupId = recruitGroupId;
         this.authorName = authorName;
@@ -49,9 +52,10 @@ public class RecruitmentDetailResponse {
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
         this.comments = comments;
+        this.isAuthor = isAuthor;
     }
 
-    public static RecruitmentDetailResponse of(Recruitment recruitment, List<CommentResponse> comments) {
+    public static RecruitmentDetailResponse of(Recruitment recruitment, List<CommentResponse> comments, Users loginUser) {
         return RecruitmentDetailResponse.builder()
                 .authorId(recruitment.getAuthor().getUserId())
                 .recruitGroupId(recruitment.getRecruitGroup().getId())
@@ -64,6 +68,7 @@ public class RecruitmentDetailResponse {
                 .createdAt(recruitment.getPostTime())
                 .updatedAt(recruitment.getLastModifiedTime())
                 .comments(comments)
+                .isAuthor(recruitment.getAuthor().getUserId().equals(loginUser.getUserId()))
                 .build();
     }
 }
