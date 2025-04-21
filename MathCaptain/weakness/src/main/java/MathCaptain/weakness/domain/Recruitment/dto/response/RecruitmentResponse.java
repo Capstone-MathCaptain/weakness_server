@@ -11,6 +11,8 @@ import java.time.LocalDateTime;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class RecruitmentResponse {
 
+    private Long recruitmentId;
+
     private String authorName;
 
     private String recruitGroupName;
@@ -28,9 +30,10 @@ public class RecruitmentResponse {
     private LocalDateTime updatedAt;
 
     @Builder
-    private RecruitmentResponse(String authorName, String recruitGroupName, String title,
+    private RecruitmentResponse(Long recruitmentId, String authorName, String recruitGroupName, String title,
                                 CategoryStatus category, String content, RecruitmentStatus recruitmentStatus,
                                 LocalDateTime createdAt, LocalDateTime updatedAt) {
+        this.recruitmentId = recruitmentId;
         this.authorName = authorName;
         this.recruitGroupName = recruitGroupName;
         this.title = title;
@@ -43,6 +46,7 @@ public class RecruitmentResponse {
 
     public static RecruitmentResponse of(Recruitment recruitment) {
         return RecruitmentResponse.builder()
+                .recruitmentId(recruitment.getId())
                 .authorName(recruitment.getAuthor().getName())
                 .recruitGroupName(recruitment.getRecruitGroup().getName())
                 .title(recruitment.getTitle())

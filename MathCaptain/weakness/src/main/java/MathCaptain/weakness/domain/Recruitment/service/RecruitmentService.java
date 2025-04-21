@@ -39,16 +39,15 @@ public class RecruitmentService {
         Group group = findLeaderGroupByUser(author);
         Recruitment recruitment = Recruitment.of(author, group, createRecruitmentRequest);
         recruitmentRepository.save(recruitment);
-        RecruitmentDetailResponse recruitmentResponse = RecruitmentDetailResponse.of(recruitment, List.of());
+        RecruitmentDetailResponse recruitmentResponse = RecruitmentDetailResponse.of(recruitment, List.of(), author);
         return ApiResponse.ok(recruitmentResponse);
     }
 
-
     // 모집글 조회
-    public ApiResponse<RecruitmentDetailResponse> getRecruitment(Long recruitmentId) {
+    public ApiResponse<RecruitmentDetailResponse> getRecruitment(Long recruitmentId, Users loginUser) {
         Recruitment recruitment = findRecruitmentBy(recruitmentId);
         List<CommentResponse> comments = commentService.getComments(recruitmentId);
-        return ApiResponse.ok(RecruitmentDetailResponse.of(recruitment, comments));
+        return ApiResponse.ok(RecruitmentDetailResponse.of(recruitment, comments, loginUser));
     }
 
     // 모집글 수정
