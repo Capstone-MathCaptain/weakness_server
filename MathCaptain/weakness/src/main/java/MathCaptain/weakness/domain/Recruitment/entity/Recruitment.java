@@ -1,10 +1,10 @@
 package MathCaptain.weakness.domain.Recruitment.entity;
 
 import MathCaptain.weakness.domain.Group.entity.Group;
-import MathCaptain.weakness.domain.Group.enums.CategoryStatus;
+import MathCaptain.weakness.domain.common.enums.CategoryStatus;
 import MathCaptain.weakness.domain.Recruitment.dto.request.CreateRecruitmentRequest;
 import MathCaptain.weakness.domain.Recruitment.dto.request.UpdateRecruitmentRequest;
-import MathCaptain.weakness.domain.Recruitment.enums.RecruitmentStatus;
+import MathCaptain.weakness.domain.common.enums.RecruitmentStatus;
 import MathCaptain.weakness.domain.User.entity.Users;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;

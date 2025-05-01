@@ -1,17 +1,16 @@
-package MathCaptain.weakness.domain.Group.enums;
+package MathCaptain.weakness.domain.common.enums;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
-public enum RequestStatus {
-    WAITING("가입요청 중"),
-    ACCEPTED("가입요청 수락"),
-    REJECTED("가입요청 거절"),
-    CANCELED("가입요청 취소");
+public enum RecruitmentStatus {
+    // 모집중, 모집종료
+    RECRUITING("모집중"),
+    END("모집종료");
 
     private final String value;
 
-    RequestStatus(String value) {
+    RecruitmentStatus(String value) {
         this.value = value;
     }
 
@@ -21,8 +20,8 @@ public enum RequestStatus {
     }
 
     @JsonCreator
-    public static RequestStatus fromValue(String value) {
-        for (RequestStatus status : RequestStatus.values()) {
+    public static RecruitmentStatus fromValue(String value) {
+        for (RecruitmentStatus status : RecruitmentStatus.values()) {
             if (status.value.equals(value) || status.name().equals(value)) {
                 return status;
             }

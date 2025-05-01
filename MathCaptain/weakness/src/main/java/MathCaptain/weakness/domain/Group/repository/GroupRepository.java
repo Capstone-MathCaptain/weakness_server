@@ -1,7 +1,7 @@
 package MathCaptain.weakness.domain.Group.repository;
 
 import MathCaptain.weakness.domain.Group.entity.Group;
-import MathCaptain.weakness.domain.Group.enums.CategoryStatus;
+import MathCaptain.weakness.domain.common.enums.CategoryStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

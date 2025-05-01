@@ -1,4 +1,4 @@
-package MathCaptain.weakness.domain.User.enums;
+package MathCaptain.weakness.domain.common;
 
 public class TierThresholds {
     public static final long BRONZE = 0;         // 기본값

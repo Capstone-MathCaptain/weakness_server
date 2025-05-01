@@ -2,8 +2,8 @@ package MathCaptain.weakness.domain.Group.repository;
 
 import MathCaptain.weakness.domain.Group.entity.Group;
 import MathCaptain.weakness.domain.Group.entity.RelationBetweenUserAndGroup;
-import MathCaptain.weakness.domain.Group.enums.GroupRole;
-import MathCaptain.weakness.domain.Group.enums.RequestStatus;
+import MathCaptain.weakness.domain.common.enums.GroupRole;
+import MathCaptain.weakness.domain.common.enums.RequestStatus;
 import MathCaptain.weakness.domain.User.entity.Users;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;

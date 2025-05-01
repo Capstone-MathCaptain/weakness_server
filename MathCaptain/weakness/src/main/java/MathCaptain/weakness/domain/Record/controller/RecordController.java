@@ -1,7 +1,6 @@
 package MathCaptain.weakness.domain.Record.controller;
 
 import MathCaptain.weakness.domain.Record.dto.request.FitnessLogEnrollRequest;
-import MathCaptain.weakness.domain.Record.dto.request.RecordEndRequest;
 import MathCaptain.weakness.domain.Record.dto.request.RunningLogEnrollRequest;
 import MathCaptain.weakness.domain.Record.dto.request.StudyLogEnrollRequest;
 import MathCaptain.weakness.domain.Record.dto.response.RecordSummaryResponse;
@@ -13,7 +12,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
-import static MathCaptain.weakness.domain.Group.enums.CategoryStatus.*;
+import static MathCaptain.weakness.domain.common.enums.CategoryStatus.*;
 
 @RestController
 @RequiredArgsConstructor

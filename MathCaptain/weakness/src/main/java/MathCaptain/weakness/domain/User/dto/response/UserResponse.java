@@ -3,7 +3,7 @@ package MathCaptain.weakness.domain.User.dto.response;
 import MathCaptain.weakness.domain.Group.dto.response.GroupResponse;
 import MathCaptain.weakness.domain.Group.entity.RelationBetweenUserAndGroup;
 import MathCaptain.weakness.domain.User.entity.Users;
-import MathCaptain.weakness.domain.User.enums.Tiers;
+import MathCaptain.weakness.domain.common.enums.Tiers;
 import lombok.*;
 
 import java.util.List;
