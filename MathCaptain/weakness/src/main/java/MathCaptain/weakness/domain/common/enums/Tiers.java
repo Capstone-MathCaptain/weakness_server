@@ -1,4 +1,4 @@
-package MathCaptain.weakness.domain.User.enums;
+package MathCaptain.weakness.domain.common.enums;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;

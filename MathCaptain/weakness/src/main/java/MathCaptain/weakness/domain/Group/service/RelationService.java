@@ -8,7 +8,7 @@ import MathCaptain.weakness.domain.Group.dto.response.RelationResponse;
 import MathCaptain.weakness.domain.Group.repository.GroupRepository;
 import MathCaptain.weakness.domain.Record.repository.record.RecordRepository;
 import MathCaptain.weakness.domain.User.dto.response.UserResponse;
-import MathCaptain.weakness.domain.Group.enums.GroupRole;
+import MathCaptain.weakness.domain.common.enums.GroupRole;
 import MathCaptain.weakness.domain.Group.repository.RelationRepository;
 import MathCaptain.weakness.domain.User.entity.Users;
 import MathCaptain.weakness.global.Api.ApiResponse;

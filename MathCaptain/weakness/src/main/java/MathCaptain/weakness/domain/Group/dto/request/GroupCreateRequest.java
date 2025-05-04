@@ -1,6 +1,6 @@
 package MathCaptain.weakness.domain.Group.dto.request;
 
-import MathCaptain.weakness.domain.Group.enums.CategoryStatus;
+import MathCaptain.weakness.domain.common.enums.CategoryStatus;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.*;

@@ -1,6 +1,6 @@
 package MathCaptain.weakness.domain.Recruitment.dto.request;
 
-import MathCaptain.weakness.domain.Recruitment.enums.RecruitmentStatus;
+import MathCaptain.weakness.domain.common.enums.RecruitmentStatus;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;

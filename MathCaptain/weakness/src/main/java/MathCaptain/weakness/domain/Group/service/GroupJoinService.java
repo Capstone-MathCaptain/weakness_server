@@ -4,7 +4,7 @@ import MathCaptain.weakness.domain.Group.entity.Group;
 import MathCaptain.weakness.domain.Group.entity.RelationBetweenUserAndGroup;
 import MathCaptain.weakness.domain.Group.dto.request.GroupJoinRequest;
 import MathCaptain.weakness.domain.Group.dto.response.GroupJoinResponse;
-import MathCaptain.weakness.domain.Group.enums.RequestStatus;
+import MathCaptain.weakness.domain.common.enums.RequestStatus;
 import MathCaptain.weakness.domain.Group.repository.GroupRepository;
 import MathCaptain.weakness.domain.Group.repository.RelationRepository;
 import MathCaptain.weakness.domain.User.entity.Users;

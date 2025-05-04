@@ -1,7 +1,7 @@
 package MathCaptain.weakness.domain.Group.controller;
 
 import MathCaptain.weakness.domain.Group.dto.request.GroupJoinRequest;
-import MathCaptain.weakness.domain.Group.enums.RequestStatus;
+import MathCaptain.weakness.domain.common.enums.RequestStatus;
 import MathCaptain.weakness.domain.Group.service.GroupJoinService;
 import MathCaptain.weakness.domain.Group.service.RelationService;
 import MathCaptain.weakness.domain.Notification.service.NotificationService;

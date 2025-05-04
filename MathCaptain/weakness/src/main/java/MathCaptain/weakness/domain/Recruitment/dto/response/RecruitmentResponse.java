@@ -1,8 +1,8 @@
 package MathCaptain.weakness.domain.Recruitment.dto.response;
 
-import MathCaptain.weakness.domain.Group.enums.CategoryStatus;
+import MathCaptain.weakness.domain.common.enums.CategoryStatus;
 import MathCaptain.weakness.domain.Recruitment.entity.Recruitment;
-import MathCaptain.weakness.domain.Recruitment.enums.RecruitmentStatus;
+import MathCaptain.weakness.domain.common.enums.RecruitmentStatus;
 import lombok.*;
 
 import java.time.LocalDateTime;

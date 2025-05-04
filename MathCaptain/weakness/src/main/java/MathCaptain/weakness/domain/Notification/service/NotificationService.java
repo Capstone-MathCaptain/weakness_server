@@ -5,6 +5,7 @@ import MathCaptain.weakness.domain.Group.entity.RelationBetweenUserAndGroup;
 import MathCaptain.weakness.domain.Group.repository.GroupRepository;
 import MathCaptain.weakness.domain.Group.repository.RelationRepository;
 import MathCaptain.weakness.domain.Notification.controller.NotificationController;
+import MathCaptain.weakness.domain.Notification.dto.response.NotificationResponse;
 import MathCaptain.weakness.domain.Notification.entity.Notification;
 import MathCaptain.weakness.domain.Notification.repository.NotificationRepository;
 import MathCaptain.weakness.domain.Recruitment.entity.Comment;
@@ -20,6 +21,7 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -36,7 +38,8 @@ public class NotificationService {
 
 
     // 메시지 알림
-    public SseEmitter subscribe(Long userId) {
+    public SseEmitter subscribe(Users user) {
+        Long userId = user.getUserId();
         SseEmitter sseEmitter = new SseEmitter(Long.MAX_VALUE);
         try {
             sseEmitter.send(SseEmitter.event().name("connect"));
@@ -60,7 +63,7 @@ public class NotificationService {
         if (NotificationController.sseEmitters.containsKey(userId)) {
             SseEmitter sseEmitter = NotificationController.sseEmitters.get(userId);
             try {
-                Map<String, String> eventData = buildNotificationData("댓글이 달렸습니다.", comment.getAuthor().getNickname(), comment.getCommentTime().toString(), comment.getContent());
+                Map<String, String> eventData = buildNotificationData("댓글이 달렸습니다.", comment.getAuthor().getUserId(), comment.getAuthor().getNickname(), comment.getCommentTime().toString(), comment.getContent());
                 sseEmitter.send(SseEmitter.event().name("addComment").data(eventData));
                 Notification notification = Notification.of(eventData);
                 notificationRepository.save(notification);
@@ -83,7 +86,7 @@ public class NotificationService {
         if (NotificationController.sseEmitters.containsKey(leaderId)) {
             SseEmitter sseEmitter = NotificationController.sseEmitters.get(leaderId);
             try {
-                Map<String,String> eventData = buildNotificationData("그룹 가입 요청이 있습니다.", user.getNickname(), LocalDateTime.now().toString(), "가입 요청");
+                Map<String,String> eventData = buildNotificationData("그룹 가입 요청이 있습니다.", leaderId ,user.getNickname(), LocalDateTime.now().toString(), "가입 요청");
                 sseEmitter.send(SseEmitter.event().name("groupJoinRequest").data(eventData));
                 // DB 저장
                 Notification notification = Notification.of(eventData);
@@ -107,7 +110,7 @@ public class NotificationService {
         if (NotificationController.sseEmitters.containsKey(userId)) {
             SseEmitter sseEmitter = NotificationController.sseEmitters.get(userId);
             try {
-                Map<String,String> eventData = buildNotificationData("그룹 가입 요청 결과가 도착했습니다.", group.getName(), LocalDateTime.now().toString(), relation.getRequestStatus().toString());
+                Map<String,String> eventData = buildNotificationData("그룹 가입 요청 결과가 도착했습니다.", userId ,group.getName(), LocalDateTime.now().toString(), relation.getRequestStatus().toString());
                 sseEmitter.send(SseEmitter.event().name("groupJoinResult").data(eventData));
                 // DB 저장
                 Notification notification = Notification.of(eventData);
@@ -144,8 +147,16 @@ public class NotificationService {
         return ApiResponse.ok("알림이 삭제되었습니다.");
     }
 
-    private Map<String, String> buildNotificationData(String message, String sender, String createdAt, String contents) {
+    public ApiResponse<?> getNotificationList(Users user) {
+        Long userId = user.getUserId();
+        List<Notification> notifications = notificationRepository.findAllByUserIdOrderByCreatedAtDesc(userId);
+        return ApiResponse.ok(NotificationResponse.fromList(notifications));
+    }
+
+    private Map<String, String> buildNotificationData(String message, Long userId, String sender, String createdAt, String contents) {
         Map<String, String> eventData = new HashMap<>();
+        eventData.put("userId", userId.toString());
+        eventData.put("userName", String.valueOf(sender));
         eventData.put("message", message);
         eventData.put("sender", sender);
         eventData.put("createdAt", createdAt);

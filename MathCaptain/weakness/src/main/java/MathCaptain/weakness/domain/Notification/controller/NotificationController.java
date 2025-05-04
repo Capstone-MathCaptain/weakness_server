@@ -23,11 +23,16 @@ public class NotificationController {
 
     @GetMapping("/notification/subscribe")
     public SseEmitter subscribe(@LoginUser Users loginUser) {
-        return notificationService.subscribe(loginUser.getUserId());
+        return notificationService.subscribe(loginUser);
     }
 
     @DeleteMapping("/notification/delete/{notificationId}")
     public ApiResponse<?> deleteNotification(@LoginUser Users loginUser, @PathVariable Long notificationId) {
         return notificationService.deleteNotification(loginUser, notificationId);
+    }
+
+    @GetMapping("/notification/list")
+    public ApiResponse<?> getNotificationList(@LoginUser Users loginUser) {
+        return notificationService.getNotificationList(loginUser);
     }
 }

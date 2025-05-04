@@ -1,7 +1,7 @@
 package MathCaptain.weakness.global.auth.filter;
 
 import MathCaptain.weakness.domain.Group.entity.RelationBetweenUserAndGroup;
-import MathCaptain.weakness.domain.Group.enums.GroupRole;
+import MathCaptain.weakness.domain.common.enums.GroupRole;
 import MathCaptain.weakness.domain.Group.repository.RelationRepository;
 import MathCaptain.weakness.domain.Recruitment.entity.Comment;
 import MathCaptain.weakness.domain.Recruitment.repository.CommentRepository;

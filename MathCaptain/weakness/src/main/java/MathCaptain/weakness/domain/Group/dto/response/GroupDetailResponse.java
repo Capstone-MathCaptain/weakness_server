@@ -1,7 +1,7 @@
 package MathCaptain.weakness.domain.Group.dto.response;
 
 import MathCaptain.weakness.domain.Group.entity.Group;
-import MathCaptain.weakness.domain.Group.enums.CategoryStatus;
+import MathCaptain.weakness.domain.common.enums.CategoryStatus;
 import MathCaptain.weakness.domain.User.entity.Users;
 import lombok.*;
 

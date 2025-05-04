@@ -2,7 +2,7 @@ package MathCaptain.weakness.domain.Group.entity;
 
 import MathCaptain.weakness.domain.Group.dto.request.GroupCreateRequest;
 import MathCaptain.weakness.domain.Group.dto.request.GroupUpdateRequest;
-import MathCaptain.weakness.domain.Group.enums.CategoryStatus;
+import MathCaptain.weakness.domain.common.enums.CategoryStatus;
 import MathCaptain.weakness.domain.Recruitment.entity.Recruitment;
 import jakarta.persistence.*;
 import lombok.*;

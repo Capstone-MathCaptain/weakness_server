@@ -2,7 +2,7 @@ package MathCaptain.weakness.domain.Record.service;
 
 import MathCaptain.weakness.domain.Group.entity.Group;
 import MathCaptain.weakness.domain.Group.entity.RelationBetweenUserAndGroup;
-import MathCaptain.weakness.domain.Group.enums.CategoryStatus;
+import MathCaptain.weakness.domain.common.enums.CategoryStatus;
 import MathCaptain.weakness.domain.Group.repository.RelationRepository;
 import MathCaptain.weakness.domain.Record.dto.request.*;
 import MathCaptain.weakness.domain.Record.dto.response.FitnessLogResponse;
@@ -10,9 +10,6 @@ import MathCaptain.weakness.domain.Record.dto.response.RunningLogResponse;
 import MathCaptain.weakness.domain.Record.dto.response.StudyLogResponse;
 import MathCaptain.weakness.domain.Record.entity.ActivityRecord;
 import MathCaptain.weakness.domain.Record.dto.response.RecordSummaryResponse;
-import MathCaptain.weakness.domain.Record.entity.UserLog.FitnessDetail;
-import MathCaptain.weakness.domain.Record.entity.UserLog.RunningDetail;
-import MathCaptain.weakness.domain.Record.entity.UserLog.StudyDetail;
 import MathCaptain.weakness.domain.Record.repository.record.RecordRepository;
 import MathCaptain.weakness.domain.User.entity.Users;
 import MathCaptain.weakness.global.PointSet;
@@ -22,13 +19,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.DayOfWeek;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.TemporalAdjusters;
 import java.util.*;
 import java.util.stream.Collectors;
-
-import static MathCaptain.weakness.domain.Group.enums.CategoryStatus.*;
 
 @Slf4j
 @Service

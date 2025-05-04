@@ -1,7 +1,7 @@
 package MathCaptain.weakness.domain.Group.dto.response;
 
 import MathCaptain.weakness.domain.Group.entity.RelationBetweenUserAndGroup;
-import MathCaptain.weakness.domain.Group.enums.GroupRole;
+import MathCaptain.weakness.domain.common.enums.GroupRole;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 

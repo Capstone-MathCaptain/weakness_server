@@ -18,6 +18,8 @@ public class Notification {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    private Long userId;
+
     @Column(nullable = false)
     private String sender;
 
@@ -25,20 +27,24 @@ public class Notification {
     private LocalDateTime createdAt;
 
     @Column(nullable = false)
-    private String contents;
+    private String content;
+
+    private Boolean isRead;
 
     @Builder
-    private Notification(String sender, LocalDateTime createdAt, String contents) {
+    private Notification(Long userId, String sender, LocalDateTime createdAt, String content) {
+        this.userId = userId;
         this.sender = sender;
         this.createdAt = createdAt;
-        this.contents = contents;
+        this.content = content;
+        this.isRead = false;
     }
 
     public static Notification of(Map<String, String> eventData) {
         return Notification.builder()
+                .userId(Long.parseLong(eventData.get("userId")))
                 .sender(eventData.get("sender"))
-                .createdAt(LocalDateTime.parse(eventData.get("createdAt")))
-                .contents(eventData.get("message"))
+                .content(eventData.get("message"))
                 .build();
     }
 }

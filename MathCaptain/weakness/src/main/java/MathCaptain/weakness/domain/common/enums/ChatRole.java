@@ -1,4 +1,4 @@
-package MathCaptain.weakness.domain.Chat.enums;
+package MathCaptain.weakness.domain.common.enums;
 
 public enum ChatRole {
     USER,
