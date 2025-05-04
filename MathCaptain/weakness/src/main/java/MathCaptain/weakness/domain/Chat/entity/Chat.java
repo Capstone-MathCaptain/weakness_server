@@ -2,6 +2,7 @@ package MathCaptain.weakness.domain.Chat.entity;
 
 import MathCaptain.weakness.domain.Chat.dto.request.ChatRequest;
 import MathCaptain.weakness.domain.Chat.dto.response.ChatResponse;
+import MathCaptain.weakness.domain.User.entity.Users;
 import MathCaptain.weakness.domain.common.enums.ChatRole;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -23,8 +24,6 @@ public class Chat {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Long chatRoomId;
-
     private Long userId;
 
     @Enumerated(EnumType.STRING)
@@ -37,20 +36,19 @@ public class Chat {
     private LocalDateTime sendTime;
 
     @Builder
-    private Chat(Long chatRoomId, Long userId, ChatRole role, String message) {
-        this.chatRoomId = chatRoomId;
+    private Chat(Long userId, ChatRole role, String message) {
         this.userId = userId;
         this.role = role;
         this.message = message;
     }
 
-    public static Chat of(ChatRequest request, ChatRole role) {
-        return new Chat(request.getChatRoomId(), request.getUserId(), role, request.getMessage());
+    public static Chat of(Users user, ChatRequest request, ChatRole role) {
+        return new Chat(user.getUserId(), role, request.getMessage());
     }
 
     public static Chat of(ChatResponse response) {
         return Chat.builder()
-                .chatRoomId(response.getChatRoomId())
+                .userId(response.getUserId())
                 .role(ChatRole.ASSISTANT)
                 .message(response.getMessage())
                 .build();

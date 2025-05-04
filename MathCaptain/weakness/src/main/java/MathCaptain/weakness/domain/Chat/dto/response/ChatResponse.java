@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class ChatResponse {
 
-    private Long chatRoomId;
+    private Long userId;
 
     private ChatRole role;
 
@@ -19,8 +19,8 @@ public class ChatResponse {
 
     private LocalDateTime sendTime;
 
-    private ChatResponse(Long chatRoomId, ChatRole role, String message, LocalDateTime sendTime) {
-        this.chatRoomId = chatRoomId;
+    private ChatResponse(Long userId, ChatRole role, String message, LocalDateTime sendTime) {
+        this.userId = userId;
         this.role = role;
         this.message = message;
         this.sendTime = sendTime;
@@ -28,7 +28,7 @@ public class ChatResponse {
 
     public static ChatResponse of(Chat chat) {
         return new ChatResponse(
-                chat.getChatRoomId(),
+                chat.getUserId(),
                 chat.getRole(),
                 chat.getMessage(),
                 chat.getSendTime()

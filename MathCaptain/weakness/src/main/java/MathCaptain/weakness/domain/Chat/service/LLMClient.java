@@ -4,6 +4,7 @@ import MathCaptain.weakness.domain.Chat.dto.request.ChatRequest;
 import MathCaptain.weakness.domain.Chat.dto.request.LLMRequest;
 import MathCaptain.weakness.domain.Chat.dto.response.ChatResponse;
 import MathCaptain.weakness.domain.Chat.entity.Chat;
+import MathCaptain.weakness.domain.User.entity.Users;
 import groovy.util.logging.Slf4j;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -30,9 +31,9 @@ public class LLMClient {
     @Value("${llm.server.url}")
     private String baseUrl;
 
-    public List<Chat> call(List<Chat> history, ChatRequest request) {
+    public List<Chat> call(Users loginUser, List<Chat> history, ChatRequest request) {
         try {
-            LLMRequest llmRequest = LLMRequest.of(request, history);
+            LLMRequest llmRequest = LLMRequest.of(loginUser, request, history);
 
             ResponseEntity<ChatResponse[]> response = restTemplate.postForEntity(
                     // TODO : 엔드포인트 수정

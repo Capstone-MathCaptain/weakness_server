@@ -7,9 +7,13 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class ChatRequest {
 
-    private Long chatRoomId;
-
-    private Long userId;
-
     private String message;
+
+    private ChatRequest(String message) {
+        this.message = message;
+    }
+
+    public static ChatRequest of(String message) {
+        return new ChatRequest(message);
+    }
 }
