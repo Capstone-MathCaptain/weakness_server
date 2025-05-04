@@ -23,7 +23,7 @@ public class LLMRequest {
         this.history = history;
     }
 
-    public static LLMRequest of(Users loginUser, ChatRequest request, List<Chat> history) {
-        return new LLMRequest(loginUser.getUserId(), request.getMessage(), history);
+    public static LLMRequest of(ChatRequest request, List<Chat> history) {
+        return new LLMRequest(request.getUserId(), request.getMessage(), history);
     }
 }
