@@ -4,8 +4,6 @@ import MathCaptain.weakness.domain.Chat.dto.request.ChatRequest;
 import MathCaptain.weakness.domain.Chat.dto.request.LLMRequest;
 import MathCaptain.weakness.domain.Chat.dto.response.ChatResponse;
 import MathCaptain.weakness.domain.Chat.service.ChatService;
-import MathCaptain.weakness.domain.User.entity.Users;
-import MathCaptain.weakness.global.annotation.LoginUser;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -41,9 +39,7 @@ public class ChatController {
         template.convertAndSend("/sub/" + request.getUserId(), chatResponse);
 
         // 2) LLM 호출 & 응답 저장 + 브로드캐스트 (동기 방식)
-        List<ChatResponse> llmResponses = chatService.askAI(request);
-        llmResponses.forEach(aiResp ->
-            template.convertAndSend("/sub/" + request.getUserId(), aiResp)
-        );
+        ChatResponse llmResponse = chatService.askAI(request);
+        template.convertAndSend("/sub/" + request.getUserId(), llmResponse);
     }
 }

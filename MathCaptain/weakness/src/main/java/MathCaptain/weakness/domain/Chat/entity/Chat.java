@@ -29,6 +29,7 @@ public class Chat {
     @Enumerated(EnumType.STRING)
     private ChatRole role;
 
+    @Column(columnDefinition = "LONGTEXT")
     private String message;
 
     @CreatedDate

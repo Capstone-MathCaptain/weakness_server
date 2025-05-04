@@ -8,6 +8,7 @@ import MathCaptain.weakness.domain.User.entity.Users;
 import groovy.util.logging.Slf4j;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
@@ -31,33 +32,31 @@ public class LLMClient {
     @Value("${llm.server.url}")
     private String baseUrl;
 
-    public List<Chat> call(List<ChatResponse> history, ChatRequest request) {
+    public Chat call(List<ChatResponse> history, ChatRequest request) {
         try {
             LLMRequest llmRequest = LLMRequest.of(request, history);
 
-            ResponseEntity<ChatResponse[]> response = restTemplate.postForEntity(
+            ResponseEntity<ChatResponse> response = restTemplate.postForEntity(
                     // TODO : 엔드포인트 수정
-                    baseUrl + "/v1/chat",
+                    baseUrl + "/mcp/query",
                     llmRequest,
                     // 응답을 ChatResponse[] (배열)로 역직렬화 (수정 필요)
-                    ChatResponse[].class
+                    ChatResponse.class
             );
 
-            ChatResponse[] body = response.getBody();
+            ChatResponse body = response.getBody();
             if (body == null) {
-                return Collections.emptyList();
+                throw new HttpServerErrorException(HttpStatus.NOT_ACCEPTABLE, "LLM이 응답하지 않습니다");
             }
-            return Arrays.stream(body)
-                    .map(Chat::of)
-                    .collect(Collectors.toList());
+            return Chat.of(body);
 
         } catch (ResourceAccessException timeoutEx) {
             log.error("LLM 서버 응답 지연", timeoutEx);
-            return List.of();
+            throw new ResourceAccessException("LLM 서버 응답 지연");
         } catch (HttpClientErrorException | HttpServerErrorException httpEx) {
             // 4XX/5XX 응답
             log.error("LLM 호출 실패: {}", httpEx.getStatusCode(), httpEx);
-            return List.of();
+            throw new HttpClientErrorException(HttpStatus.NOT_ACCEPTABLE, "LLM 호출 실패");
         }
     }
 }
