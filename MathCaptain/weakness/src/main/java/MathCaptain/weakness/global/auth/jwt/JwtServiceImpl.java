@@ -12,6 +12,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -214,6 +217,18 @@ public class JwtServiceImpl implements JwtService{
             log.error("🍪유효하지 않은 Token입니다", e.getMessage());
             return false;
         }
+    }
+
+    @Override
+    public Authentication getAuthentication(String accessToken) {
+        log.info("Authentication 추출");
+        return extractEmail(accessToken)
+                .map(email -> new UsernamePasswordAuthenticationToken(
+                        email,
+                        null,
+                        List.of(new SimpleGrantedAuthority("ROLE_USER"))
+                ))
+                .orElseThrow(() -> new RuntimeException("유효하지 않은 토큰입니다."));
     }
 
 }

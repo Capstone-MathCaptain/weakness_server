@@ -16,6 +16,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 
 import java.io.IOException;
+import java.util.Map;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -40,13 +41,28 @@ public class LoginSuccessJWTProvideHandler extends SimpleUrlAuthenticationSucces
                 user -> user.updateRefreshToken(refreshToken)
         );
 
-        // TODO
-        // 사용자의 그룹 정보 조회를 리다이렉트를 이용하여 옮기는 것이 좋아보임
+        userRepository.findByEmail(email).ifPresent(user -> {
+            try {
+                var responseBody = objectMapper.writeValueAsString(Map.of(
+                        "status", true,
+                        "message", "로그인 성공",
+                        "data", Map.of(
+                                "userId", user.getUserId(),
+                                "email", email
+                        )
+                ));
 
-        // JSON 응답 설정 및 전송
-        response.setContentType("application/json");
-        response.setCharacterEncoding("UTF-8");
-        response.setStatus(HttpServletResponse.SC_OK);
+                // JSON 응답 설정 및 전송
+                response.setContentType("application/json");
+                response.setCharacterEncoding("UTF-8");
+                response.setStatus(HttpServletResponse.SC_OK);
+                response.getWriter().write(responseBody);
+
+            } catch (IOException e) {
+                log.error("❌JSON 응답 실패", e);
+                throw new RuntimeException(e);
+            }
+        });
 
         log.info( "✅ 로그인에 성공합니다. 📧email: {}" , email);
     }

@@ -2,6 +2,7 @@ package MathCaptain.weakness.global.auth.jwt;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.security.core.Authentication;
 
 import java.io.IOException;
 import java.util.List;
@@ -33,4 +34,5 @@ public interface JwtService {
 
     boolean isTokenValid(String token);
 
+    Authentication getAuthentication(String token);
 }
