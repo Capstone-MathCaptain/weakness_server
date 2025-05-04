@@ -42,8 +42,8 @@ public class Chat {
         this.message = message;
     }
 
-    public static Chat of(Users user, ChatRequest request, ChatRole role) {
-        return new Chat(user.getUserId(), role, request.getMessage());
+    public static Chat of(ChatRequest request) {
+        return new Chat(request.getUserId(), ChatRole.USER, request.getMessage());
     }
 
     public static Chat of(ChatResponse response) {

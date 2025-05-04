@@ -7,33 +7,43 @@ import MathCaptain.weakness.domain.Chat.repository.ChatRepository;
 import MathCaptain.weakness.domain.User.entity.Users;
 import MathCaptain.weakness.domain.common.enums.ChatRole;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class ChatService {
 
-    public static final ChatRole USER = ChatRole.USER;
     private final ChatRepository chatRepository;
     private final LLMClient llm;
 
     @Transactional
-    public ChatResponse saveUserMessage(Users loginUser, ChatRequest request) {
-        Chat message = Chat.of(loginUser, request, USER);
+    public ChatResponse saveUserMessage(ChatRequest request) {
+        log.info("userid {}", request.getUserId());
+        log.info("message {}", request.getMessage());
+        Chat message = Chat.of(request);
         Chat saved = chatRepository.save(message);
         return ChatResponse.of(saved);
     }
 
-    public List<ChatResponse> askAI(Users loginUser, ChatRequest request) {
-        List<Chat> history = chatRepository.findAllByUserIdOrderBySendTimeAsc(loginUser.getUserId());
-        List<Chat> aiChats = llm.call(loginUser, history, request);
+    public List<ChatResponse> askAI(ChatRequest request) {
+        List<Chat> history = chatRepository.findAllByUserIdOrderBySendTimeAsc(request.getUserId());
+        List<Chat> aiChats = llm.call(history, request);
         return aiChats.stream()
                       .map(this::storeAndTransform)
+                      .toList();
+    }
+
+    @Transactional
+    public List<ChatResponse> getHistory(Long userId) {
+        List<Chat> history = chatRepository.findAllByUserIdOrderBySendTimeAsc(userId);
+        return history.stream()
+                      .map(ChatResponse::of)
                       .toList();
     }
 

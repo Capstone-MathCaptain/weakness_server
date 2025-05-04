@@ -31,9 +31,9 @@ public class LLMClient {
     @Value("${llm.server.url}")
     private String baseUrl;
 
-    public List<Chat> call(Users loginUser, List<Chat> history, ChatRequest request) {
+    public List<Chat> call(List<Chat> history, ChatRequest request) {
         try {
-            LLMRequest llmRequest = LLMRequest.of(loginUser, request, history);
+            LLMRequest llmRequest = LLMRequest.of(request, history);
 
             ResponseEntity<ChatResponse[]> response = restTemplate.postForEntity(
                     // TODO : 엔드포인트 수정
