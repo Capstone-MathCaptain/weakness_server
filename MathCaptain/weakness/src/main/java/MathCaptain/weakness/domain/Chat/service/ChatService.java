@@ -15,7 +15,7 @@ import java.util.List;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
+@Transactional
 public class ChatService {
 
     private final ChatRepository chatRepository;
@@ -28,15 +28,13 @@ public class ChatService {
         return ChatResponse.of(saved);
     }
 
-    public List<ChatResponse> askAI(ChatRequest request) {
+    public ChatResponse askAI(ChatRequest request) {
         List<ChatResponse> history = chatRepository.findAllByUserIdOrderBySendTimeAsc(request.getUserId()).stream()
                 .map(ChatResponse::of)
                 .toList();
 
-        List<Chat> aiChats = llm.call(history, request);
-        return aiChats.stream()
-                      .map(this::storeAndTransform)
-                      .toList();
+        Chat aiChats = llm.call(history, request);
+        return storeAndTransform(aiChats);
     }
 
     @Transactional

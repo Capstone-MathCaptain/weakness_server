@@ -18,7 +18,7 @@ public class Prompt {
     private List<ChatResponse> history;
 
     private Prompt(Long userId, String message, List<ChatResponse> history) {
-        this.template = "다음 내용을 참고하여 답변해줘";
+        this.template = "질문의 내용에 답변을 할 때 사용자의 활동기록과 문서에서 검색된 내용이 필요하면 참고해서 답변해줘";
         this.inputs = Map.of(
                 "user_id", userId.toString(),
                 "user_question", message
