@@ -1,29 +1,31 @@
 package MathCaptain.weakness.domain.Chat.dto.request;
 
-import MathCaptain.weakness.domain.Chat.entity.Chat;
-import MathCaptain.weakness.domain.User.entity.Users;
+import MathCaptain.weakness.domain.Chat.dto.response.ChatResponse;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Getter
 @NoArgsConstructor
 public class LLMRequest {
 
-    private Long userId;
+    private Prompt prompt;
 
-    private String message;
+    private Map<String, Object> resources;
 
-    private List<Chat> history;
+    private List<Object> tools;
 
-    private LLMRequest(Long userId, String message, List<Chat> history) {
-        this.userId = userId;
-        this.message = message;
-        this.history = history;
+    private LLMRequest(Prompt prompt) {
+        this.prompt = prompt;
+        this.resources = new HashMap<>();
+        this.tools = List.of();
     }
 
-    public static LLMRequest of(ChatRequest request, List<Chat> history) {
-        return new LLMRequest(request.getUserId(), request.getMessage(), history);
+    public static LLMRequest of(ChatRequest request, List<ChatResponse> history) {
+        Prompt prompt = Prompt.of(request, history);
+        return new LLMRequest(prompt);
     }
 }

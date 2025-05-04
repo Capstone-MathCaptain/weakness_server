@@ -31,7 +31,7 @@ public class LLMClient {
     @Value("${llm.server.url}")
     private String baseUrl;
 
-    public List<Chat> call(List<Chat> history, ChatRequest request) {
+    public List<Chat> call(List<ChatResponse> history, ChatRequest request) {
         try {
             LLMRequest llmRequest = LLMRequest.of(request, history);
 

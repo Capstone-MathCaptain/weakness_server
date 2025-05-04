@@ -1,6 +1,7 @@
 package MathCaptain.weakness.domain.Chat.controller;
 
 import MathCaptain.weakness.domain.Chat.dto.request.ChatRequest;
+import MathCaptain.weakness.domain.Chat.dto.request.LLMRequest;
 import MathCaptain.weakness.domain.Chat.dto.response.ChatResponse;
 import MathCaptain.weakness.domain.Chat.service.ChatService;
 import MathCaptain.weakness.domain.User.entity.Users;
@@ -8,9 +9,8 @@ import MathCaptain.weakness.global.annotation.LoginUser;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 
 @RestController
@@ -24,6 +24,14 @@ public class ChatController {
     @GetMapping("/chat/history/{userId}")
     public List<ChatResponse> getHistory(@PathVariable Long userId) {
         return chatService.getHistory(userId);
+    }
+
+    @PostMapping("/chat/test/{userId}")
+    public LLMRequest test(
+            @PathVariable Long userId,
+            @RequestBody ChatRequest request
+    ) {
+       return chatService.test(userId, request);
     }
 
     @MessageMapping("/chat.send")  // 클라이언트 → /app/chat.send

@@ -1,11 +1,10 @@
 package MathCaptain.weakness.domain.Chat.service;
 
 import MathCaptain.weakness.domain.Chat.dto.request.ChatRequest;
+import MathCaptain.weakness.domain.Chat.dto.request.LLMRequest;
 import MathCaptain.weakness.domain.Chat.dto.response.ChatResponse;
 import MathCaptain.weakness.domain.Chat.entity.Chat;
 import MathCaptain.weakness.domain.Chat.repository.ChatRepository;
-import MathCaptain.weakness.domain.User.entity.Users;
-import MathCaptain.weakness.domain.common.enums.ChatRole;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -24,15 +23,16 @@ public class ChatService {
 
     @Transactional
     public ChatResponse saveUserMessage(ChatRequest request) {
-        log.info("userid {}", request.getUserId());
-        log.info("message {}", request.getMessage());
         Chat message = Chat.of(request);
         Chat saved = chatRepository.save(message);
         return ChatResponse.of(saved);
     }
 
     public List<ChatResponse> askAI(ChatRequest request) {
-        List<Chat> history = chatRepository.findAllByUserIdOrderBySendTimeAsc(request.getUserId());
+        List<ChatResponse> history = chatRepository.findAllByUserIdOrderBySendTimeAsc(request.getUserId()).stream()
+                .map(ChatResponse::of)
+                .toList();
+
         List<Chat> aiChats = llm.call(history, request);
         return aiChats.stream()
                       .map(this::storeAndTransform)
@@ -45,6 +45,15 @@ public class ChatService {
         return history.stream()
                       .map(ChatResponse::of)
                       .toList();
+    }
+
+    @Transactional
+    public LLMRequest test(Long userId, ChatRequest request) {
+        List<ChatResponse> history = chatRepository.findAllByUserIdOrderBySendTimeAsc(userId).stream()
+                .map(ChatResponse::of)
+                .toList();
+
+        return LLMRequest.of(request, history);
     }
 
     private ChatResponse storeAndTransform(Chat message) {
