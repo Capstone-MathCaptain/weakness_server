@@ -41,7 +41,7 @@ public class UserService {
 
     // 회원가입
     public ApiResponse<UserResponse> saveUser(SaveUserRequest userSaveRequest) {
-        Users user = Users.of(userSaveRequest);
+        Users user = Users.of(userSaveRequest, passwordEncoder);
         userRepository.save(user);
         return ApiResponse.ok(UserResponse.of(user));
     }

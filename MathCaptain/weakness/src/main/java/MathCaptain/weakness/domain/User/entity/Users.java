@@ -79,10 +79,10 @@ public class Users {
         this.phoneNumber = phoneNumber;
     }
 
-    public static Users of(SaveUserRequest userRequestDto) {
+    public static Users of(SaveUserRequest userRequestDto, PasswordEncoder passwordEncoder) {
         return new Users(
                 userRequestDto.getEmail(),
-                userRequestDto.getPassword(),
+                passwordEncoder.encode(userRequestDto.getPassword()),
                 userRequestDto.getName(),
                 userRequestDto.getNickname(),
                 userRequestDto.getPhoneNumber());

@@ -2,7 +2,6 @@ package MathCaptain.weakness.domain.Chat.entity;
 
 import MathCaptain.weakness.domain.Chat.dto.request.ChatRequest;
 import MathCaptain.weakness.domain.Chat.dto.response.ChatResponse;
-import MathCaptain.weakness.domain.User.entity.Users;
 import MathCaptain.weakness.domain.common.enums.ChatRole;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -29,7 +28,7 @@ public class Chat {
     @Enumerated(EnumType.STRING)
     private ChatRole role;
 
-    @Column(columnDefinition = "LONGTEXT")
+    @Column(columnDefinition = "TEXT")
     private String message;
 
     @CreatedDate
