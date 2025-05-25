@@ -11,7 +11,7 @@
 | <div align="center"><a href="https://github.com/JayongLEE"><b>이제용</b></a></div> | <div align="center"><a href="https://github.com/HeroLee0607"><b>이영웅</b></a></div> | <div align="center"><a href="https://github.com/JeongbinOK"><b>옥정빈</b></a></div> | <div align="center"><a href="https://github.com/woosungk1163"><b>김우성</b></a></div> |
 
 # 3. 기술스택 🔧
-<img src="https://img.shields.io/badge/spring-6DB33F?style=for-the-badge&logo=spring&logoColor=white"> <img src="https://img.shields.io/badge/springboot-6DB33F?style=for-the-badge&logo=springboot&logoColor=white"> <img src="https://img.shields.io/badge/springsecurity-6DB33F?style=for-the-badge&logo=springsecurity&logoColor=white"> <img src="https://img.shields.io/badge/postgresql-4169E1?style=for-the-badge&logo=postgresql&logoColor=white">
+<img src="https://img.shields.io/badge/spring-6DB33F?style=for-the-badge&logo=spring&logoColor=white"> <img src="https://img.shields.io/badge/springboot-6DB33F?style=for-the-badge&logo=springboot&logoColor=white"> <img src="https://img.shields.io/badge/springsecurity-6DB33F?style=for-the-badge&logo=springsecurity&logoColor=white"> <img src="https://img.shields.io/badge/postgresql-4169E1?style=for-the-badge&logo=postgresql&logoColor=white"> <img src="https://img.shields.io/badge/docker-2496ED?style=for-the-badge&logo=docker&logoColor=white">
 
 # 4. 주요기능 ✅
 - 그룹 생성 / 가입 / 주간 및 일간 목표 설정
